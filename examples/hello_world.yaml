@@ -35,9 +35,9 @@ appliance:
             enabled: False
             allowManagement: False
   activation: #Activation codes
-    base: "390F-FCA3-1BF3-D607-E9D0-60E4-DC01-0C0B"
-    aac: "7B85-119C-1C2E-2FC4-075F-D805-B7DC-08AD"
-    fed: "5C29-6E32-F430-3921-41B6-4472-4F4A-9277"
+    base: "&BASE_LICENSE"
+    aac: "&ACCESS_CONTROL_LICENSE"
+    fed: "&FEDERATION_LICENSE"
 webseal:
   runtime: #Runtime component must be defined in order to specify WebSEAL configuration
     policy_server: "local"
@@ -56,20 +56,6 @@ webseal:
       https:
         enabled: "yes"
         port: 443
-      junctions:
-        - junction_point: "/scim"
-          transparent_path_junction: "yes"
-          server_hostname: "localhost"
-          junction_type: "ssl"
-          remote_http_header:
-            - "iv-user"
-            - "iv-groups"
-            - "iv-creds"
-          enable_basic_auth: "yes"
-          username: "easuser"
-          password: "passw0rd"
-          server_hostname: "localhost"
-          server_port: 443
       aac_configuration:
         hostname: "localhost"
         port: 443
@@ -78,24 +64,11 @@ webseal:
         junction: "/mga"
         reuse_acls: True
         reuse_certs: True
-      stanza_config:
-        - stanza: "local-apps"
-          key: "cred-viewer"
-          value: "cred"
-        - stanza: "server"
-          key: "auth-challenge-type"
-          value: "[+*]ba"
-        - stanza: "rsp-header-names"
-          key: "content-security-policy"
-          value: "default-src self; upgrade-insecure-requests; script-src unsafe-inline; img-src self https://168.1.30.85:30443 data:; frame-ancestors none; style-src self https://168.1.30.85:30443"
-        - stanza: "ba"
-          key: "ba-auth"
-          value: "both"
   users:
     - name: "testuser"
-      password: "passw0rd"
-      first_name: "test"
+      first_name: "Test"
       last_name: "user"
+      password: "passw0rd"
       cn: "testuser"
       dc: "iswga"
 aac:
@@ -116,14 +89,6 @@ aac:
           - usernamePasswordAuthentication.maxServerConnections: "16"
           - usernamePasswordAuthentication.userSearchFilter: "(|(objectclass=ePerson)(objectclass=Person))"
           - usernamePasswordAuthentication.loginFailuresPersistent: "false"
-      - name: "Example InfoMap Mechanism"
-        description: "Info Map Authentication"
-        uri: "urn:ibm:security:authentication:asf:mechanism:test"
-        predefined: False
-        type: "Info Map Authentication"
-        properties:
-          - infoMap.HTMLPage: ""
-          - infoMap.JSRule: ""
   advanced_configuration:
     - id: 12503
       sensitive: False

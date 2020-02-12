@@ -4,25 +4,36 @@ import logging
 import json
 import os
 
-from .constants import AAC, CONFIG_BASE_DIR, CONFIG, deploy_pending_changes
-
+from constants import AAC, CONFIG_BASE_DIR, CONFIG, deploy_pending_changes
 
 _logger = logging.getLogger(__name__)
 
+def advanced_config(aac_config):
+    if aac_config.advanced_configuration != None:
+        for advConf in aac_config.advanced_configuration:
+            rsp = AAC.advanced_config.update(
+                    advConf.id, value=advConf.value, sensitive=advConf.sensitive)
+            if rsp.success == True:
+                _logger.info("Successfully updated advanced configuration " + str(advConf.id))
+            else:
+                _logger.error("Failed to upate advanced configuration with:\n{}\n{}".format(
+                    json.dumps(advConf, indent=4), rsp.data))
 
-def scim_configuration(schemas):
-    for schema in schemas:
-        rsp = AAC.scim_config.get_schema(schema.uri)
-        if rsp.success == False:
-            _logger.error("Failed to get config for schema [{}]".format(schema.uri))
-            return
-        config = {**rsp.json, **schema.properties}
-        rsp = AAC.scim_config.update_schema(schema.uri, config)
-        if rsp.success == True:
-            _logger.info("Successfully updated schema [{}]".format(schema.uri))
-        else:
-            _logger.error("Failed to update schema [{}] with configuration:\n{}".format(
-                schema.uri, config))
+
+def scim_configuration(aac_config):
+    if aac_config.scim != None:
+        for schema in aac_config.scim:
+            rsp = AAC.scim_config.get_schema(schema.uri)
+            if rsp.success == False:
+                _logger.error("Failed to get config for schema [{}]".format(schema.uri))
+                return
+            config = {**rsp.json, **schema.properties}
+            rsp = AAC.scim_config.update_schema(schema.uri, config)
+            if rsp.success == True:
+                _logger.info("Successfully updated schema [{}]".format(schema.uri))
+            else:
+                _logger.error("Failed to update schema [{}] with configuration:\n{}".format(
+                    schema.uri, config))
 
 
 def _ci_server_connection(connection):
@@ -46,7 +57,7 @@ def _jdbc_server_connection(connection):
     rsp = AAC.server_connections.create_jdbc(name=connection.name, description=connection.description,
             locked=connection.locked, database_type=connection.type, connection_jndi=props.jndi, connection_hostname=props.hostname,
             connection_port=props.port, connection_ssl=props.ssl, connection_user=props.user, connection_password=props.password, 
-            connection.type=props.type, connetion_service_name=props.service_name, conection_database_name=props.database_name, 
+            connection_type=props.type, connetion_service_name=props.service_name, conection_database_name=props.database_name, 
             connection_aged_timeout=props.aged_timeout, connection_connection_timeout=props.connection_timeout, 
             connection_per_thread=props.connections.per_thread, connection_max_idle=props.max_idle, connection_max_pool_size=props.max_pool_size, 
             connection_min_pool_size=props.min_pool_size, connection_connections_per_local_thread=props.connections_per_local_thread, 
@@ -62,29 +73,29 @@ def _smtp_server_connection(connection):
 
 def _ws_server_connection(connection):
     props = connection.properties
-    rsp = AAC.server_connection.create_web_service(name=connection.name, description=connection.description,
+    rsp = AAC.server_connection.screate_web_service(name=connection.name, description=connection.description,
             locked=connection.locked, connection_url=props.url, connection_user=props.user,
-            connection.password=props.password, connection_ssl_truststore=props.key_file, 
+            connection_password=props.password, connection_ssl_truststore=props.key_file, 
             connection_ssl_auth_key=props.cert_file, connection_ssl=props.ssl)
     return rsp
 
 def _remove_server_connection(connection):
-    configured_connections = AAC.server_connection.list_all().json
+    configured_connections = AAC.server_connections.list_all().json
     for c in configured_connections:
         if c.get('name') == connection.name and c.get('locked') == True:
             _logger.error("Connection {} exists and is locked, skipping".format(connection.name))
             return False
         elif c.get('name') == connection.name:
             logger.info("connection {} exists, deleting before recreating".format(connection.name))
-            rsp = {"ci": AAC.server_connection.delete_ci,
-              "ldap": AAC.server_connection.delete_ldap,
-              "isamruntime": AAC.server_connection.delete_runtime,
-              "oracle": AAC.server_connection.delete_jdbc,
-              "db2": AAC.server_connection.delete_jdbc,
-              "soliddb": AAC.server_connection.delete_jdbc,
-              "postgresql": AAC.server_connection.delete_jdbc,
-              "smtp": AAC.server_connection.delete_smtp,
-              "ws": AAC.server_connection.delete_web_service}.get(connection.type, None)(c['uuid'])
+            rsp = {"ci": AAC.server_connections.delete_ci,
+              "ldap": AAC.server_connections.delete_ldap,
+              "isamruntime": AAC.server_connections.delete_runtime,
+              "oracle": AAC.server_connections.delete_jdbc,
+              "db2": AAC.server_connections.delete_jdbc,
+              "soliddb": AAC.server_connections.delete_jdbc,
+              "postgresql": AAC.server_connections.delete_jdbc,
+              "smtp": AAC.server_connections.delete_smtp,
+              "ws": AAC.server_connections.delete_web_service}.get(connection.type, None)(c['uuid'])
             return rsp.success
 
 def server_connections(connections):
@@ -197,7 +208,7 @@ def api_protection_configuration(aac_config):
             definitions = AAC.api_protection.list_definitions()
             for client in aac_config.api_protection.clients:
                 for definition in definitions:
-                    if definition['name'] == client.api_definition
+                    if definition['name'] == client.api_definition:
                         client.api_definition = definition['id']
                         break
                 rsp = AAC.api_protection.create_client(name=client.name, redirect_uri=client.redirect_uri,
@@ -214,24 +225,33 @@ def api_protection_configuration(aac_config):
 def authentication_configuration(aac_config):
     if aac_config.authentication != None:
         if aac_config.authentication.mechanisms != None:
-            mechTypes = AAC.authentication.list_mechanism_types()
-            existing_mechanisms = AAC.authentication.list_mechanisms()
+            mechTypes = AAC.authentication.list_mechanism_types().json
+            existing_mechanisms = AAC.authentication.list_mechanisms().json
             for mechanism in aac_config.authentication.mechanisms:
                 try:
-                    typeId = list(filter(lambda _type: _type['name'] == mechanism.type, mechTypes))[0]['typeId']
-                except IndexError, KeyError:
+                    typeId = list(filter(lambda _type: _type['type'] == mechanism.type, mechTypes))[0]['id']
+                except (IndexError, KeyError):
                     _logger.error("Mechanism [{}] specified an invalid type, skipping".format(mechanism))
                     continue
                 rsp = None
+                props = None
+                if mechanism.properties != None and isinstance(mechanism.properties, list):
+                    props = []
+                    for e in mechanism.properties: 
+                        props += [{"key": k, "value": v} for k, v in e.items()]
+                attrs = None
+                if mechanism.attributes != None and isinstance(mechanism.attributes, list):
+                    attrs = []
+                    for e in mechanism.attributes: 
+                        attrs += [{"key": k, "value": v} for k, v in e.items()]
                 old_mech = list(filter( lambda m: m['uri'] == mechanism.uri, existing_mechanisms))
                 if old_mech:
                     old_mech = old_mech[0]
                     rsp = AAC.authentication.update_mechanism(id=old_mech['id'], description=mechanism.description, name=mechanism.name,
-                            uri=mechanism.name, uri=mechanism.uri, type_id=typeId, predefined=old_mech['predefined'], properties.mechanism.properties,
-                            attributes=mechanism.attributes)
+                            uri=mechanism.uri, type_id=typeId, predefined=old_mech['predefined'], properties=props, attributes=attrs)
                 else:
-                    rsp = AAC.authentication.create_mechanism(description=mechanism.description, name=mechanism.name,  uri=mechanism.name, uri=mechanism.uri,
-                            type_id=typeId,  properties.mechanism.properties, attributes=mechanism.attributes)
+                    rsp = AAC.authentication.create_mechanism(description=mechanism.description, name=mechanism.name,  uri=mechanism.uri,
+                            type_id=typeId,  properties=props, attributes=attrs)
                 if rsp.success == True:
                     _logger.info("Successfully set configuration for {} mechanism".format(mechanism.name))
                 else:
@@ -277,16 +297,17 @@ def mmfa_configuration(aac_config):
 def configure():
     config = CONFIG.aac
     if config == None:
-        _logger.info("No Access Control configuration detected, exiting")
+        _logger.info("No Access Control configuration detected, skipping")
         return
 
     upload_files(config)
     server_connections(config)
-    api_prtection_configuration(config)
+    api_protection_configuration(config)
     deploy_pending_changes()
 
     attributes_configuration(config)
     authentication_configuration(config)
     scim_configuration(config)
     mmfa_configuration(config)
+    advanced_config(config)
     deploy_pending_changes()

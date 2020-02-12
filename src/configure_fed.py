@@ -4,12 +4,12 @@ import json
 import os
 import logging
 
-from .constants import CONFIG, FED, deploy_pending_changes
+from constants import CONFIG, FED, deploy_pending_changes
 
 _logger = logging.getLogger(__name__)
 
 
-def configure_poc(fedration_config):
+def configure_poc(federation_config):
     if federation_config.points_of_contact != None:
         for poc in ederation_config.points_of_contact:
             rsp = FED.poc.create_like_credential(name=poc.name, description=poc.description,
@@ -23,11 +23,11 @@ def configure_poc(fedration_config):
                     poc.name, json.dumps(poc, indent=4), rsp.data))
 
 
-def configure_alias_service():
+def configure_alias_service(federation_config):
     return
 
 
-def configure_access_policy():
+def configure_access_policy(federation_config):
     return
 
 
@@ -43,7 +43,7 @@ def _configure_saml_partner(fedId, partner):
             "include_federation_id": config.include_federation_id,
             "logout_request_lifetime": config.logout_request_lifetime,
             "name_id_format": config.name_id_format,
-            "provider_id": config.provider_id
+            "provider_id": config.provider_id,
             "artifact_resolution_service": config.artifact_resolution_service,
             "assertion_consumer_service": config.assertion_consumer_service
             })
@@ -71,7 +71,7 @@ def _configure_oidc_partner(fedId, partner):
             "enabled": partner.enabled
         }
     if partner.configuration != None:
-        config = partner.configuration:
+        config = partner.configuration
         methodArgs.update({
                 "client_id": config.client_id,
                 "client_secret": config.client_secret,
@@ -84,7 +84,7 @@ def _configure_oidc_partner(fedId, partner):
         if config.advanced_configuration != None:
             methodArgs.update({
                     "advanced_configuration_active_delegate": config.advanced_configuration.active_delegate_id,
-                    "advanced_configuration_rule_id": config.advanced_configuration..mapping_rule
+                    "advanced_configuration_rule_id": config.advanced_configuration.mapping_rule
                 })
 
     rsp = FED.federations.create_oidc_rp_partner(fedId, **methodArgs)
@@ -107,7 +107,7 @@ def _configure_federation_partner(federation, partner):
             }.get(partner.role, None)
     if method == None:
         _logger.error("Federation partner {} does not specify a valid configuration: {}\n\tskipping . . .".format(
-            partner.name, json.dumps(partner, indent=4))
+            partner.name, json.dumps(partner, indent=4)))
     else:
         method(federationId, partner)
 
@@ -124,9 +124,9 @@ def _configure_saml_federation(federation):
                 "company_name": config.company_name,
                 "message_valid_time": config.message_valid_time,
                 "message_issuer_format": config.message_issuer_format,
-                "message_issuer_name_qualifier": config.message_issuer_name_qualifier
+                "message_issuer_name_qualifier": config.message_issuer_name_qualifier,
                 "point_of_contact_url": config.point_of_contact_url,
-                "session_timeout": config.session_timeout
+                "session_timeout": config.session_timeout,
                 "assertion_consumer_service": config.assertion_consumer_service,
                 "name_id_format": config.name_id_format
             })
@@ -168,7 +168,7 @@ def _configure_saml_federation(federation):
         
     rsp = FED.federations.create_saml_federation(**methodArgs)
     if rsp.success == True:
-        _logger.info("Successfully created {} SAML2.0 Federation".format(federation.name)
+        _logger.info("Successfully created {} SAML2.0 Federation".format(federation.name))
     else:
         _logger.error("Failed to create {} SAML2.0 Federation with config:\n{}\n{}".format(
             federation.name, json.dumps(federation, indent=4), rsp.data))
@@ -211,25 +211,29 @@ def _configure_oidc_fedation(federation):
             for partner in federation.partners:
                 _create_partner(federation, partner)
 
-def configure_federations(federations):
-    for federation in federations:
-        method = {"SAML2_0": _configure_saml_federation,
-                  "OIDC10": _configure_oidc_fedation
-                  }.get(federation.protocol, None)
-        if method == None:
-            _logger.error("Federation {} does not specify a valid configuration: {}\n\tskipping . . .".format(
-                federation.name, json.dumps(federation, indent=4)))
-            continue
-        else:
-            method(federation)
+def configure_federations(federation_config):
+    if federation_config.federations != None:
+        for federation in federations:
+            method = {"SAML2_0": _configure_saml_federation,
+                      "OIDC10": _configure_oidc_fedation
+                      }.get(federation.protocol, None)
+            if method == None:
+                _logger.error("Federation {} does not specify a valid configuration: {}\n\tskipping . . .".format(
+                    federation.name, json.dumps(federation, indent=4)))
+                continue
+            else:
+                method(federation)
 
 
 def configure():
     config = CONFIG.federation
-    configure_poc()
-    configur_alias_service()
-    configure_access_policy()
-    configure_federations()
+    if config == None:
+        _logger.info("No Federation configuration detected, skipping")
+        return
+    configure_poc(config)
+    configur_alias_service(config)
+    configure_access_policy(config)
+    configure_federations(config)
 
 if __name__ == "__main__":
     configure()

@@ -3,7 +3,7 @@
 import logging
 import json
 
-from .constants import WEB, deploy_pending_changes
+from constants import CONFIG, WEB, deploy_pending_changes
 
 _logger = logging.getLogger(__name__)
 
@@ -11,17 +11,26 @@ _logger = logging.getLogger(__name__)
 def _update_stanza(proxy_id, config):
     for entry in config:
         rsp = WEB.reverse_proxy.update_configuration_stanza_entry(
-                proxy_id, entry.stanza, entry.entry, entry.value)
+                proxy_id, entry.stanza, entry.key, entry.value)
         if rsp.success == True:
             _logger.info("Successfully updated stanza [{}] with [{}:{}]".format(
-                    entry.stanza, entry.entry, entry.value))
+                    entry.stanza, entry.key, entry.value))
         else:
             _logger.error("Failed to update stanza [{}] with [{}:{}]".format(
-                    entry.stanza, entry.entry, entry.value))
+                    entry.stanza, entry.key, entry.value))
 
 
 def _configure_aac(proxy_id, aac_config):
-    rsp = WEB.reverse_proxy.configure_aac(proxy_id, **aac_config)
+    methodArgs = {
+            "runtime_hostname": aac_config.hostname,
+            "runtime_port": aac_config.port,
+            "junction": aac_config.junction,
+            "runtime_username": aac_config.user,
+            "runtime_password": aac_config.password,
+            "reuse_certs": aac_config.reuse_certs,
+            "reuse_acls": aac_config.reuse_acls
+        }
+    rsp = WEB.reverse_proxy.configure_aac(proxy_id, **methodArgs)
     if rsp.success == True:
         _logger.info("Successfully ran Advanced Access Control configuration wizard on {} proxy instance".format(proxy_id))
     else:
@@ -49,11 +58,10 @@ def _configure_federations(proxy_id, fed_config):
 
 def _add_junction(proxy_id, junction):
     forceJunction = False
-    jcts_response = WEB.reverse_proxy.list_junctions(proxy_id)
-    if jcts_response != None and jcts_response.success = True:
-        for jct in jcts.json:
-            if jct["id"] == junction.name:
-                junction['force'] = "yes"
+    junctions = WEB.reverse_proxy.list_junctions(proxy_id).json
+    for jct in junctions:
+        if jct["id"] == junction.junction_point:
+            junction['force'] = "yes"
 
     rsp = WEB.reverse_proxy.create_junction(proxy_id, **junction)
     
@@ -65,31 +73,47 @@ def _add_junction(proxy_id, junction):
 
 
 def configure_wrp(runtime, proxy):
-    rsp = WEB.reverse_proxy.create_instance(inst_name=proxy.name, 
-                                      host=proxy.hostname, 
-                                      admin_id=runtime.admin_user if runtime.admin_user else "sec_master", 
-                                      admin_pwd=runtime.admin_.password,
-                                      ssl_yn=proxy.ldap.ssl, 
-                                      key_file=proxy.ldap.key_file, 
-                                      cert_label=proxy.ldap.cert_file, 
-                                      ssl_port=proxy.ldap.port,
-                                      http_yn=proxy.http.enabled, 
-                                      http_port=proxy.http.port, 
-                                      https_yn=proxy.https.enabled, 
-                                      https_port=proxy.https.port,
-                                      nw_interface_yn="yes" if proxy.address else "no",
-                                      ip_address=proxy.address, 
-                                      listening_port=proxy.listening_port,
-                                      domain=proxy.domain)
+    wrp_instances = WEB.reverse_proxy.list_instances().json
+    for instance in wrp_instances:
+        if instance['id'] == proxy.name:
+            rsp = WEB.reverse_proxy.delete_instance(proxy.name, 
+                    runtime.admin_user if runtime.admin_user else "sec_master",
+                    runtime.admin_password)
+            if rsp.success != True:
+                _logger.error("WebSEAL Reverse proxy {} already exists with config: \n{}\nand cannot be removed".format(
+                    proxy.name, proxy))
+                return
+    methodArgs = {
+                    "inst_name":proxy.name, 
+                    "host": proxy.hostname, 
+                    "admin_id": runtime.admin_user if runtime.admin_user else "sec_master", 
+                    "admin_pwd": runtime.admin_password,
+                    "http_yn": proxy.http.enabled, 
+                    "http_port": proxy.http.port, 
+                    "https_yn": proxy.https.enabled, 
+                    "https_port": proxy.https.port,
+                    "nw_interface_yn": "yes" if proxy.address else "no",
+                    "ip_address": proxy.address, 
+                    "listening_port": proxy.listening_port,
+                    "domain": proxy.domain
+            }
+    if proxy.ldap != None:
+        methodArgs.update({
+                            "ssl_yn": proxy.ldap.ssl, 
+                            "key_file": proxy.ldap.key_file, 
+                            "cert_label": proxy.ldap.cert_file, 
+                            "ssl_port": proxy.ldap.port,
+                    })
+    rsp = WEB.reverse_proxy.create_instance(**methodArgs)
     if rsp.success == True:
         _logger.info("Successfully configured proxy {}".format(proxy.name))
     else:
-        _logger.error("Configuration of proxy failed with config:\n{}".format(
-            json.dumps(proxy, indent=4)))
+        _logger.error("Configuration of {} proxy failed with config:\n{}\n{}".format(
+            proxy.name, json.dumps(proxy, indent=4), rsp.data))
         return
 
     if proxy.junctions != None:
-        for jct in proxy.junctons:
+        for jct in proxy.junctions:
             _add_junction(proxy.name, jct)
 
     if proxy.aac_configuration != None:
@@ -104,24 +128,34 @@ def configure_wrp(runtime, proxy):
     if proxy.stanza_config != None:
         _update_stanza(proxy.name, proxy.stanza_config)
 
+    deploy_pending_changes()
+    rsp = WEB.reverse_proxy.restart_instance(proxy.name)
+    if rsp.success == True:
+        _logger.info("Successfully restart {} proxy instance after applying configuration".format(
+            proxy.name))
+    else:
+        _logger.error("Failed to restart {} proxy instance after applying configuration".format(
+            proxy.name))
+
 
 def configure_user(runtime, user):
     firstName = user.first_name if user.first_name else user.name
     lastName = user.last_name if user.last_name else user.name
     pdadminCommands = [
-            "user create {} cn={},dc={} {} {} {}".format(user.name, user.name, user.domain, firstName, lastName, user.password),
+            "user create {} cn={},dc={} {} {} {}".format(
+                user.name, user.cn, user.dc, firstName, lastName, user.password),
             "user modify {} account-valid yes".format(user.name)
         ]
     rsp = WEB.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
     if rsp.success == True:
         _logger.info("Successfullt created user {}".format(user.name))
     else:
-        _logger.error("Failed to create user {} with config:\n{}".format(user.name, json.dumps(user, indnet=4)))
+        _logger.error("Failed to create user {} with config:\n{}".format(user.name, json.dumps(user, indent=4)))
 
 
 def configure_runtime(runtime):
     rte_status = WEB.runtime_component.get_status()
-    if rte_status.json['status'] == "Avaliable":
+    if rte_status.json['status'] == "Available":
         rsp = WEB.runtime_component.unconfigure(ldap_dn=runtime.ldap_dn, ldap_pwd=runtime.ldap_dn, clean=runtime.clean_ldap, force=True)
         if rsp.success == True:
             _logger.info("Successfully unconfigured RTE")
@@ -129,14 +163,14 @@ def configure_runtime(runtime):
             _logger.error("RTE cannot be unconfigured, will not override config")
             return
 
-    config = {"ps_mode": runtime.ps_mode,
-              "user_registry": "local" if runtime.ps_mode == "local" else "ldap",
+    config = {"ps_mode": runtime.policy_server,
+              "user_registry": "local" if runtime.policy_server == "local" else "ldap",
               "ldap_dn": runtime.ldap_dn,
               "ldap_suffix": runtime.ldap_suffix,
               "clean_ldap": runtime.clean_ldap,
-              "domain": runtime.domain,
-              "admin_pwd": runtime.admin_password,
-              "admin_cert_lifetime": runtime.admin_cert_lifetime
+              "isam_domain": runtime.domain,
+              "admin_password": runtime.admin_password,
+              "admin_cert_lifetime": runtime.admin_cert_lifetime,
               "ssl_compliance": runtime.ssl_compliance
             }
     if runtime.ps_mode != None and runtime.ps_mode == "remote":
@@ -152,27 +186,31 @@ def configure_runtime(runtime):
     if rsp.success == True:
         _logger.info("Successfullt configured RTE")
     else:
-        _logger.error("Failed to configure RTE with config:\n{}".format(json.dumps(runtime, indent=4)))
+        _logger.error("Failed to configure RTE with config:\n{}\n{}".format(
+            json.dumps(runtime, indent=4), rsp.data))
+    return rsp.success
 
 
 def configure():
     websealConfig = CONFIG.webseal
     if websealConfig == None:
-        _logger.info("No webseal configuration found . . .  skipping")
+        _logger.info("No WebSEAL configuration detected, skipping")
         return
-
     if websealConfig.runtime != None:
         runtime = websealConfig.runtime
-        configure_runtime(runtime)
-
-        if websealConfig.reverse_proxy != None:
-            for proxy in websealConfig.webseal.reverse_proxy:
-                configure_wrp(runtime, proxy)
+        result = configure_runtime(runtime)
+        if result == False:
+            return
 
         if websealConfig.users != None:
             for user in websealConfig.users:
                 configure_user(runtime, user)
-        deploy_pending_changes()
+            deploy_pending_changes()
+
+        if websealConfig.reverse_proxy != None:
+            for proxy in websealConfig.reverse_proxy:
+                configure_wrp(runtime, proxy)
+
     else:
         _logger.info("No runtime configuration detected, unable to set up any reverse proxy config")
 

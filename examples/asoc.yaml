@@ -56,20 +56,6 @@ webseal:
       https:
         enabled: "yes"
         port: 443
-      junctions:
-        - junction_point: "/scim"
-          transparent_path_junction: "yes"
-          server_hostname: "localhost"
-          junction_type: "ssl"
-          remote_http_header:
-            - "iv-user"
-            - "iv-groups"
-            - "iv-creds"
-          enable_basic_auth: "yes"
-          username: "easuser"
-          password: "passw0rd"
-          server_hostname: "localhost"
-          server_port: 443
       aac_configuration:
         hostname: "localhost"
         port: 443
@@ -81,23 +67,20 @@ webseal:
       stanza_config:
         - stanza: "local-apps"
           key: "cred-viewer"
-          value: "cred"
+          value: "/cred"
         - stanza: "server"
           key: "auth-challenge-type"
-          value: "[+*]ba"
+          value: "[.*]ba"
         - stanza: "rsp-header-names"
           key: "content-security-policy"
           value: "default-src self; upgrade-insecure-requests; script-src unsafe-inline; img-src self https://168.1.30.85:30443 data:; frame-ancestors none; style-src self https://168.1.30.85:30443"
-        - stanza: "ba"
-          key: "ba-auth"
-          value: "both"
   users:
     - name: "testuser"
       password: "passw0rd"
       first_name: "test"
       last_name: "user"
       cn: "testuser"
-      dc: "iswga"
+      dn: "iswga"
 aac:
   authentication:
     mechanisms:
@@ -117,14 +100,29 @@ aac:
           - usernamePasswordAuthentication.userSearchFilter: "(|(objectclass=ePerson)(objectclass=Person))"
           - usernamePasswordAuthentication.loginFailuresPersistent: "false"
       - name: "Example InfoMap Mechanism"
-        description: "Info Map Authentication"
-        uri: "urn:ibm:security:authentication:asf:mechanism:test"
+        description: "InfoMap mechanism"
+        uri: "urn:ibm:security:authentication:asf:mechanism:password"
         predefined: False
-        type: "Info Map Authentication"
+        type: "InfoMap"
         properties:
-          - infoMap.HTMLPage: ""
-          - infoMap.JSRule: ""
-  advanced_configuration:
+          - key: ""
+            value: ""
+    policies:
+      - name: "Example Policy"
+        description: "Example policy"
+        dialect: "urn:ibm:security:authentication:policy:1.0:schema"
+        uri: "urn:ibm:security:authentication:asf:example_policy"
+        predefined: False
+        enabled: True
+        policy: "<xml/>"
+      - name: "Example Branching Policy"
+        description: "Example branching policy"
+        uri: "urn:ibm:security:authentication:asf:branching_example"
+        predefined: False
+        enabled: False
+        policy: "<branching><xml/></branching>"
+  advanced_config:
     - id: 12503
       sensitive: False
       value: "both"
+

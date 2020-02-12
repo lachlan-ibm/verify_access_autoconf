@@ -1,0 +1,363 @@
+appliance:
+  lmi: #Local Management Interface settings
+    timeout: 720
+    timezone: "Australia/Brisbane"
+  activtion: #Activation codes
+    base: "example"
+    aac: "example"
+    fed: "example"
+  cluster: #High Avaliablity/Extensal Services configuration
+    config_database:
+      address: "127.0.0.1"
+      port: 1234
+      username: "database_user"
+      password: "database_password"
+      ssl: True
+      ssl_keystore: "lmi_trust_store.kdb"
+      ssl_keyfile: "server.cer"
+webseal:
+  runtime: #Runtime component must be defined in order to specify WebSEAL configuration
+    policy_server: "remote"
+    ldap:
+      host: "0.0.0.0"
+      port: 389
+      isam_host: "0.0.0.0"
+      isam_port: "443"
+      dn: "dc=example"
+      dn_password: "password"
+    clean_ldap: True
+    domain: "isam_registry"
+    admin_user: "sec_master"
+    admin_password: "password"
+  reverse_proxy:
+    - name: "default"
+      hostname: "hostname"
+      address: "0.0.0.0"
+      listening_port: 7234
+      domain: "Default"
+      http: 
+        - enabled: "no"
+      https:
+        - enabled: "yes"
+          port: 443
+      junctions:
+        - name: "/app"
+          transparent_path: True
+          server:
+            host: "1.2.3.4"
+            port: 443
+          ssl:
+            - enabled: "yes"
+              key_file: "example.kdb",
+              cert_file: "server"
+      aac_configuration_wizard:
+        hostname: "localhost"
+        port: 443
+        user: "easuser"
+        password: "password"
+        junction: "/mga"
+        reuse_acls: True
+        reuse_certs: True
+  users:
+    - name: "testuser"
+      password: "password"
+      dn: "cn=testuser,dc=iswga"
+aac:
+  access_control:
+
+  server_connections:
+      - name: "Local LDAP"
+        description: "Local LDAP"
+        locked: False
+        type: "ldap"
+        properties:
+          hostname: "0.0.0.0"
+          port: 389
+          bind_dn: "cn=root,secAuthority=Default"
+          bind_password: "password"
+          ssl: False
+          timeout: 30
+      - name: "CI"
+        description: "CI"
+        locked: True
+        type: "ci"
+        properties:
+          admin_host: "example.tenant.ci.ibm.com"
+          client_id: "abcd1234"
+          client_secret: "abcd1234"
+          ssl_truststore: "rt_profile_keys.kdb"
+  mapping_rules:
+    #List of files/directories which contain json files if ampping rule payloads
+    - "access_control/mapping_rules"
+  template_pages:
+    - "access_control/teamplate_pages"
+  attributes:
+    - name: "Example 1"
+      category: "Subject"
+      matcher: "1"
+      datatype: "String"
+      storage_domain:
+        session: False
+        behvaior: False
+        device: True
+      attribute_type:
+        policy: True
+        risk: False
+      uri: "urn:example:attribute:one"
+      predefined: False
+    - name: "Example 2"
+      category: "Resource"
+      matcher: "0"
+      issuer: "example"
+      description: "Second example"
+      name: "Example 2"
+      datatype: "Boolean"
+      storage_domain:
+        session: True
+        behavior: False
+        device: False
+      attribute_type:
+        policy: False
+        risk: True
+      uri: "urn:example:attribute:two"
+      predefined: False
+  api_protection:
+    definitions:
+      - name: "API Protection example"
+        description: "Example API Proectection definition"
+        grant_types:
+          - "AUTHORIZATION_CODE"
+          - "DEVICE"
+        tcm_behavior: "NEVER_PROMPT"
+        token_lifetime: 3600
+        token_length: 20
+        single_use_grant: False
+        authorizaton_code_lifetime: 300
+        authorization_code_length: 30
+        issue_refresh_token: True
+        refresh_token_length: 40
+        max_authorization_grant_lifetime: 604800
+        single_token_per_grant: True
+        multiple_refresh_tokens: True
+        pin_policy: False
+        oidc:
+          enabled: True
+          iss: "https://oidc.example.com"
+          poc: "https://oidc.example.com/oidc/poc"
+          lifetime: 3600
+          alg: "RS256"
+          db: "rt_profile_keys"
+          cert: "oidc.cer"
+          enc:
+            enabled: True
+            alg: "RSA-OEAP-256"
+            enc: "A128CBC-HS256"
+        attribute_sources:
+          - name: "Example Attribute"
+            source: "1"
+    clients:
+      - name: "Example client"
+        redirect_uri: "https://webesal.com/redirect/uri"
+        company_name: "IBM"
+        company_url: "https://www.ibm.com"
+        api_definition: "API Protection example"
+        client_id: "ABCD1234"
+        client_secret: "ABCD1234"
+        require_pkce: False
+        encryption_db: "rt_profile_keys"
+        encryption_cert: "api_protection"
+        jwks_uri: "https://webseal.com/jwks/uri"
+        introspect_with_secret: False
+        extension_properties:
+          example: "value"
+  scim:
+    - uri: "urn:ietf:params:scim:schemas:core:2.0:User"
+      properties:
+        ldap_connection: "localldap"
+        user_suffix: "cn"
+        user_dn: "cn"
+        search_suffix: "dc=iswga"
+        ldap_object_classes:
+          - name: "top"
+          - name: "person"
+          - name: "ePerson"
+          - name: "organizationalPerson"
+          - name: "inetOrgPerson"
+  mmfa:
+    client_id: "Example client"
+    hostname: "https://webseal.com"
+    junction: "/mga"
+    port: "443"
+    options: "ignoreSslCerts=true,bgColor=blue"
+    endpoints:
+      - details_url: "https://webseal.com/mga/sps/mmfa/user/mgmt/details"
+        token_endpoint: "https://webseal.com/mga/sps/oauth/oauth20/token"
+    discovery_mechanisms:
+      - "urn:ibm:security:authentication:asf:mechanism:mobile_user_approval:fingerprint"
+      - "urn:ibm:security:authentication:asf:mechanism:mobile_user_approval:user_presence"
+  authentication:
+    mechanisms:
+      - name: "Example InfoMap Mechanism"
+        description: "InfoMap mechanism"
+        uri: "urn:ibm:security:authentication:asf:mechanism:infomap_example"
+        predefined: False
+        type: "InfoMap"
+        properties:
+          - key: "infoMap.JSRule"
+            value: "example.js"
+          - key: "infoMap.HTMLPage"
+            value: "example.html"
+      - name: "FIDO2 WebAuthn Authenticator"
+        description: "Performs the FIDO2/WebAuthn Assertion Ceremony"
+        uri: "urn:ibm:security:authentication:asf:mechanism:fido2"
+        predefined: True
+        type: "FIDO2 WebAuthn Authenticator"
+        properties:
+          - key: "FIDO2.relyingPartyConfigId"
+            value: "webseal.com"
+    policies:
+      - name: "Example Policy"
+        description: "Example policy"
+        dialect: "urn:ibm:security:authentication:policy:1.0:schema"
+        uri: "urn:ibm:security:authentication:asf:example_policy"
+        predefined: False
+        enabled: True
+        policy: "<xml/>"
+      - name: "Example Branching Policy"
+        description: "Example branching policy"
+        uri: "urn:ibm:security:authentication:asf:branching_example"
+        predefined: False
+        enabled: False
+        policy: "<branching><xml/></branching>"
+federation:
+  alias_service:
+  mapping_rules:
+    - "federation/mapping_rules"
+  points_of_contact:
+    - name: "Test POC"
+      description: "Test POC profile"
+      authenticate_callbacks:
+      sign_in_callbacks:
+      local_id_callbacks:
+      sign_out_callbacks:
+      authn_policy_callbacks:
+  federations:
+    - name: "Test OIDC Federation"
+      protocol: "OIDC10"
+      role: "rp"
+      configuration:
+        redirect_uri_prefix: "https://webseal.com/mga"
+        response_types:
+          - "code"
+          - "token"
+        attribute_mapping:
+          - name: "test"
+            source: "urn:ibm:security:test"
+          - name: "example"
+            source: "urn:ibm:security:example"
+        identity_mapping:
+          active_delegate_id: "default-map"
+          identity_mapping_rule_reference: "OIDCRP"
+        advance_configuration:
+          active_delegate_id: "default-map"
+          advanced_mapping_rule_reference: "advances_identity.js"
+    - name: "SAML SP 2.0 Example"
+      protocol: "SAML2_0"
+      description: "Demo SAML SP integration"
+      role: "sp"
+      configuration:
+        artiactLifeTime: 120
+        assertion_consumer_service:
+          - binding: "post"
+            index: 1
+            default: "false"
+          - binding: "artifact"
+            default: "true"
+            index: 0
+        artifact_resolution_service:
+          - binding: "soap"
+            default: "true"
+            index: 0
+        company_name: "IBM"
+        identity_mapping:
+          active_delegate_id: "default-map"
+          identity_mapping_rule_reference: "SAML2_0_EXT"
+        extension_mapping:
+          active_delegate_id: "default-map"
+          extension_mapping_rule_reference: "SAML2_0_EXT"
+        message_valid_time: 300
+        message_issuer_format: "urn:oasis:names:tc:SAML:2.0:nameid-format:entity"
+        message_issuer_name_qualifier: ""
+        name_id_format: "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
+        point_of_contact_url: "https://webseal.com/mga/sps"
+        session_timeout: 7200
+        signature_settings:
+          key_info_elements:
+            include_x509_certificate_data: "true"
+            include_x509_subject_name: "false"
+            include_x509_subject_key_identifier: "false"
+            include_x509_issuer_detials: "false"
+            include_public_key: "false"
+          signing_key_identifier:
+            keystore: "rt_profile_keys"
+            certificate: "server"
+          signing_options:
+            sign_authn_request: "false"
+            sign_artifact_request: "false"
+            sign_artifact_response: "false"
+          include_inclusive_namespaces: "true"
+          validate_assertion: "false"
+      partners:
+        - name: "Example IdP"
+          protocol: "SAML2_0"
+          role: "ip"
+          configuration:
+            artifact_resolution_service:
+              - binding: "soap"
+                default: "true"
+                index: 0
+                url: "https://www.webseal.com/mga/sps/new/saml20/soap"
+             assertion_consumer_service:
+               - binding: "soap"
+                 default: "true"
+                 index: 0
+                 url: "https://www.webseal.com/mga/sps/new/saml20/soap"
+             assertion_settings:
+               attribute_types:
+                 - "*"
+               session_not_after: 3600
+               create_multiple_attribute_statements: "false"
+             encryption_settings:
+               block_encryption_algorithm: "AES-128"
+               encryptionKeyTransportAlgorithm: "RSA-OEAP"
+               encrypt_name_id: "false"
+               keystore: "rt_profile_keys"
+               certificate: "server"
+             identity_mapping:
+               active_delegate_id: "default-map"
+               identity_mapping_rule_reference: "SAML2_0_EXT"
+             extension_mapping:
+               active_delegate_id: "default-map"
+               extension_mapping_rule_reference: "SAML2_0_EXT"
+             include_federation_id: "false"
+             logout_request_lifetime: 120
+             name_id_format: "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"
+             provider_id: "https://www.webseal.com/mga/sps/new/saml20"
+             signature_settings:
+               signing_algorithm: "RSA-SHA256"
+               digest_algorithm: "SHA256"
+               validation_key:
+                 keystore: "rt_profile_keys"
+                 certificate: "server"
+               signing_options:
+                 sign_authn_request: "false"
+                 sign_assertion: "false"
+               validate_assertion: "false"
+               validate_authn_response: "false"
+               validate_artifact_request: "false"
+               validate_artifact_response: "false"
+               include_inclusive_namespaces: "true"
+             soap_settings:
+               keystore: "rt_profile_keys"
+               certificate: "server"
+               method: "none"
