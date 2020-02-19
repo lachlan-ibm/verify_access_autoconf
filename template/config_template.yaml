@@ -15,6 +15,15 @@ appliance:
       ssl: True
       ssl_keystore: "lmi_trust_store.kdb"
       ssl_keyfile: "server.cer"
+  ssl_certificates:
+    - database: "lmi_trust_store"
+      personal_certificates:
+        - "ssl/lmi_trust_store/personal"
+      signer_certificates:
+        - "ssl/lmi_trust_store/signer"
+    - database: "rt_profile_keys"
+      signer_certificates:
+        - "ssl/rt_profile_keys/signer"
 webseal:
   runtime: #Runtime component must be defined in order to specify WebSEAL configuration
     policy_server: "remote"

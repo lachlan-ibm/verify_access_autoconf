@@ -1,5 +1,7 @@
 FROM python:alpine
 
+RUN apk add docker
+
 WORKDIR /user/src/app
 
 env ISVA_CONFIGURATION_AUTOMATION_BASEDIR /user/src/app

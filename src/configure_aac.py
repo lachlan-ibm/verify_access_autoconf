@@ -81,47 +81,53 @@ def _ws_server_connection(connection):
 
 def _remove_server_connection(connection):
     configured_connections = AAC.server_connections.list_all().json
-    for c in configured_connections:
-        if c.get('name') == connection.name and c.get('locked') == True:
-            _logger.error("Connection {} exists and is locked, skipping".format(connection.name))
-            return False
-        elif c.get('name') == connection.name:
-            logger.info("connection {} exists, deleting before recreating".format(connection.name))
-            rsp = {"ci": AAC.server_connections.delete_ci,
-              "ldap": AAC.server_connections.delete_ldap,
-              "isamruntime": AAC.server_connections.delete_runtime,
-              "oracle": AAC.server_connections.delete_jdbc,
-              "db2": AAC.server_connections.delete_jdbc,
-              "soliddb": AAC.server_connections.delete_jdbc,
-              "postgresql": AAC.server_connections.delete_jdbc,
-              "smtp": AAC.server_connections.delete_smtp,
-              "ws": AAC.server_connections.delete_web_service}.get(connection.type, None)(c['uuid'])
-            return rsp.success
+    print(configured_connections)
+    for connectionType in configured_connections:
+        print(connectionType)
+        for c in configured_connections[connectionType]:
+            print(c)
+            if c.get('name') == connection.name and c.get('locked') == True:
+                _logger.error("Connection {} exists and is locked, skipping".format(connection.name))
+                return False
+            elif c.get('name') == connection.name:
+                logger.info("connection {} exists, deleting before recreating".format(connection.name))
+                rsp = {"ci": AAC.server_connections.delete_ci,
+                  "ldap": AAC.server_connections.delete_ldap,
+                  "isamruntime": AAC.server_connections.delete_runtime,
+                  "oracle": AAC.server_connections.delete_jdbc,
+                  "db2": AAC.server_connections.delete_jdbc,
+                  "soliddb": AAC.server_connections.delete_jdbc,
+                  "postgresql": AAC.server_connections.delete_jdbc,
+                  "smtp": AAC.server_connections.delete_smtp,
+                  "ws": AAC.server_connections.delete_web_service}.get(connection.type, None)(c['uuid'])
+                return rsp.success
+    return True
 
-def server_connections(connections):
-    for connection in connections:
-        if not _remove_server_connection(connection):
-            continue
+def server_connections(config):
+    if config.server_connections:
+        for connection in config.server_connections:
+            if not _remove_server_connection(connection):
+                continue
 
-        method = {"ci": _ci_server_connection,
-                  "ldap": _ldap_server_connection,
-                  "isamruntime": _runtime_server_connection,
-                  "oracle": _jdbc_server_connection,
-                  "db2": _jdbc_server_connection,
-                  "soliddb": _jdbc_server_connection,
-                  "postgresql": _jdbc_server_connection,
-                  "smtp": _smtp_server_connection,
-                  "ws": _ws_server_connection}.get(connection.type, None)
-        if method == None:
-            _logger.error("Unable to create a connection for type {} with config:\n{}".format(
-                connection.type, json.dumps(connection, indent=4)))
-        else:
-            rsp = method(connection)
-            if rsp.success == True:
-                _logger.info("Successfully created {} server connection".format(connection.name))
+            method = {"ci": _ci_server_connection,
+                      "ldap": _ldap_server_connection,
+                      "isamruntime": _runtime_server_connection,
+                      "oracle": _jdbc_server_connection,
+                      "db2": _jdbc_server_connection,
+                      "soliddb": _jdbc_server_connection,
+                      "postgresql": _jdbc_server_connection,
+                      "smtp": _smtp_server_connection,
+                      "ws": _ws_server_connection}.get(connection.type, None)
+            if method == None:
+                _logger.error("Unable to create a connection for type {} with config:\n{}".format(
+                    connection.type, json.dumps(connection, indent=4)))
             else:
-                _logger.error("Failed to create server connection [{}] with config:\n{}".format(
-                    connection.name, connection))
+                rsp = method(connection)
+                if rsp.success == True:
+                    _logger.info("Successfully created {} server connection".format(connection.name))
+                else:
+                    _logger.error("Failed to create server connection [{}] with config:\n{}".format(
+                        connection.name, connection))
 
 
 def upload_template_files(base='.', _file=None):

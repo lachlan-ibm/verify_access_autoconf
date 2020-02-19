@@ -83,9 +83,13 @@ def configure_wrp(runtime, proxy):
                 _logger.error("WebSEAL Reverse proxy {} already exists with config: \n{}\nand cannot be removed".format(
                     proxy.name, proxy))
                 return
+    host = proxy.hostname
+    if not host:
+        if CONFIG.docker and CONFIG.docker.containers and CONFIG.docker.containers.configuration:
+            host = CONFIG.docker.containers.configuration[0]
     methodArgs = {
                     "inst_name":proxy.name, 
-                    "host": proxy.hostname, 
+                    "host": host, 
                     "admin_id": runtime.admin_user if runtime.admin_user else "sec_master", 
                     "admin_pwd": runtime.admin_password,
                     "http_yn": proxy.http.enabled, 
@@ -141,9 +145,18 @@ def configure_wrp(runtime, proxy):
 def configure_user(runtime, user):
     firstName = user.first_name if user.first_name else user.name
     lastName = user.last_name if user.last_name else user.name
+    dc = ""
+    if isinstance(user.dc, list):
+        for i, e in enumerate(user.dc):
+            dc += "dc=" + e
+            if i != len(user.dc) - 1:
+                dc += ","
+    else:
+        dc = "dc=" + user.dc
+    print(dc)
     pdadminCommands = [
-            "user create {} cn={},dc={} {} {} {}".format(
-                user.name, user.cn, user.dc, firstName, lastName, user.password),
+            "user create {} cn={},{} {} {} {}".format(
+                user.name, user.cn, dc, firstName, lastName, user.password),
             "user modify {} account-valid yes".format(user.name)
         ]
     rsp = WEB.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
@@ -164,7 +177,7 @@ def configure_runtime(runtime):
             return
 
     config = {"ps_mode": runtime.policy_server,
-              "user_registry": "local" if runtime.policy_server == "local" else "ldap",
+              "user_registry": runtime.user_registry,
               "ldap_dn": runtime.ldap_dn,
               "ldap_suffix": runtime.ldap_suffix,
               "clean_ldap": runtime.clean_ldap,
@@ -173,15 +186,21 @@ def configure_runtime(runtime):
               "admin_cert_lifetime": runtime.admin_cert_lifetime,
               "ssl_compliance": runtime.ssl_compliance
             }
-    if runtime.ps_mode != None and runtime.ps_mode == "remote":
-        config += {
+    if runtime.ldap:
+        config.update({
                     "ldap_host": runtime.ldap.host,
                     "ldap_port": runtime.ldap.port,
                     "ldap_dn": runtime.ldap.dn,
-                    "ldap_pwd": runtime.ldap.dn_password,
-                    "ldap_ssl_db": runtime.ldap.ssl_keystore,
-                    "ldap_ssl_label": runtime.ldap.ssl_cert
-                }
+                    "ldap_password": runtime.ldap.dn_password,
+                })
+        if runtime.ldap.key_file:
+            config.update({
+                    "ldap_ssl_db": runtime.ldap.key_file
+                })
+        if runtime.ldap.cert_file:
+            config.update({
+                    "ldap_ssl_label": runtime.ldap.cert_file
+                })
     rsp = WEB.runtime_component.configure(**config)
     if rsp.success == True:
         _logger.info("Successfullt configured RTE")
