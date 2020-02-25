@@ -29,12 +29,12 @@ def configure_database():
         return
     database = CONFIG.docker.database
     rsp = system.runtime_db.set_db(db_type=database.type, host=database.host, port=database.port,
-            secure=database.ssl, user=database.user, passwd=database.password, db_name=database.db_name)
+            secure=database.ssl, user=database.username, passwd=database.password, db_name=database.db_name)
     if rsp.success == True:
         _logger.info("Successfully configured HVDB")
     else:
         _logger.error("Failed to configure HVDB with config:\n{}\n{}".format(
-            json.dumps(database), rsp.data))
+            json.dumps(database, indent=4), rsp.data))
 
 
 def configure():
@@ -42,6 +42,7 @@ def configure():
     _logger.info(json.dumps(CONFIG, indent=4))
     configure_configuration_publishing()
     configure_database()
+    deploy_pending_changes()
 
 if __name__ == "__main__":
     configure()

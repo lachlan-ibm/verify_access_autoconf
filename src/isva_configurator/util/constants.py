@@ -25,8 +25,9 @@ AAC = FACTORY.get_access_control()
 FED = FACTORY.get_federation()
 
 CONFIG_BASE_DIR = os.environ.get("ISVA_CONFIGURATION_AUTOMATION_BASEDIR")
+ISVA_CONFIGURATION = os.environ.get("ISVA_CONFIGURATION_YAML")
 
-CONFIG = Map( yaml.load( open(CONFIG_BASE_DIR + '/config.yaml', 'r'), CustomLoader) )
+CONFIG = Map( yaml.load( open(CONFIG_BASE_DIR + ISVA_CONFIGURATION, 'r'), CustomLoader) )
 
 KUBERNETES_CLIENT = None
 

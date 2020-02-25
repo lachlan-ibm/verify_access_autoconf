@@ -28,6 +28,28 @@ def complete_setup():
     deploy_pending_changes()
     _logger.info("Completed setup")
 
+
+def _activateBaseAppliance():
+    payload = {'code': CONFIG.appliance.activation.base if CONFIG.appliance else CONFIG.docker.activation.base}
+    rsp = requests.post(LICENSE_ENDPOINT, auth=CREDS, headers=HEADERS, json=payload, verify=False)
+    assert rsp.status_code == 200, "Could not apply the base license, statuc_code: {}\n{}".format(
+            rsp.status_code, rsp.content)
+    _logger.info("applied Base licence")
+
+def _activateAdvancedAccessControl():
+    payload = {'code': CONFIG.appliance.activation.aac if CONFIG.appliance else CONFIG.docker.activation.aac}
+    rsp = requests.post(LICENSE_ENDPOINT, auth=CREDS, headers=HEADERS, json=payload, verify=False)
+    assert rsp.status_code == 200, "Could not apply the aac license, statuc_code: {}\n{}".format(
+            rsp.status_code, rsp.content)
+    _logger.info("applied AAC licence")
+
+def _activateFederation():
+    payload = {'code': CONFIG.appliance.activation.fed if CONFIG.appliance else CONFIG.docker.activation.fed}
+    rsp = requests.post(LICENSE_ENDPOINT, auth=CREDS, headers=HEADERS, json=payload, verify=False)
+    assert rsp.status_code == 200, "Could not apply the fed license, statuc_code: {}/n{}".format(
+            rsp.status_code, rsp.content)
+    _logger.info("applied Federation licence")
+
 def activate_appliance():
     system = FACTORY.get_system_settings()
     activations = system.licensing.get_activated_modules().json
@@ -81,6 +103,7 @@ def import_ssl_certificates():
     base_dir = CONFIG_BASE_DIR if CONFIG_BASE_DIR.endswith('/') else CONFIG_BASE_DIR + '/'
     if ssl_config:
         old_databases = [d['id'] for d in ssl.list_databases().json]
+        print(old_databases)
         for database in ssl_config:
             if database.name not in old_databases:
                 rsp = ssl.create_database(database.name, type='kdb')
@@ -106,7 +129,6 @@ def configure():
                 " This should be the absolute path the configuration files required to set up ISVA")
     accept_eula()
     complete_setup()
-    activate_appliance()
     import_ssl_certificates()
     if CONFIG.appliance != None:
         isva_appliance.configure()
@@ -115,6 +137,7 @@ def configure():
     else:
         _logger.error("Deployment model cannot be found in config.yaml, exiting")
         sys.exit(1)
+    activate_appliance()
     web.configure()
     aac.configure()
     fed.configure()
