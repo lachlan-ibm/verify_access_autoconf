@@ -9,15 +9,21 @@ To get started several example deployments are avaliable in the [Examples](examp
 # Setup
 ## Environment
 
-- `ISVA_CONFIGURATION_BASEDIR` = base directory which constains ISVA Configurator source code
 - `ISVA_CONFIGURATION` = path to ISVA configuration yaml file. Path should be relative to `ISVA_CONFIGURATION_BASEDIR`
-- `MGMT_BASE_URL` = address to access ISVA LMI, eg. https://\<isva appliance\>:\<isva port\>
-- `MGMT_PASSWORD` = administrator password for the `admin` account
+- `MGMT_BASE_URL` = address to access ISVA LMI, eg. https://\<isva appliance\>:\<isva port\>. This propert can also be specified in the configuration yaml file. If present, this proprty will take precedence.
+- `MGMT_PASSWORD` = administrator password for the `admin` account. This property can also be specified in the configuration yaml file. If present, this property will take precedence.
 - `KUBECONFIG` (optional) = path to Kubernetes configuration yaml for kubernetes deployments. Path should be relative to `ISVA_CONFIGURATION_BASEDIR`. Note that if your kubernetes cluster requires mutual authentication (TLS) then a pem certificate file must also be avaliable to ISVA Configurator
 
 ## Deployment
 ### Local environment
-IBM Security Verify Access Configuration Automation is simple to run locally. after setting the required environment variables use python to run `src/configure.py`. `deploy.sh` is an example of this deployment option.
+IBM Security Verify Access Configuration Automation is simple to run locally. 
+1. First the required python packages are installed from [IBM Security Verify Access DevOps PyPi](https://na.artifactory.swg-devops.com/artifactory/sec-iam-isam-devops-team-pypi-local/). 
+2. Set the required environment variables
+3. a python interactive shell or python script can be used to configure applainces:
+```python
+>>> import isva_configurator
+>>> isva_configurator.configurator.configure()
+```
 
 ### Docker
 IBM Security Verify Access Configuration Automation can also be run within a docker container. Use to [Dockerfile](Dockerfile) to build a local docer image or pull the latest image from [ISVA Devops Artifactory](https://na.artifactory.swg-devops.com/artifactory/sec-iam-isam-devops-team-docker-local/)\(IBM w3 login is required\).
