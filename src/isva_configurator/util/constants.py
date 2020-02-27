@@ -3,7 +3,7 @@ import os
 import yaml
 import logging
 from pyisam.factory import Factory
-from isva_util import Map, CustomLoader 
+from .util.configure_util import Map, CustomLoader
 
 _logger = logging.getLogger(__name__)
 
@@ -24,7 +24,6 @@ WEB = FACTORY.get_web_settings()
 AAC = FACTORY.get_access_control()
 FED = FACTORY.get_federation()
 
-CONFIG_BASE_DIR = os.environ.get("ISVA_CONFIGURATION_AUTOMATION_BASEDIR")
 ISVA_CONFIGURATION = os.environ.get("ISVA_CONFIGURATION_YAML")
 
 CONFIG = Map( yaml.load( open(CONFIG_BASE_DIR + ISVA_CONFIGURATION, 'r'), CustomLoader) )
@@ -36,7 +35,8 @@ def update_container_names():
     #Try update kubernetes containers with generated names
     if CONFIG.docker != None and CONFIG.docker.orchestration == 'kubernetes':
         from kubernetes import client, config
-        config.load_kube_config()
+        kubernetes_config = os.environ.get("ISVA_KUBERNETES_CONFIG") #If none config will be loaded from default location
+        config.load_kube_config(config_file=kubernetes_config)
         KUBERNETES_CLIENT = client.CoreV1Api()
         pods = []
         ret = KUBERNETES_CLIENT.list_pod_for_all_namespaces(watch=False)
