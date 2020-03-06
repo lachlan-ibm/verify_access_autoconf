@@ -96,7 +96,7 @@ class WEB_Configurator(object):
                         "http_port": proxy.http.port, 
                         "https_yn": proxy.https.enabled, 
                         "https_port": proxy.https.port,
-                        "nw_interface_yn": "yes" if proxy.address else "no",
+                        "nw_interface_yn":  proxy.nw_interface_yn,
                         "ip_address": proxy.address, 
                         "listening_port": proxy.listening_port,
                         "domain": proxy.domain

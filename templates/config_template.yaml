@@ -1,3 +1,6 @@
+mgmg_base_url: 'https://isva.lmi'
+mgmt_password: 'Passw0rd'
+mgmt_old_password: 'admin'
 appliance:
   lmi: #Local Management Interface settings
     timeout: 720
@@ -71,9 +74,11 @@ webseal:
     - name: "testuser"
       password: "password"
       dn: "cn=testuser,dc=iswga"
+  pdadmin:
 aac:
   access_control:
-
+  fido2:
+  attributes:
   server_connections:
       - name: "Local LDAP"
         description: "Local LDAP"

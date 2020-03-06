@@ -12,7 +12,9 @@ To get started several example deployments are avaliable in the [Examples](examp
 - `ISVA_CONFIGURATION` = path to ISVA configuration yaml file. Path should be relative to `ISVA_CONFIGURATION_BASEDIR`
 - `MGMT_BASE_URL` = address to access ISVA LMI, eg. https://\<isva appliance\>:\<isva port\>. This propert can also be specified in the configuration yaml file. If present, this proprty will take precedence.
 - `MGMT_PASSWORD` = administrator password for the `admin` account. This property can also be specified in the configuration yaml file. If present, this property will take precedence.
-- `KUBECONFIG` (optional) = path to Kubernetes configuration yaml for kubernetes deployments. Path should be relative to `ISVA_CONFIGURATION_BASEDIR`. Note that if your kubernetes cluster requires mutual authentication (TLS) then a pem certificate file must also be avaliable to ISVA Configurator
+- ` MGMT_OLD_PASSWORD` = if a password change for the administrator account (eg. from the dafualt) is required, the old password can be specified with this environment variable. If present the administrator's password will be chagned from `MGMT_OLD_PASSWORD` to `MGMT_PASSWORD`
+- `KUBECONFIG` (optional) = path to Kubernetes configuration yaml for kubernetes deployments. 
+  - Note: If your kubernetes cluster requires mutual authentication (TLS) then a pem certificate file must also be avaliable to ISVA Configurator
 
 ## Deployment
 ### Local environment

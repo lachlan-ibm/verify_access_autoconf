@@ -11,21 +11,34 @@ from .docker.configure_docker import Docker_Configurator as isva_docker
 from .access_control.configure_aac import AAC_Configurator as aac
 from .webseal.configure_webseal import WEAB_Configurator as web
 from .federation.configure_fed import FED_Configurator as fed
-from  .utils.constants import EULA_ENDPOINT, LICENSE_ENDPOINT, SETUP_ENDPOINT, FACTORY, CONFIG, CREDS, HEADERS, CONFIG_BASE_DIR, deploy_pending_changes
+from  .util.constants import EULA_ENDPOINT, LICENSE_ENDPOINT, SETUP_ENDPOINT, CONFIG, CREDS, OLD_CREDS, HEADERS, CONFIG_BASE_DIR, MGMT_BASE_URL
+import .util.constants as const
+from .util.configure_util import deploy_pending_changes
 
 _logger = logging.getLogger(__name__)
 
 class ISVA_Configurator(object):
 
-    def accept_eula(self:
+    def old_password(self):
+        rsp = requests.get(MGMT_BASE_URL, auth=OLD_CREDS, headers=HEADERS, verify=False)
+        if rsp.status_code == 403:
+            return False
+        return True
+
+
+    def set_admin_password(self, old, new):
+        pass
+
+
+    def accept_eula(self, creds):
         payload = {"accepted": True}
-        rsp = requests.put(EULA_ENDPOINT, auth=CREDS, headers=HEADERS, json=payload, verify=False)
+        rsp = requests.put(EULA_ENDPOINT, auth=creds, headers=HEADERS, json=payload, verify=False)
         assert rsp.status_code == 200, "Failed to accept EULA, status code:" + str(rsp.status_code)
         _logger.info("Accepted EULA")
 
 
-    def complete_setup(self):
-        rsp = requests.put(SETUP_ENDPOINT, auth=CREDS, headers=HEADERS, verify=False)
+    def complete_setup(self, creds):
+        rsp = requests.put(SETUP_ENDPOINT, auth=creds, headers=HEADERS, verify=False)
         assert rsp.status_code == 200, "Did not complete setup"
         deploy_pending_changes()
         _logger.info("Completed setup")
@@ -53,7 +66,7 @@ class ISVA_Configurator(object):
         _logger.info("applied Federation licence")
 
     def activate_appliance(self):
-        system = FACTORY.get_system_settings()
+        system = const.FACTORY.get_system_settings()
         activations = system.licensing.get_activated_modules().json
         if not any(module.get('id', None) == 'wga' and module.get('enabled', "False") == "True" for module in activations):
             _activateBaseAppliance()
@@ -66,7 +79,7 @@ class ISVA_Configurator(object):
 
 
     def _import_signer_certs(self, database, base, filePointer):
-        ssl = FACTORY.get_system_settings().ssl_certificates
+        ssl = const.FACTORY.get_system_settings().ssl_certificates
         base = base if base.endswith('/') else base + '/'
         if os.path.isdir(base + filePointer):
             for fp in os.listdir(base + filePointer):
@@ -81,7 +94,7 @@ class ISVA_Configurator(object):
                     filePointer, database, rsp.data))
 
     def _import_personal_certs(self, database, base, filePointer):
-        ssl = FACTORY.get_system_settings().ssl_certificates
+        ssl = const.FACTORY.get_system_settings().ssl_certificates
         base = base if base.endswith('/') else base + '/'
         if os.path.isdir(base + filePointer):
             for fp in os.listdir(base + filePointer):
@@ -101,7 +114,7 @@ class ISVA_Configurator(object):
             ssl_config = CONFIG.appliance.ssl_certificates
         elif CONFIG.docker:
             ssl_config = CONFIG.docker.ssl_certificates
-        ssl = FACTORY.get_system_settings().ssl_certificates
+        ssl = const.FACTORY.get_system_settings().ssl_certificates
         base_dir = CONFIG_BASE_DIR if CONFIG_BASE_DIR.endswith('/') else CONFIG_BASE_DIR + '/'
         if ssl_config:
             old_databases = [d['id'] for d in ssl.list_databases().json]
@@ -126,8 +139,19 @@ class ISVA_Configurator(object):
 
 
     def configure(self):
-        accept_eula()
-        complete_setup()
+        if old_password():
+            const.FACTORY = pyisam.Factory(MGMT_BASE_URL, OLD_CREDS[0], OLD_CREDS[1])
+            accept_eula(OLD_CREDS)
+            complete_setup(OLD_CREDS)
+            set_admin_password(OLD_CREDS, CREDS)
+        else:
+            const.FACTORY = pyisam.Factory(MGMT_BASE_URL, CREDS[0], CREDS[1])
+            accept_eula(CREDS)
+            complete_setup(CREDS)
+        const.FACTORY = pyisam.Factory(MGMT_BASE_URL, CREDS[0], CREDS[1])
+        const.WEB = const.FACTORY.get_web_settings()
+        const.AAC = const.FACTORY.get_access_control()
+        const.FED = const.FACTORY.get_federation()
         import_ssl_certificates()
         if CONFIG.appliance != None:
             isva_appliance().configure()

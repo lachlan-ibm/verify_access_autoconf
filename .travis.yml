@@ -1,0 +1,22 @@
+dist: xenial
+language: python
+python:
+  - "3.5"
+  - "3.6"
+  - "3.7"
+  - "3.8-dev"
+
+script: 
+  - ./test.sh
+
+stages:
+  - deploy
+
+jobs:
+  include:
+    - stage: deploy
+      script: 
+        - ./deploy.sh
+      python:
+        - "3.7"
+      if: branch = master

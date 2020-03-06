@@ -9,6 +9,70 @@ from .utils.constants import AAC, CONFIG_BASE_DIR, CONFIG, deploy_pending_change
 _logger = logging.getLogger(__name__)
 
 class AAC_Configurator(object):
+
+    def _cba_obligation(self, obligation):
+        pass
+
+    def _cba_attribute(self, attribute):
+        pass
+
+    def _cba_resource(self, resource):
+        methodArgs = {
+            "server": resource.server,
+            "resourceUri": resource.uri,
+            "policies": resource.policies,
+            "policy_combining_algorithm": resource.policy_combining_algorithm,
+            "cache": resource.cache
+        }
+        rsp = AAC.access_control.configure_resource(**methodArgs)
+        if rsp.success == True:
+            _logger.info("Successfully configured {} resource for {}".format(resource.uri, respurce.server))
+        else:
+            _logger.error("Failed to create resource with configuration:\n{}\n{}".format(
+                json.dumps(resource, indent=4), rsp.data))
+
+    def _cba_policy(self, policy):
+        old_policies = AAC.access_control.list_policies().json
+        exists = False
+        for p in old_policies:
+            if p['name'] == policy.name:
+                exists = True
+                break
+        methodArgs = {
+                "name": policy.name,
+                "description": policy.description,
+                "dialect": policy.dialect if policy.dialect else "urn:oasis:names:tc:xacml:2.0:policy:schema:os",
+                "policy": policy.policy,
+                "attributes_required": policy.attributes_required
+            }
+        rsp = None
+        if exists == True:
+            rsp = AAC.access_control.update_policy(**methodArgs)
+        else:
+            rsp = AAC.access_control.create_policy(**methodArgs)
+        if rsp.success == True:
+            _logger.info("Successfully created {} Access Control Policy")
+        else:
+            _logger.error("Failed to create Access Control Policy with config:\n{}\n{}".format(
+                json.dumps(policy, indent=4), rsp.data))
+
+    def access_control(self, aac_config):
+        if aac_config.access_control != None:
+            ac = aac_config.access_control
+            if ac.policies != None:
+                for policy in ac.policies:
+                    _cba_policy(policy)
+            if ac.resources != None:
+                for resource in ac.resources:
+                    _cba_resource(resource)
+            if ac.attributes != None:
+                for attribute in ac.attributes:
+                    _cba_attribute(attribute)
+            if ac.obligations != None:
+                for obligation in ac.obligations:
+                    _cba_obligation(obligation)
+
+
     def advanced_config(self, aac_config):
         if aac_config.advanced_configuration != None:
             for advConf in aac_config.advanced_configuration:
@@ -229,42 +293,44 @@ class AAC_Configurator(object):
                             client.name, json.dumps(client, indent=4), rsp.data))
 
 
+    def _configure_mechanism(self, mechanism):
+        mechTypes = AAC.authentication.list_mechanism_types().json
+        try:
+            typeId = list(filter(lambda _type: _type['type'] == mechanism.type, mechTypes))[0]['id']
+        except (IndexError, KeyError):
+            _logger.error("Mechanism [{}] specified an invalid type, skipping".format(mechanism))
+            return
+        props = None
+        if mechanism.properties != None and isinstance(mechanism.properties, list):
+            props = []
+            for e in mechanism.properties: 
+                props += [{"key": k, "value": v} for k, v in e.items()]
+        attrs = None
+        if mechanism.attributes != None and isinstance(mechanism.attributes, list):
+            attrs = []
+            for e in mechanism.attributes: 
+                attrs += [{"key": k, "value": v} for k, v in e.items()]
+        existing_mechanisms = AAC.authentication.list_mechanisms().json
+        old_mech = list(filter( lambda m: m['uri'] == mechanism.uri, existing_mechanisms))
+        rsp = None
+        if old_mech:
+            old_mech = old_mech[0]
+            rsp = AAC.authentication.update_mechanism(id=old_mech['id'], description=mechanism.description, name=mechanism.name,
+                    uri=mechanism.uri, type_id=typeId, predefined=old_mech['predefined'], properties=props, attributes=attrs)
+        else:
+            rsp = AAC.authentication.create_mechanism(description=mechanism.description, name=mechanism.name,  uri=mechanism.uri,
+                    type_id=typeId,  properties=props, attributes=attrs)
+        if rsp.success == True:
+            _logger.info("Successfully set configuration for {} mechanism".format(mechanism.name))
+        else:
+            _logger.error("Failed to set configuration for {} mechanism with:\n{}\n{}".format(
+                mechanism.name, json.dumps(mechanism, indent=4), rsp.data))
+
     def authentication_configuration(self, aac_config):
         if aac_config.authentication != None:
             if aac_config.authentication.mechanisms != None:
-                mechTypes = AAC.authentication.list_mechanism_types().json
-                existing_mechanisms = AAC.authentication.list_mechanisms().json
                 for mechanism in aac_config.authentication.mechanisms:
-                    try:
-                        typeId = list(filter(lambda _type: _type['type'] == mechanism.type, mechTypes))[0]['id']
-                    except (IndexError, KeyError):
-                        _logger.error("Mechanism [{}] specified an invalid type, skipping".format(mechanism))
-                        continue
-                    rsp = None
-                    props = None
-                    if mechanism.properties != None and isinstance(mechanism.properties, list):
-                        props = []
-                        for e in mechanism.properties: 
-                            props += [{"key": k, "value": v} for k, v in e.items()]
-                    attrs = None
-                    if mechanism.attributes != None and isinstance(mechanism.attributes, list):
-                        attrs = []
-                        for e in mechanism.attributes: 
-                            attrs += [{"key": k, "value": v} for k, v in e.items()]
-                    old_mech = list(filter( lambda m: m['uri'] == mechanism.uri, existing_mechanisms))
-                    if old_mech:
-                        old_mech = old_mech[0]
-                        rsp = AAC.authentication.update_mechanism(id=old_mech['id'], description=mechanism.description, name=mechanism.name,
-                                uri=mechanism.uri, type_id=typeId, predefined=old_mech['predefined'], properties=props, attributes=attrs)
-                    else:
-                        rsp = AAC.authentication.create_mechanism(description=mechanism.description, name=mechanism.name,  uri=mechanism.uri,
-                                type_id=typeId,  properties=props, attributes=attrs)
-                    if rsp.success == True:
-                        _logger.info("Successfully set configuration for {} mechanism".format(mechanism.name))
-                    else:
-                        _logger.error("Failed to set configuration for {} mechanism with:\n{}\n{}".format(
-                            mechanism.name, json.dumps(mechanism, indent=4), rsp.data))
-
+                    _configure_mechanism(mechanism)
             if aac_config.authentication.policies != None:
                 existing_policies = AAC.authentication.list_policies()
                 for policy in aac_config.authentication.policies:
@@ -301,6 +367,29 @@ class AAC_Configurator(object):
                     json.dumps(aac_config.mmfa, indent=4), rsp.data))
 
 
+    def _upload_metadata(self, metadata)
+        pass
+
+    def _upload_mediator(self, mediator):
+        pass
+
+    def _create_relying_party(self, rp):
+        pass
+
+    def fido2_configuration(self, aac_config):
+        if aac_config.fido2 != None:
+            fido2 = aac_config.fido2
+            if fido2.metadata != None:
+                for metadata in fido2.metadata:
+                    _upload_metadata(metadata)
+            if fido2.mediators != None:
+                for mediator in fido2.mediators:
+                    _upload_mediator(mediator)
+            if fido2.relying_parties != None:
+                for rp in fido2.relying_parties:
+                    _create_relying_party(rp)
+
+
     def configure(self):
         config = CONFIG.aac
         if config == None:
@@ -309,6 +398,7 @@ class AAC_Configurator(object):
 
         upload_files(config)
         server_connections(config)
+        fido2_configuration(config)
         api_protection_configuration(config)
         deploy_pending_changes()
 
