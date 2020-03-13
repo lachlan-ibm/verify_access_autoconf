@@ -3,8 +3,8 @@ import logging
 import requests
 import json
 
-from  .util.constants import FACTORY, CONFIG, CREDS, HEADERS
-from .util.configure_util import update_container_names, deploy_pending_changes
+from  ..util.constants import FACTORY, CONFIG, CREDS, HEADERS
+from ..util.configure_util import update_container_names, deploy_pending_changes
 
 _logger = logging.getLogger(__name__)
 

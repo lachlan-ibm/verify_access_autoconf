@@ -3,7 +3,7 @@
 import logging
 import json
 
-from .util.constants import CONFIG, WEB, deploy_pending_changes
+from ..util.constants import CONFIG, WEB, deploy_pending_changes
 
 _logger = logging.getLogger(__name__)
 

@@ -4,7 +4,7 @@ import json
 import os
 import logging
 
-from constants import CONFIG, FED, deploy_pending_changes
+from ..util.constants import CONFIG, FED, deploy_pending_changes
 
 _logger = logging.getLogger(__name__)
 

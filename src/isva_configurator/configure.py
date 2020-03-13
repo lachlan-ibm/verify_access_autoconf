@@ -6,13 +6,13 @@ import json
 import requests
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-from .applaince.configure_appliance imort Appliance_Configurator as isva_appliance
+from .appliance.configure_appliance import Appliance_Configurator as isva_appliance
 from .docker.configure_docker import Docker_Configurator as isva_docker
 from .access_control.configure_aac import AAC_Configurator as aac
 from .webseal.configure_webseal import WEAB_Configurator as web
 from .federation.configure_fed import FED_Configurator as fed
 from  .util.constants import EULA_ENDPOINT, LICENSE_ENDPOINT, SETUP_ENDPOINT, CONFIG, CREDS, OLD_CREDS, HEADERS, CONFIG_BASE_DIR, MGMT_BASE_URL
-import .util.constants as const
+from .util import constants as const
 from .util.configure_util import deploy_pending_changes
 
 _logger = logging.getLogger(__name__)
@@ -138,7 +138,11 @@ class ISVA_Configurator(object):
         deploy_pending_changes()
 
 
-    def configure(self):
+    def configure(self, config_file=None):
+        if config_file:
+            from .util import constants, data_util
+            import yaml
+            constants.CONFIG = data_util.Map( yaml.load( open(config_file, 'r'), data_util.CustomLoader) )
         if old_password():
             const.FACTORY = pyisam.Factory(MGMT_BASE_URL, OLD_CREDS[0], OLD_CREDS[1])
             accept_eula(OLD_CREDS)
@@ -166,5 +170,5 @@ class ISVA_Configurator(object):
         fed().configure()
 
 if __name__ == "__main__":
-    from isva_configurator import ISVA_Configurator
-    ISVA_Configurator().configure()
+    from isva_configurator import configurator
+    configurator.configure()

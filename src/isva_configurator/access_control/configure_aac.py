@@ -4,7 +4,7 @@ import logging
 import json
 import os
 
-from .utils.constants import AAC, CONFIG_BASE_DIR, CONFIG, deploy_pending_changes
+from ..utils.constants import AAC, CONFIG_BASE_DIR, CONFIG, deploy_pending_changes
 
 _logger = logging.getLogger(__name__)
 
