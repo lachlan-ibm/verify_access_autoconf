@@ -26,9 +26,6 @@ if not CREDS and CONFIG:
 OLD_CREDS = ("admin", os.environ.get("MGMT_OLD_PASSWORD")) if os.environ.get("MGMT_OLD_PASSWORD") else None
 if not OLD_CREDS and CONFIG and CONFIG.mgmt_old_password:
     OLD_CREDS = ("admin", CONFIG.mgmt_old_password)
-LICENSE_ENDPOINT = MGMT_BASE_URL + "/isam/capabilities/v1"
-SETUP_ENDPOINT = MGMT_BASE_URL + "/setup_complete"
-EULA_ENDPOINT = MGMT_BASE_URL + "/setup_service_agreements/accepted"
 
 FACTORY = None #Factory(MGMT_BASE_URL, CREDS[0], CREDS[1])
 WEB = None #FACTORY.get_web_settings()

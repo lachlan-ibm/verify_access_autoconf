@@ -94,6 +94,10 @@ class Appliance_Configurator(object):
             _logger.error("Failed to update address for interface {} with config:\n{}\n{}".format(
                 iface.label, json.dumps(iface, indent=4), rsp.data))
 
+    def administratior_settings(self, config):
+        if config.lmi != None:
+            pass
+
     def update_network(self):
         config = CONFIG.appliance
         if config.network != None:
@@ -103,6 +107,7 @@ class Appliance_Configurator(object):
             if config.network.interfaces != None:
                 for iface in config.network.interfaces:
                     _update_interface(iface)
+        administrator_settings(config)
         deploy_pending_changes()
 
 

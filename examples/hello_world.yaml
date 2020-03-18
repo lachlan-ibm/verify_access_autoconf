@@ -1,7 +1,8 @@
 appliance:
   lmi: #Local Management Interface settings
-    timeout: 720
-    timezone: "Australia/Brisbane"
+    admin_cfg:
+      timeout: 720
+      timezone: "Australia/Brisbane"
   network:
     routes:
       - enabled: True
