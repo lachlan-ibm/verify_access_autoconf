@@ -94,9 +94,6 @@ class Appliance_Configurator(object):
             _logger.error("Failed to update address for interface {} with config:\n{}\n{}".format(
                 iface.label, json.dumps(iface, indent=4), rsp.data))
 
-    def administratior_settings(self, config):
-        if config.lmi != None:
-            pass
 
     def update_network(self):
         config = CONFIG.appliance
@@ -110,9 +107,20 @@ class Appliance_Configurator(object):
         administrator_settings(config)
         deploy_pending_changes()
 
+    def date_time(self):
+        config = CONFIG.appliance
+        if config.date_time != None:
+            rsp = FACTORY.get_system_settings().date_time.update(enable_ntp=config.date_time.enable_ntp,
+                    ntp_servers=config.date_time.ntp_servers, time_zone=config.date_time.time_zone)
+            if rsp.success == True:
+                _logger.info("Successfully updated Date/Time settings on appliance")
+            else:
+                _logger.error("Failed to update the Date/Time settings on the appliance with:\n{}\n{}".format(
+                    json.dumps(config.date_time, indent=4), rsp.data))
 
     def configure(self):
         update_network()
+        date_time()
 
 if __name__ == "__main__":
     configure()

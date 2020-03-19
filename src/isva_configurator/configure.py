@@ -224,12 +224,94 @@ class ISVA_Configurator(object):
             if config.account_management.users != None:
                 _system_users(config.account_management.users)
 
-    def management_authorization(self):
-        pass
+    def _add_auth_role(self, role):
+        if role.operation == "delete":
+            rsp = const.FACTORY.get_system_settings().manangemetauthorization.delete_role(role.name)
+            if rsp.success == True:
+                _logger.info("Successfully removed {} authorization role".format(role.name))
+            else:
+                _logger.error("Failed to remove {} authroization role:\n{}".format(
+                    role.name, rsp.data))
+        elif role.operation in ["add", "update"]:
+            configured_roles = const.FACTORY.get_system_settings().managementauthorization.get_roles().json
+            exists = False
+            for r in configured_roles:
+                if r['name'] == role.name:
+                    exits = True
+                    break
+            rsp = None
+            if exits == True:
+                rsp = const.FACTORY.get_system_settings().managementauthorization.update_role(
+                        name=role.name, users=role.users, groups=role.groups, features=role.features)
+            else:
+                rsp = const.FACTORY.get_system_settings().managementauthorization.create_role(
+                        name=role.name, users=role.users, groups=role.groups, features=role.features)
+            if rsp.success == True:
+                _logger.info("Successfully configured {} authprization role".format(role.name))
+            else:
+                _logger.error("Failed to configure {} authorization role:\n{}".format(
+                    role.name, rsp.data))
+        else:
+            _logger.error("Unknown operation {} for role configuration:\n{}".format(
+                role.operation, json.dumps(role, indent=4))
 
+    def management_authorization(self, config):
+        if config.management_authorization != None and config.management_authorization.roles != None:
+            for role in config.management_authorization.roles:
+                _add_auth_role(role)
+            if config.management_authorization.authorization_enforcement:
+                rsp = const.FACTORY.get_system_settings().managementauthorization.enable(
+                        enforce=config.management_authorization.authorization_enforcement)
+                if rsp.success == True:
+                    _logger.info("Successfully enabled role based authroization")
+                else:
+                    _logger.error("Failed to enable role based authorization:\n{}".format(rsp.data))
 
-    def advanced_tuning_parameters(self):
-        pass
+    def advanced_tuning_parameters(self, config):
+        if config.advanced_tuning_parameters != None:
+            params = const.FACTORY.get_system-settings().advance_tining.list_params().json
+            for atp in config.advanced_tuning_parameters:
+                if atp.operation == "delete":
+                    uuid = None
+                    for p in params:
+                        if p['key'] == atp.name:
+                            uuid = p['uuid']
+                            break
+                    rsp = const.FACTORY.get_system_settings().advanced_tuning.delete_parameter(uuid=uuid)
+                    if rsp.success == True:
+                        _logger.info("Successfully removed {} Advanced Tuning Parameter".format(atp.name))
+                    else:
+                        _logger.error("Failed to remove {} Advanced tuning paramter:\n{}".format(
+                            atp.name, rsp.data))
+                elif atp.operation == "update":
+                    exits = False
+                    for p in params:
+                        if p['key'] == atp.name:
+                            exists = True
+                            break
+                    rsp = None
+                    if exists == True:
+                        rsp = const.FACTORY.get_system_settings().advanced_tuning.update_parameter(
+                            key=atp.name, value=atp.value, comment=atp.comment)
+                    else:
+                        rsp = const.FACTORY.get_system_settings().advanced_tuning.create_parameter(
+                            key=atp.name, value=atp.value, comment=atp.comment)
+                    if rsp.success == True:
+                        _logger.info("Successfully updated {} Advanced Tuning Parameter".format(atp.name))
+                    else:
+                        _logger.error("Failed to update {} Advanced Tuning Parameter with:\n{}\n{}".format(
+                            atp.name, json.dupms(atp, indent=4), rsp.data))
+                elif atp.operation == "add":
+                    rsp = const.FACTORY.get_system_settings().advanced_tuning.create_parameter(
+                        key=atp.name, value=atp.value, comment=atp.comment)
+                    if rsp.success == True:
+                        _logger.info("Successfully add {} Advanced Tuning Parameter".format(atp.name))
+                    else:
+                        _logger.error("Failed to add {} Advanced Tuning Parameter with:\n{}\n{}".format(
+                            atp.name, json.dupms(atp, indent=4), rsp.data))
+                else:
+                    _logger.error("Unknown operation {} for Advanced Tuning Parameter:\n{}".format(
+                        atp.operation, json.dumps(atp, indent=4)))
 
 
     def date_time(self):
