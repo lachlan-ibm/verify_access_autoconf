@@ -157,10 +157,7 @@ class ISVA_Configurator(object):
 
     def admin_config(self, config):
         if config.admin_config != None:
-            methodArgs = {
-
-                }
-            rsp = const.FACTORY.get_system_settings().admin_settings.update(**methodArgs)
+            rsp = const.FACTORY.get_system_settings().admin_settings.update(**config.admin_config)
             ir rsp.success == True:
                 _logger.info("Successfullt set admin config")
             else:

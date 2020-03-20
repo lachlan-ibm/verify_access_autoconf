@@ -2,3 +2,5 @@ pyyaml
 requests
 kubernetes
 docker-compose
+wheel
+setuptools

@@ -1,11 +1,8 @@
 #!/bin/python
 import os
 import yaml
-import logging
 from pyisam.factory import Factory
 from .data_util import Map, CustomLoader
-
-_logger = logging.getLogger(__name__)
 
 
 HEADERS = {

@@ -1,3 +1,4 @@
 *.pyc
 *.swp
 config.yaml
+src/isva_configurator.egg-info
