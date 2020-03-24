@@ -36,9 +36,9 @@ appliance:
             enabled: False
             allowManagement: False
   activation: #Activation codes
-    base: "&BASE_LICENSE"
-    aac: "&ACCESS_CONTROL_LICENSE"
-    fed: "&FEDERATION_LICENSE"
+    wga: "&BASE_LICENSE"
+    mga: "&ACCESS_CONTROL_LICENSE"
+    federation: "&FEDERATION_LICENSE"
 webseal:
   runtime: #Runtime component must be defined in order to specify WebSEAL configuration
     policy_server: "local"
@@ -49,7 +49,7 @@ webseal:
   reverse_proxy:
     - name: "default"
       hostname: "my.idp"
-      address: "192.168.42.102"
+      ip_address: "192.168.42.102"
       listening_port: 7234
       domain: "Default"
       http: 

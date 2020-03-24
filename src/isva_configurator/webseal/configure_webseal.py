@@ -97,7 +97,7 @@ class WEB_Configurator(object):
                         "https_yn": proxy.https.enabled, 
                         "https_port": proxy.https.port,
                         "nw_interface_yn":  proxy.nw_interface_yn,
-                        "ip_address": proxy.address, 
+                        "ip_address": proxy.ip_address, 
                         "listening_port": proxy.listening_port,
                         "domain": proxy.domain
                 }
@@ -129,8 +129,8 @@ class WEB_Configurator(object):
         if proxy.federation_configuration != None:
             _configure_federations(proxy.name, proxy.federation_configuration)
 
-        if proxy.stanza_config != None:
-            _update_stanza(proxy.name, proxy.stanza_config)
+        if proxy.stanza_configuration != None:
+            _update_stanza(proxy.name, proxy.stanza_configuration)
 
         deploy_pending_changes()
         rsp = WEB.reverse_proxy.restart_instance(proxy.name)

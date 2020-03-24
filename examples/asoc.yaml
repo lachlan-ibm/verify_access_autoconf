@@ -14,9 +14,9 @@ docker:
     timezone: "Australia/Brisbane"
     admin_password: "examplePassw0rd"
   activation: #Activation codes
-    base: "&BASE_CODE"
-    aac: "&ACCESS_CONTROL_CODE"
-    fed: "&FEDERATION_CODE"
+    wga: "&BASE_CODE"
+    mga: "&ACCESS_CONTROL_CODE"
+    federation: "&FEDERATION_CODE"
   database:
     type: "postgresql"
     host: "postgresql"
