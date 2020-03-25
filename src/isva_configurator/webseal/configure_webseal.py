@@ -8,17 +8,25 @@ from ..util.constants import CONFIG, WEB, deploy_pending_changes
 _logger = logging.getLogger(__name__)
 
 class WEB_Configurator(object):
+
     def _update_stanza(self, proxy_id, config):
         for entry in config:
-            rsp = WEB.reverse_proxy.update_configuration_stanza_entry(
-                    proxy_id, entry.stanza, entry.key, entry.value)
-            if rsp.success == True:
-                _logger.info("Successfully updated stanza [{}] with [{}:{}]".format(
-                        entry.stanza, entry.key, entry.value))
+            if entry.operation == "delete":
+                #TODO
+            elif entry.operation == "add":
+                #TODO
+            elif entry.operation == "update":
+                rsp = WEB.reverse_proxy.update_configuration_stanza_entry(
+                        proxy_id, entry.stanza, entry.key, entry.value)
+                if rsp.success == True:
+                    _logger.info("Successfully updated stanza [{}] with [{}:{}]".format(
+                            entry.stanza, entry.key, entry.value))
+                else:
+                    _logger.error("Failed to update stanza [{}] with [{}:{}]".format(
+                            entry.stanza, entry.key, entry.value))
             else:
-                _logger.error("Failed to update stanza [{}] with [{}:{}]".format(
-                        entry.stanza, entry.key, entry.value))
-
+                _logger.error("Unknown operation {} in stanza entry: {}".format(
+                    entry.operation, json.dumps(entry, indent=4)))
 
     def _configure_aac(self, proxy_id, aac_config):
         methodArgs = {
@@ -72,7 +80,7 @@ class WEB_Configurator(object):
                 proxy_id, json.dumps(junction, indnet=4)))
 
 
-    def configure_wrp(self, runtime, proxy):
+    def _wrp(self, runtime, proxy):
         wrp_instances = WEB.reverse_proxy.list_instances().json
         for instance in wrp_instances:
             if instance['id'] == proxy.name:
@@ -142,31 +150,7 @@ class WEB_Configurator(object):
                 proxy.name))
 
 
-    def configure_user(self, runtime, user):
-        firstName = user.first_name if user.first_name else user.name
-        lastName = user.last_name if user.last_name else user.name
-        dc = ""
-        if isinstance(user.dc, list):
-            for i, e in enumerate(user.dc):
-                dc += "dc=" + e
-                if i != len(user.dc) - 1:
-                    dc += ","
-        else:
-            dc = "dc=" + user.dc
-        print(dc)
-        pdadminCommands = [
-                "user create {} cn={},{} {} {} {}".format(
-                    user.name, user.cn, dc, firstName, lastName, user.password),
-                "user modify {} account-valid yes".format(user.name)
-            ]
-        rsp = WEB.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
-        if rsp.success == True:
-            _logger.info("Successfullt created user {}".format(user.name))
-        else:
-            _logger.error("Failed to create user {} with config:\n{}".format(user.name, json.dumps(user, indent=4)))
-
-
-    def configure_runtime(self, runtime):
+    def _runtime(self, runtime):
         rte_status = WEB.runtime_component.get_status()
         if rte_status.json['status'] == "Available":
             rsp = WEB.runtime_component.unconfigure(ldap_dn=runtime.ldap_dn, ldap_pwd=runtime.ldap_dn, clean=runtime.clean_ldap, force=True)
@@ -210,26 +194,164 @@ class WEB_Configurator(object):
         return rsp.success
 
 
+    def _pdadmin_acl(self, runtime, acl):
+        #TODO
+
+    def _pdadmin_pop(self, runtime, pop):
+        #TODO
+
+    def _pdadmin_proxy(self, runtime, proxy_config):
+        #TODO
+
+    def _pdadmin_user(self, runtime, user):
+        firstName = user.first_name if user.first_name else user.name
+        lastName = user.last_name if user.last_name else user.name
+        dc = ""
+        if isinstance(user.dc, list):
+            for i, e in enumerate(user.dc):
+                dc += "dc=" + e
+                if i != len(user.dc) - 1:
+                    dc += ","
+        else:
+            dc = "dc=" + user.dc
+        print(dc)
+        pdadminCommands = [
+                "user create {} cn={},{} {} {} {}".format(
+                    user.name, user.cn, dc, firstName, lastName, user.password),
+                "user modify {} account-valid yes".format(user.name)
+            ]
+        rsp = WEB.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
+        if rsp.success == True:
+            _logger.info("Successfullt created user {}".format(user.name))
+        else:
+            _logger.error("Failed to create user {} with config:\n{}".format(user.name, json.dumps(user, indent=4)))
+
+    def _pdadmin_groups(self, runtime, group):
+        #TODO
+
+    def _pdadmin(self, runtime, config):
+        if config.acls != None:
+            for acl in config.acls:
+                _pdadmin_acl(runtime, acl)
+
+        if config.pops != None:
+            for pop in config.pops:
+                _pdadmin_pop(runtime, pop)
+
+        if config.groups != None:
+            for group in config.groups:
+                _pdadmin_group(runtime, group)
+
+        if config.users != None:
+            for user in config.users:
+                _pdadmin_user(runtime, user)
+
+        if config.reverse_proxies != None:
+            for proxy in config.reverse_proxies:
+                _pdadmin_proxy(proxy)
+        deploy_pending_changes()
+
+
+    def _client_cert_mapping(self, cert_mapping):
+        #TODO
+
+    def _junction_mapping(self, junction_mapping):
+        #TODO
+
+    def _url_mapping(self, url_mapping):
+        #TODO
+
+    def _user_mapping(self, user_mapping):
+        #TODO
+
+    def _federated_sso(self, fsso_config):
+        #TODO
+
+    def _http_transform(self, http_transform_rules):
+        #TODO
+
+    def _kerberos(self, kerberos_config):
+        #TODO
+
+    def _password_strengt(self, password_strength_rules):
+        #TODO
+
+    def _rsa(self, rsa_config):
+        #TODO
+
+    def __apiac_resources(self, resources):
+        #TODO
+
+    def __apiac_utilities(self, utilities):
+        #TODO
+
+    def __apiac_cors(self, cors):
+        #TODO
+
+    def __apiac_document_root(self, doc_root):
+        #TODO
+
+    def _api_access_control(self, apiac):
+        if apiac.resources != None:
+            __apiac_resources(apiac.resources)
+        
+        if apiac.utilities != None:
+            __apiac_utilities(apiac.utilities)
+
+        if apiac.cors != None:
+            __apiac_cors(apiac.cors)
+
+        if apiac.document_root != None:
+            __apiac_document_root(apiac.document_root)
+
+
     def configure(self):
         websealConfig = CONFIG.webseal
         if websealConfig == None:
             _logger.info("No WebSEAL configuration detected, skipping")
             return
+        
+        if websealConfig.client_cert_mapping != None:
+            _client_cert_mapping(websealConfig.client_cert_mapping)
+
+        if websealConfig.junction_mapping != None:
+            _junction_mapping(websealConfig.junction_mapping)
+
+        if websealConfig.url_mapping != None:
+            _url_mapping(websealConfig.url_mapping)
+
+        if websealConfig.user_mapping != None:
+            _user_mapping(websealConfig.user_mapping)
+
+        if websealConfig.fsso != None:
+            _federated_sso(websealConfig.fsso)
+
+        if websealConfig.http_transform != None:
+            _http_transform(websealConfig.http_transform)
+
+        if websealConfig.kerberos != None:
+            _kerberos(websealCOnfig.kerberos)
+
+        if websealConfig.password_strength != None:
+            _password_strength(websealConfig.password_strength)
+
+        if websealConfig.rsa_config != None:
+            _rsa(websealConfig.rsa_config)
 
         if websealConfig.runtime != None:
-            configure_runtime(runtime)
-
-            if websealConfig.users != None:
-                for user in websealConfig.users:
-                    configure_user(runtime, user)
-                deploy_pending_changes()
-
+            _runtime(runtime)
             if websealConfig.reverse_proxy != None:
                 for proxy in websealConfig.reverse_proxy:
-                    configure_wrp(runtime, proxy)
-
+                    _wrp(runtime, proxy)
+            
+            if websealConfig.pdadmin != None:
+                _pdadmin(runtime, websealConfig.pdadmin)
         else:
-            _logger.info("No runtime configuration detected, unable to set up any reverse proxy config")
+            _logger.info("No runtime configuration detected, unable to set up any reverse proxy config or run pdadmin commands")
+
+        if websealConfig.api_access_control != None:
+            _api_access_control(websealConfig.api_access_control)
+
 
 if __name__ == "__main__":
         configure()
