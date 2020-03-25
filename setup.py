@@ -1,5 +1,24 @@
-from setuptools import find_packages, setup
 import os
+from setuptools import setup, find_packages, Command
+
+class CleanCommand(Command):
+    """Custom clean command to tidy up the project root."""
+    user_options = []
+    def initialize_options(self):
+        pass
+    def finalize_options(self):
+        pass
+    def run(self):
+        for root, dirs, files in os.walk("./", topdown=False):
+            for name in files:
+                if name.endswith((".pyc", ".tgz", ".whl")):
+                    print("remove {}".format(os.path.join(root, name)))
+                    os.remove(os.path.join(root, name))
+            for name in dirs:
+                if name.endswith((".egg-info", "build", "dist", "__pycache__")):
+                    print("remove {}".format(os.path.join(root, name)))
+                    #os.rmdir(os.path.join(root, name))
+                    os.system('rm -vrf {}'.format(os.path.join(root, name)))
 
 setup(
     name='isva_configurator',
@@ -18,5 +37,8 @@ setup(
         'docker-compose>=1.25.4'
     ],
     url='https://github.ibm.com/lgleeson/ISVAConfigurationAutomation',
-    zip_safe=False
+    zip_safe=False,
+    cmdclass={
+        'clean': CleanCommand,
+    }
 )
