@@ -359,50 +359,256 @@ class WEB_Configurator(object):
 
 
     def _client_cert_mapping(self, cert_mapping):
-        #TODO
+        cert_mapping_file = FILE_LOADER.read_file(cert_mapping)
+        if len(cert_mapping_file) != 1:
+            _logger.error("Can only specify one cert mapping file")
+            return
+        rsp = WEB.client_cert_mapping.create(name=cert_mapping_file['name'], content=cert_mapping_file['content'])
+        if rsp.success == True:
+            _logger.info("Successfully configured certificate mapping")
+        else:
+            _logger.error("Failed to configure certificate mapping using {} config file".format(cert_mapping_file['name'}))
 
     def _junction_mapping(self, junction_mapping):
-        #TODO
+        jct_mapping_file = FILE_LOADER.read_file(junction_mapping)
+        if len(jct_mapping_file) != 1:
+            _logger.error("Can only specify one jct mapping file")
+            return
+        rsp = WEB.jct_mapping.create(name=jct_mapping_file['name'], jmt_config_data=jct_mapping_file['content'])
+        if rsp.success == True:
+            _logger.info("Successfully configured junction mapping")
+        else:
+            _logger.error("Failed to configure junction mapping using {} config file".format(jct_mapping_file['name'}))
 
     def _url_mapping(self, url_mapping):
-        #TODO
+        url_mapping_file = FILE_LOADER.read_file(url_mapping)
+        if len(url_mapping_file) != 1:
+            _logger.error("Can only specify one url mapping file")
+            return
+        rsp = WEB.url_mapping.create(name=url_mapping_file['name'], dynurl_config_data=url_mapping_file['content'])
+        if rsp.success == True:
+            _logger.info("Successfully configured URL mapping")
+        else:
+            _logger.error("Failed to configure URL mapping using {} config file".format(url_mapping_file['name'}))
 
     def _user_mapping(self, user_mapping):
-        #TODO
+        user_mapping_file = FILE_LOADER.read_file(user_mapping)
+        if len(user_mapping_file) != 1:
+            _logger.error("Can only specify one user mapping file")
+            return
+        rsp = WEB.user_mapping.create(name=user_mapping_file['name'], content=user_mapping_file['content'])
+        if rsp.success == True:
+            _logger.info("Successfully configured user mapping")
+        else:
+            _logger.error("Failed to configure user mapping using {} config file".format(user_mapping_file['name'}))
 
     def _federated_sso(self, fsso_config):
-        #TODO
+        fsso_config_file = FILE_LOADER.read_file(fsso_config)
+        if len(user_mapping_file) != 1:
+            _logger.error("Can only specify one FSSO configuration file")
+            return
+        rsp = WEB.fsso.create(name=fsso_config_file['name'], fsso_config_data=fsso_config_file['content'])
+        if rsp.success == True:
+            _logger.info("Successfully configured Federated Singe Sign On configuration")
+        else:
+            _logger.error("Failed to configure FSSO using {} config file".format(user_mapping_file['name'}))
 
     def _http_transform(self, http_transform_rules):
-        #TODO
+        for http_transform_file_pointer in http_transform_rules:
+            http_transform_files = FILE_LOADER.read_files(http_transform_file_pointer)
+            for http_transform_file in http_transform_files:
+                rsp = WEB.http_transform.create(name, http_transform_file['name'], 
+                        contents=http_transform_file['content'])
+                if rsp.success == True:
+                    _logger.info("Successfully created {} HTTP transform rule".format(http_transform_file['name']))
+                else:
+                    _logger.error("Failed to create {} HTTP transform rule".format(http_transform_file['name']))
 
     def _kerberos(self, kerberos_config):
-        #TODO
+        for config in kerberos_config:
+            rsp = WEB.kerberos.create(_id=config.id, subsection=config.subsection, name=config.name, 
+                    value=config.value)
+            if rsp.success == True:
+                _logger.info("Successfully configured Kerberos {} property".format(config.name))
+            else:
+                _logger.error("Failed to configure Kerberos config:\n{}\n{}".format(json.dumps(config,indent=4),
+                    rsp.content))
 
-    def _password_strengt(self, password_strength_rules):
-        #TODO
+    def _password_strength(self, password_strength_rules):
+        pwd_config_file = FILE_LOADER.read_file(password_strength_rules)
+        if len(pwd_mapping_file) != 1:
+            _logger.error("Can only specify one password strength rule file")
+            return
+        rsp = WEB.password_strength.create(name=pwd_config_file['name'], content=pwd_config_file['content'])
+        if rsp.success == True:
+            _logger.info("Successfully configured password strength rules")
+        else:
+            _logger.error("Failed to configure password strength rules using {}".format(pwd_mapping_file['name'}))
 
     def _rsa(self, rsa_config):
-        #TODO
+        rsa_config_file = FILE_LOADER.read_file(rsa_config)
+        if len(pwd_mapping_file) != 1:
+            _logger.error("Can only specify one RSA configuration file")
+            return
+        rsp = WEB.rsa.create(name=pwd_config_file['path'])
+        if rsp.success == True:
+            _logger.info("Successfully configured RSA")
+        else:
+            _logger.error("Failed to configure RSA using {}".format(rsa_config_file['name'}))
 
-    def __apiac_resources(self, resources):
-        #TODO
+    def __apiac_resources(self, proxy_id, resources):
+        for resource in resources:
+            methodArgs = {
+                    "server_hostname": resource.server_hostname,
+                    "junction_point": resource.junction_point,
+                    "junction_type": resource.junction_type,
+                    "static_response_headers": resource.static_response_headers,
+                    "description": resource.description,
+                    "junction_hard_limit": resource.junction_hard_limit,
+                    "junction_soft_limit": resource.junction_soft_limit,
+                    "basic_auth_mode": resource.basic_auth_mode,
+                    "tfim_sso": resource.tfim_sso,
+                    "remote_http_header": resource.remote_http_header,
+                    "stateful_junction": resource.stateful_junction,
+                    "http2_junction": resource.http2_junction,
+                    "sni_name": resource.sni_name,
+                    "preserve_cookie": resource.preserve_cookie,
+                    "cookie_include_path": resource.cookie_include_path,
+                    "transparent_path_junction": resource.transparent_path_junction,
+                    "mutual_auth": resource.mutual_auth,
+                    "insert_ltpa_cookies": resource.insert_ltpa_cookies,
+                    "insert_session_cookies": resource.insert_session_cookies,
+                    "request_encoding": resource.request_encoding,
+                    "enable_basic_auth": resource.enable_basic_auth,
+                    "key_labelkey_label": resource.key_label,
+                    "gso_resource_group": resource.gso_resource_group,
+                    "junction_cookie_javascript_block": resource.junction_cookie_javascript_block,
+                    "client_ip_http": resource.client_ip_http,
+                    "version_two_cookies": resource.version_two_cookies,
+                    "ltpa_keyfile": resource.ltpa_keyfile,
+                    "authz_rules": resource.authz_rules,
+                    "fsso_config_file": resource.fsso_config_file,
+                    "username": resource.username,
+                    "password": resource.password,
+                    "server_uuid": resource.server_uuid,
+                    "server_port": resource.server_port,
+                    "virtual_hostname" : resource.virtual_hostname,
+                    "server_dn": resource.server_dn,
+                    "local_ip": resource.local_ip,
+                    "query_contents": resource.query_contents,
+                    "case_sensitive_url": resource.case_sensitive_url,
+                    "windows_style_url": resource.windows_style_url,
+                    "ltpa_keyfile_password": resource.ltpa_keyfile_password,
+                    "https_port": resource.https_port,
+                    "http_port": resource.http_port,
+                    "proxy_hostname": resource.proxy_hostname,
+                    "proxy_port": resource.proxy_port,
+                    "sms_environment": resource.sms_environment,
+                    "vhost_label": resource.vhost_label,
+                    "force": resource.force,
+                    "delegation_support": resource.delegation_support,
+                    "scripting_support": resource.scripting_support
+                }
+            if resource.policy:
+                policy = resurce.policy
+                methodArgs.update({
+                        "name": policy.name,
+                        "type": policy.type
+                    })
+            if resource.authentication:
+                methodArgs.update({"type": resource.authentication.type})
+                if resource.autehntication.oauth_introspection:
+                    oauth_introspection = resource.autehntication.oauth_introspection
+                    methodArgs.update({
+                            "oauth_introspection_transport": oauth_introspection.transport,
+                            "oauth_introspection_endpoint": oauth_introspection.endpoint,
+                            "oauth_introspection_proxy": oauth_introspection.proxy,
+                            "oauth_introspection_auth_method": oauth_introspection.auth_method,
+                            "oauth_introspection_client_id": oauth_introspection.client_id,
+                            "oauth_introspection_client_secret": oauth_introspection.client_secret,
+                            "oauth_introspection_client_id_hdr": oauth_introspection.client_id_hdr,
+                            "oauth_introspection_token_type_hint": oauth_introspection.token_type_hint,
+                            "oauth_introspection_mapped_id": oauth_introspection.mapped_id,
+                            "oauth_introspection_external_user": oauth_introspection.external_user,
+                            "oauth_introspection_response_attributes": oauth_introspection.response_attributes
+                        })
+                if resource.authentication.jwt:
+                    jwt = resource.authentication.jwt
+                    methodArgs.update({
+                            "jwt_header_name": jwt.header_name,
+                            "jwt_certificate": jwt.certificate,
+                            "jwt_claims": jwt.claims
+                        })
+            rsp = WEB.api_access_control.resources.create_server(proxy_id, **methodArgs)
+            if rsp.success == True:
+                _logger.info("Successfully created {} API AC Resource server".format(resource.server_hostname))
+            else:
+                _logger.error("Failed to create {} API AC Resource serveer with config:\n{}\n{}".format(
+                    resource.server_hostname, json.dumps(resource, indent=4), rsp.content))
+                continue
+            if resource.junctions:
+                for junction in resource.junctions:
+                    methodArgs = {
+                            "server_type": junction.server_type,
+                            "method", junction.method,
+                            "path": junction.path,
+                            "name": junction.name,
+                            "static_response_headers": junction.static_response_headers,
+                            "rate_limiting_policy": junction.rate_limiting_policy,
+                            "url_aliases": junction.url_aliases
+                        }
+                    if junction.policy:
+                        policy = junction.policy
+                        methodArgs.update({
+                                "policy_type": policy.type,
+                                "policy_name": policy.name
+                            })
+                    if junction.documentation:
+                        doc = junction.documentation
+                        methodArgs.update({
+                            "documentation_content_type": doc.content_type,
+                            "documentation_file": doc.file
+                        })
+                    rsp = WEB.api_access_control.resources.create(proxy_id, resource.junction_point, **methodArgs)
+                    if rsp.success == True:
+                        _logger.info("Successfully created {} junctioned resource".format(junction.name))
+                    else:
+                        _logger.error("Failed to create {} junctioned resource with config;\n{}\n{}".format(
+                            junction.name, json.dumps(junction, indent=4), rsp.content))
 
-    def __apiac_utilities(self, utilities):
-        #TODO
+    def __apiac_cors(self, cors_policies):
+        for cors in cors_policies:
+            rsp = WEB.api_access_control.cors.create(name=cors.name, allowed_origins=cors.allowed_origins, 
+                    allow_credentials=cors.allow_credentials, exposed_headers=cors.exposed_headers, 
+                    handle_preflight=cors.handle_preflight, allowed_methods=cors.allowed_methods,
+                    allowed_headers=cors.allowed_headers, max_age=cors.max_age)
+            if rsp.success == True:
+                _logger.info("Successfully created {} CORS policy".format(cors.name))
+            else:
+                _logger.error("Failed to create {} CORS policy using config:\n{}\n{}".format(cors.name, 
+                    json.dumps(cors, indent=4), rsp.content))
 
-    def __apiac_cors(self, cors):
-        #TODO
+    def __apiac_document_root(self, proxy_id, doc_roots):
+        for doc_root in doc_roots:
+            files = FILE_LOADER.read_files(doc_root, include_directories=True)
+            for _file in files:
+                rsp = WEB.api_access_control.document_root.create(proxy_id, filename=_file['name'], 
+                        file_type=_file['type'], contents=_file.get('contents'))
+                if rsp.success == True:
+                    _logger.info("Successfully uploaded {} {}".format(_file['name'], _file['type']))
+                else:
+                    _logger.error("Failed to upload {} {}\n{}".format(_file["name"], _file["type"], rsp.content))
 
-    def __apiac_document_root(self, doc_root):
-        #TODO
-
-    def _api_access_control(self, apiac):
+    def _api_access_control(self, runtime, apiac):
+        rsp = WEB.api_access.control.utilities.store_credential(admin_id=runtime.admin_user, 
+                admin_pwd=runtime.admin_password, admin_doman=runtime.domain)
+        if rsp.success == True:
+            _logger.info("API Access Control successfully stored admin credential")
+        else:
+            _logger.error("API Access Control was unable to store admin credential")
+            return
         if apiac.resources != None:
             __apiac_resources(apiac.resources)
-        
-        if apiac.utilities != None:
-            __apiac_utilities(apiac.utilities)
 
         if apiac.cors != None:
             __apiac_cors(apiac.cors)
