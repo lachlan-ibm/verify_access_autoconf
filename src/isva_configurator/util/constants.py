@@ -2,7 +2,7 @@
 import os
 import yaml
 from pyisam.factory import Factory
-from .data_util import Map, CustomLoader
+from .data_util import Map, CustomLoader, FileLoader
 
 
 HEADERS = {
@@ -30,3 +30,5 @@ AAC = None #FACTORY.get_access_control()
 FED = None #FACTORY.get_federation()
 
 KUBERNETES_CLIENT = None
+
+FILE_LOADER = FileLoader(CONFIG_BASE_DIR)

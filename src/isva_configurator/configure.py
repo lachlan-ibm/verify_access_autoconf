@@ -11,7 +11,7 @@ from .docker.configure_docker import Docker_Configurator as isva_docker
 from .access_control.configure_aac import AAC_Configurator as aac
 from .webseal.configure_webseal import WEAB_Configurator as web
 from .federation.configure_fed import FED_Configurator as fed
-from .util.constants import CONFIG, CREDS, OLD_CREDS, HEADERS, CONFIG_BASE_DIR, MGMT_BASE_URL
+from .util.constants import CONFIG, CREDS, OLD_CREDS, HEADERS, CONFIG_BASE_DIR, MGMT_BASE_URL, FILE_LOADER
 from .util import constants as const
 from .util.configure_util import deploy_pending_changes
 
@@ -95,35 +95,25 @@ class ISVA_Configurator(object):
         _logger.info("appliance activated")
 
 
-    def _import_signer_certs(self, database, base, filePointer):
+    def _import_signer_certs(self, database, parsed_file):
         ssl = const.FACTORY.get_system_settings().ssl_certificates
-        base = base if base.endswith('/') else base + '/'
-        if os.path.isdir(base + filePointer):
-            for fp in os.listdir(base + filePointer):
-                _import_signer_certs(database, base + filePointer, fp)
-        elif os.path.isfile(base + filePointer):
-            rsp = ssl.import_signer(database, os.path.abspath(base + filePointer), label=filePointer)
-            if rsp.success == True:
-                _logger.info("Successfully uploaded {} signer certificate to {}".format(
-                    filePointer, database))
-            else:
-                _logger.error("Failed to upload {} signer certificate to {} database\n{}".format(
-                    filePointer, database, rsp.data))
+        rsp = ssl.import_signer(database, os.path.abspath(base + filePointer), label=filePointer)
+        if rsp.success == True:
+            _logger.info("Successfully uploaded {} signer certificate to {}".format(
+                filePointer, database))
+        else:
+            _logger.error("Failed to upload {} signer certificate to {} database\n{}".format(
+                filePointer, database, rsp.data))
 
-    def _import_personal_certs(self, database, base, filePointer):
+    def _import_personal_certs(self, database, parsed_file):
         ssl = const.FACTORY.get_system_settings().ssl_certificates
-        base = base if base.endswith('/') else base + '/'
-        if os.path.isdir(base + filePointer):
-            for fp in os.listdir(base + filePointer):
-                _import_personal_certs(database, base + filePointer, fp)
-        elif os.path.isfile(base + filePointer):
-            rsp = ssl.import_personal(database, os.path.abspath(base + filePointer))
-            if rsp.success == True:
-                _logger.info("Successfully uploaded {} personal certificate to {}".format(
-                    filePointer, database))
-            else:
-                _logger.error("Failed to upload {} personal certificate to {}/n{}".format(
-                    filePointer, database, rsp.data))
+        rsp = ssl.import_personal(database, os.path.abspath(parsed_file['path']))
+        if rsp.success == True:
+            _logger.info("Successfully uploaded {} personal certificate to {}".format(
+                parsed_file['name'], database))
+        else:
+            _logger.error("Failed to upload {} personal certificate to {}/n{}".format(
+                parsed_file['name'], database, rsp.data))
 
     def import_ssl_certificates(self):
         ssl_config = None
@@ -132,7 +122,6 @@ class ISVA_Configurator(object):
         elif CONFIG.docker:
             ssl_config = CONFIG.docker.ssl_certificates
         ssl = const.FACTORY.get_system_settings().ssl_certificates
-        base_dir = CONFIG_BASE_DIR if CONFIG_BASE_DIR.endswith('/') else CONFIG_BASE_DIR + '/'
         if ssl_config:
             old_databases = [d['id'] for d in ssl.list_databases().json]
             print(old_databases)
@@ -148,10 +137,14 @@ class ISVA_Configurator(object):
                         continue
                 if database.signer_certificates:
                     for fp in database.signer_certificates:
-                        _import_signer_certs(database.name, base_dir, fp)
+                        signer_parsed_files = FILE_LOADER.read_files(fp)
+                        for parsed_file in signer_parsed_files:
+                            _import_signer_certs(database.name, parsed_file)
                 if database.personal_certificates:
                     for fp in database.personal_certificates:
-                        _import_personal_certs(database.name, base_dir, fp)
+                        personal_parsed_files = FILE_LOADER.read_files(fp)
+                        for parsed_file in personal_parsed_files:
+                            _import_personal_certs(database.name, base_dir, parsed_file)
         deploy_pending_changes()
 
 
@@ -310,10 +303,17 @@ class ISVA_Configurator(object):
                     _logger.error("Unknown operation {} for Advanced Tuning Parameter:\n{}".format(
                         atp.operation, json.dumps(atp, indent=4)))
 
-
-    def date_time(self):
-        pass
-
+    def date_time(self, config):
+        dateTime = const.FACTORY.get_system_setting().date_time
+        if config.date_time:
+            dtConfig = config.date_time
+            rsp =dateTime.update(enable_ntp=dtConfig.enable_ntp, ntp_servers=dtConfig.ntp_servers, 
+                    time_zone=dtConfig.time_zone, date_time=dtConfig.date_time)
+            if rsp.success == True:
+                _logger.info("Successfullt set date/time configuration")
+            else:
+                _logger.error("Failed to set date/time configuration using:\n{}\n{}".format(
+                    json.dumps(dtConfig, indent=4), rsp.content))
 
     def configure(self, config_file=None):
         if config_file:
@@ -347,7 +347,6 @@ class ISVA_Configurator(object):
             account_management(CONFIG.docker)
             management_authorization(CONFIG.docker)
             advanced_tuning_parameters(CONFIG.docker)
-            date_time(CONFIG.docker)
             isva_docker().configure()
         else:
             _logger.error("Deployment model cannot be found in config.yaml, exiting")

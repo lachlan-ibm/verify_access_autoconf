@@ -9,21 +9,54 @@ _logger = logging.getLogger(__name__)
 
 class WEB_Configurator(object):
 
-    def _update_stanza(self, proxy_id, config):
+    def __update_stanza(self, proxy_id, entry):
+        rsp = WEB.reverse_proxy.update_configuration_stanza_entry(
+                proxy_id, entry.stanza, entry.entry_id, entry.value)
+        if rsp.success == True:
+            _logger.info("Successfully updated stanza [{}] with [{}:{}]".format(
+                    entry.stanza, entry.key, entry.value))
+        else:
+            _logger.error("Failed to update stanza [{}] with [{}:{}]".format(
+                    entry.stanza, entry.key, entry.value))
+
+    def __add_stanza(self, proxy_id, entry):
+        rsp = None
+        if entry.entry_id:
+            rsp = WEB.reverse_proxy.add_configuration_stanza_entry(
+                    proxy_id, entry.stanza, entry.entry_id, entry.value)
+        elif entry.stanza:
+            rsp = WEB.reverse_proxy.add_configuration_stanza(proxy_id, entry.stanza)
+        else:
+            _logger.error("Configuration invalid:\n{}".format(json.dumps(entry, indent=4)))
+            return
+        if rsp.success == True:
+            _logger.info("Successfully created stanza entry")
+        else:
+            _logger.error("Failed to create stanza entry:\n{}\n{}".format(json.dumps(entry, indent=4) rsp.content))
+
+    def __detele_stanza(self, proxy_id, entry):
+        rsp = None
+        if entry.entry_id:
+            rsp = WEB.reverse_proxy.delete_configuration_stanza_entry(proxy_id, entry.stanza, entry.entry_id,
+                    entry.value)
+        elif entry.stanza:
+            rsp = WEB.reverse_proxy.delete_configuration_stanza(proxy_id, entry.stana)
+        else:
+            _logger.error("Stanza configuration entry invalid:\n{}".format(json.dumps(entry, indent=4)))
+            return
+        if rsp.success == True:
+            _logger.info("Successfully deleted stanza entry")
+        else:
+            _logger.error("Failed to delete stanza entry:\n{}\n{}".format(json.dumps(entry, indent=4), rsp.content))
+
+    def _configure_stanza(self, proxy_id, config):
         for entry in config:
             if entry.operation == "delete":
-                #TODO
+                self.__delete_stanza(proxy_id, entry)
             elif entry.operation == "add":
-                #TODO
+                self.__add_stanza(proxy_id, entry)
             elif entry.operation == "update":
-                rsp = WEB.reverse_proxy.update_configuration_stanza_entry(
-                        proxy_id, entry.stanza, entry.key, entry.value)
-                if rsp.success == True:
-                    _logger.info("Successfully updated stanza [{}] with [{}:{}]".format(
-                            entry.stanza, entry.key, entry.value))
-                else:
-                    _logger.error("Failed to update stanza [{}] with [{}:{}]".format(
-                            entry.stanza, entry.key, entry.value))
+                self.__update_stanza(proxy_id, entry)
             else:
                 _logger.error("Unknown operation {} in stanza entry: {}".format(
                     entry.operation, json.dumps(entry, indent=4)))
@@ -129,16 +162,16 @@ class WEB_Configurator(object):
                 _add_junction(proxy.name, jct)
 
         if proxy.aac_configuration != None:
-            _configure_aac(proxy.name, proxy.aac_configuration)
+            self._configure_aac(proxy.name, proxy.aac_configuration)
 
         if proxy.mmfa_configuration != None:
-            _configure_mmfa(proxy.name, proxy.mmfa_configuration)
+            self._configure_mmfa(proxy.name, proxy.mmfa_configuration)
 
         if proxy.federation_configuration != None:
-            _configure_federations(proxy.name, proxy.federation_configuration)
+            self._configure_federations(proxy.name, proxy.federation_configuration)
 
         if proxy.stanza_configuration != None:
-            _update_stanza(proxy.name, proxy.stanza_configuration)
+            self._configure_stanza(proxy.name, proxy.stanza_configuration)
 
         deploy_pending_changes()
         rsp = WEB.reverse_proxy.restart_instance(proxy.name)
@@ -195,39 +228,112 @@ class WEB_Configurator(object):
 
 
     def _pdadmin_acl(self, runtime, acl):
-        #TODO
+        pdadminCommands = ["acl create {}".format(acl.name)]
+        if acl.description:
+            pdadminCommands += ["acl modify {} set desription {}".format(acl.name, acl.description)]
+        if acl.attributes:
+            for attribute in acl.attributes:
+                pdadminCommands += ["acl modify {} set attribute {} {}".format(acl.name, attribute.name, 
+                    attribute.value)]
+        if acl.users:
+            for user in acl.users:
+                pdadminCommands += ["acl modify {} set user {} {}".format(acl.name, user.name, user.permissions)]
+
+        if acl.groups:
+            for group in acl.groups:
+                pdadminCommands += ["acl modify {} set group {} {}".format(acl.name, user.name, user.permissions)]
+
+        if acl.any_other:
+            pdadminCommands += ["acl modify {} set any-other {}".format(acl.name, acl.any_other)]
+
+        if acl.unauthenticated:
+            pdadmiNCommands += ["acl modify {} set unauthenticated {}".format(acl.name, acl.unauthenticated)]
+
+        rsp = WEB.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
+        if rsp.success == True:
+            _logger.info("Successfullt created acl {}".format(acl.name))
+        else:
+            _logger.error("Failed to create acl {} with config:\n{}\n{}".format(acl.name, json.dumps(acl, indent=4),
+                rsp.content))
 
     def _pdadmin_pop(self, runtime, pop):
-        #TODO
+        pdadminCommnads = ["pop create {}".format(pop.name)]
+        if pop.description:
+            pdadminCommands += ["pop modify {} set desription {}".format(pop.name, pop.description)]
 
-    def _pdadmin_proxy(self, runtime, proxy_config):
-        #TODO
+        if pop.attributes:
+            for attribute in pop.attributes:
+                pdadminCommands += ["pop modify {} set attribute {} {}".format(pop.name, attrbute.name, 
+                    attribute.value)]
+
+        if pop.tod_access:
+            pdadminCommands += ["pop modify {} set tod-access {}".format(pop.name, pop.tod_access)]
+
+        if pop.audit_level:
+            pdadminCommands += ["pop modify {} set audit-level {}".format(pop.name, pop.audit_level)]
+
+        if pop.ip_auth:
+            if pop.ip_auth.any_other_network:
+                pdadminCommands += ["pop modify {} set ipauth anyothernw {}".format(pop.name, 
+                    pop.ip_auth.any_other_network)]
+            if pop.ip_auth.networks:
+                for network in pop.ip_auth.networks:
+                    pdadminCommands += ["pop modify {} set ipauth {} {}".format(pop.name, network.network, 
+                        network.netmask, network.auth_level)]
+
+        rsp = WEB.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
+        if rsp.success == True:
+            _logger.info("Successfullt created pop {}".format(pop.name))
+        else:
+            _logger.error("Failed to create pop {} with config:\n{}\n{}".format(pop.name, json.dumps(pop, indent=4),
+                rsp.content))
+
+    def _pdadmin_proxy(self, runtime, reverse_proxy_host, proxy_config):
+        pdadminCommands = []
+        if proxy_config.acls:
+            for acl in proxy_config.acls:
+                for junction in acl.junctions:
+                    pdadminCommands += ["acl attach /{}/{} {}".format(proxy_config.host, junction, acl.name)]
+
+        if proxy_config.pops:
+            for pop in proxy_config.pops:
+                for junction in pop.junctions:
+                    pdadminCommands += ["pop attach /{}/{} {}".format(proxy_config.host, junction, pop.name)]
+
+        rsp = WEB.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
+        if rsp.success == True:
+            _logger.info("Successfullt attached acls/pops to {}".format(proxy_config.host))
+        else:
+            _logger.error("Failed to attach acls/pops to {} with config:\n{}\n{}".format(proxy_config.host,
+                json.dumps(proxy_config, indent=4),
+                rsp.content))
 
     def _pdadmin_user(self, runtime, user):
         firstName = user.first_name if user.first_name else user.name
         lastName = user.last_name if user.last_name else user.name
-        dc = ""
-        if isinstance(user.dc, list):
-            for i, e in enumerate(user.dc):
-                dc += "dc=" + e
-                if i != len(user.dc) - 1:
-                    dc += ","
-        else:
-            dc = "dc=" + user.dc
-        print(dc)
         pdadminCommands = [
-                "user create {} cn={},{} {} {} {}".format(
-                    user.name, user.cn, dc, firstName, lastName, user.password),
+                "user create {} {} {} {} {}".format(
+                    user.name, user.dn, firstName, lastName, user.password),
                 "user modify {} account-valid yes".format(user.name)
             ]
         rsp = WEB.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
         if rsp.success == True:
             _logger.info("Successfullt created user {}".format(user.name))
         else:
-            _logger.error("Failed to create user {} with config:\n{}".format(user.name, json.dumps(user, indent=4)))
+            _logger.error("Failed to create user {} with config:\n{}\n{}".format(user.name, json.dumps(user, indent=4),
+                rsp.content))
 
     def _pdadmin_groups(self, runtime, group):
-        #TODO
+        pdadminCommands = ["group create {} {} {}".format(group.name, group.dn, group.description)]
+        if group.users:
+            for user in group.users:
+                pdadminCommands += ["group modify {} add user {}".format(group.name, user)]
+        rsp = WEB.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
+        if rsp.success == True:
+            _logger.info("Successfullt created group {}".format(group.name))
+        else:
+            _logger.error("Failed to create group {} with config:\n{}\n{}".format(group.name, 
+                json.dumps(group, indent=4), rsp.content))
 
     def _pdadmin(self, runtime, config):
         if config.acls != None:

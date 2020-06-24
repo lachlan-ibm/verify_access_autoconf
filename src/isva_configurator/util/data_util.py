@@ -58,3 +58,32 @@ class CustomLoader(yaml.SafeLoader):
         filename = os.path.join(self._root, self.construct_scalar(node))
         with open(filename, 'r') as f:
             return yaml.load(f, CustomLoader)
+
+class FileLoader():
+
+    def __init__(self, config_base_dir):
+        self.config_base = config_base_dir
+
+    def read_files(self, paths):
+        result = []
+        for path in path:
+            result += self.read_file(path)
+        return result
+
+    def read_file(self, path):
+        contents = []
+        if not os.path.isabs(path):
+            path = self.config_base + path
+        if os.path.isdir(path):
+            for file_pointer in os.listdir(path):
+                contents += [self.read_file(path + file_pointer)]
+        else:
+            with open(path, 'rb') as _file:
+                contents = _file.read()
+                result = {"name": os.path.basename(path), "contents": contents, "path": path}
+                try:
+                    result['text'] = contents.decode()
+                except Exception:
+                    result['text'] = 'undefined'
+                contents += [result]
+        return contents 
