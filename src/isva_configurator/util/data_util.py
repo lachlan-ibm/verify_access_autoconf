@@ -63,6 +63,8 @@ class FileLoader():
 
     def __init__(self, config_base_dir):
         self.config_base = config_base_dir
+        if config_base_dir.endswith('/') == False:
+            self.config_base_dir += '/'
 
     def read_files(self, paths, include_directories=False):
         result = []
@@ -76,13 +78,16 @@ class FileLoader():
             path = self.config_base + path
         if os.path.isdir(path):
             if include_directories == True:
-                contents += [{"name": os.path.basename(path), "path": path, "type": "dir"}]
+                contents += [{"name": os.path.basename(path), "path": path, "type": "dir", 
+                    "directory": os.path.dirname(path).replace(self.config_base_dir), ''}]
             for file_pointer in os.listdir(path):
                 contents += [self.read_file(path + file_pointer)]
         else:
             with open(path, 'rb') as _file:
                 contents = _file.read()
-                result = {"name": os.path.basename(path), "contents": contents, "path": path, "type": "file"}
+                result = {"name": os.path.basename(path), "contents": contents, "path": path, "type": "file",
+                        "directory": os.path.dirname(path),
+                        "directory": os.path.dirname(path).replace(self.config_base_dir), '')}
                 try:
                     result['text'] = contents.decode()
                 except Exception:

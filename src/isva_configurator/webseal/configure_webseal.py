@@ -80,7 +80,29 @@ class WEB_Configurator(object):
 
 
     def _configure_mmfa(self, proxy_id, mmfa_config):
-        rsp = WEB.reverse_proxy.configure_mmfa(proxy_id, **mmfa_config)
+        methodArgs = {
+                "reuse_acls": mmfa_config.reuse_acls,
+                "reuse_pops": mmfa_config.reuse_pops,
+                "reuse_certs": mmfa_config.reuse_certs,
+                "channel": mmfa_config.channel
+            }
+        if mmfa_config.lmi:
+            lmi = mmfa_config.lmi
+            methodArgs.update({
+                    "lmi_hostname": lmi.hostname,
+                    "lmi_port": lmi.port,
+                    "lmi_username": lmi.username,
+                    "lmi_password": lmi.password
+                })
+        if mmfa_config.runtime:
+            runtime = mmfa_config.runtime
+            methodArgs.update({
+                    "runtime_hostname": runtime.hostname,
+                    "runtime_port": runtime.port,
+                    "runtime_username": runtime.username,
+                    "runtime_password": runtime.password
+                })
+        rsp = WEB.reverse_proxy.configure_mmfa(proxy_id, **methodArgs)
         if rsp.success == True:
             _logger.info("Successfully ran MMFA configuration wizard on {} proxy instance".format(proxy_id))
         else:
@@ -288,7 +310,7 @@ class WEB_Configurator(object):
             _logger.error("Failed to create pop {} with config:\n{}\n{}".format(pop.name, json.dumps(pop, indent=4),
                 rsp.content))
 
-    def _pdadmin_proxy(self, runtime, reverse_proxy_host, proxy_config):
+    def _pdadmin_proxy(self, runtime, proxy_config):
         pdadminCommands = []
         if proxy_config.acls:
             for acl in proxy_config.acls:
@@ -642,7 +664,7 @@ class WEB_Configurator(object):
             _http_transform(websealConfig.http_transform)
 
         if websealConfig.kerberos != None:
-            _kerberos(websealCOnfig.kerberos)
+            _kerberos(websealConfig.kerberos)
 
         if websealConfig.password_strength != None:
             _password_strength(websealConfig.password_strength)
@@ -655,14 +677,15 @@ class WEB_Configurator(object):
             if websealConfig.reverse_proxy != None:
                 for proxy in websealConfig.reverse_proxy:
                     _wrp(runtime, proxy)
-            
+
+            if websealConfig.api_access_control != None:
+                _api_access_control(websealConfig.api_access_control)
+
             if websealConfig.pdadmin != None:
                 _pdadmin(runtime, websealConfig.pdadmin)
+
         else:
             _logger.info("No runtime configuration detected, unable to set up any reverse proxy config or run pdadmin commands")
-
-        if websealConfig.api_access_control != None:
-            _api_access_control(websealConfig.api_access_control)
 
 
 if __name__ == "__main__":

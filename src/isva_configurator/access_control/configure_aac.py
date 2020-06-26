@@ -10,11 +10,14 @@ _logger = logging.getLogger(__name__)
 
 class AAC_Configurator(object):
 
+    def push_notifications(self, config):
+        #TODO
+
     def _cba_obligation(self, obligation):
-        pass
+        #TODO
 
     def _cba_attribute(self, attribute):
-        pass
+        #TODO
 
     def _cba_resource(self, resource):
         methodArgs = {
@@ -86,6 +89,7 @@ class AAC_Configurator(object):
 
 
     def scim_configuration(self, aac_config):
+        #TODO
         if aac_config.scim != None:
             for schema in aac_config.scim:
                 rsp = AAC.scim_config.get_schema(schema.uri)
@@ -195,53 +199,38 @@ class AAC_Configurator(object):
                             connection.name, connection))
 
 
-    def upload_template_files(self, base='.', _file=None):
-        if os.path.isdir(base + '/' + _file):
-            rsp = AAC.template_files.create_directory(base, isam_path)
-            if rsp.success == True:
-                _logger.info("Successfully created directory {}/{}".format(base, _file))
+    def upload_template_files(self, template_files):
+        for file_pointer in template_files:
+            rsp = None
+            if file_pointer.get("type") == "file":
+                rsp = AAC.template_files.create_file(file_pointer['directory'], file_name=file_pointer['name'],
+                        contents=file_pointer['contents'])
             else:
-                _logger.error("Failed to create directory {}/{}".format(base, _file))
-                return
-            #recurse upload files
-            path = base + '/' + _file
-            for f in os.listdir(path):
-                upload_template_files(base=path, _file=f)
-
-        else:
-            contents = open(base + '/' + _file, 'rb').read()
-            rsp = AAC.template_files.create_file(base, _file, contents)
+                rsp = AAC.template_files.create_directory(file_pointer['directory'], dir_name=file_ponter['name'])
             if rsp.success == True:
-                _logger.info("Successfully created template file {}/{}".format(base, _file))
+                _logger.info("Successfully created template file {}".format(file_pointer['path']))
             else:
-                _logger.error("Failed to create tempalte file {}/{}".format(base, _file))
+                _logger.error("Failed to create tempalte file {}".format(file_pointer['path']))
 
-
-    def upload_mapping_rules(self, base='.', _file=None):
-        path = base + '/' + _file
-        if os.path.isdir(path):
-            for f in os.listdir(path):
-                upload_mapping_rules(base=path, _file=f)
-        else:
-            payload = json.load(path)
-            AAC.mapping_rule.create_rule(**payload)
-
+    def upload_mapping_rules(self, _type, maping_rules):
+        for mapping_rule in mapping_rules:
+            rsp = AAC.mapping_rule.create_rule(file_name=mapping_rule["path"], rule_name=mapping_rule['name'],
+                    category=_type, content=mapping_rule['contents'])
+            if rsp.success == True:
+                _logger.info("Successfully uploaded {} mapping rule".foramt(mapping_rule['name']))
+            else:
+                _logger.error("Failed to upload {} mapping rule".format(mapping_rule['name']))
 
     def upload_files(self, config):
-        cwd = os.getcwd()
         if config.template_files != None:
             for entry in config.template_files:
-                os.chdir(CONFIG_BASE_DIR + '/' + entry)
-                for f in os.listdir('.'):
-                    upload_template_files(_file=f)
-
+                parsed_files = FILE_LOADER.read_files(entry, include_directories=True)
+                self.upload_template_files(parsed_files)
         if config.mapping_rules != None:
             for entry in config.mapping_rules:
-                os.chdir(CONFIG_BASE_DIR + '/' + entry)
-                for f in os.listdir('.'):
-                    upload_mapping_rules(_file=f)
-
-        os.chdir(cwd)
+                for file_pointer in entry.files:
+                    parsed_files = FILE_LOADER.read_files(file_pointer)
+                self.upload_mapping_rules(entry.type, parsed_files)
 
 
     def attributes_configuration(self, aac_config):
@@ -257,40 +246,69 @@ class AAC_Configurator(object):
                     _logger.error("Failed to create attribute [{}] with config:\n{}\n{}".format(
                         attr.name, json.dumps(attr, indent=4), rsp.data))
 
+    def _configure_api_protection_definition(self, defintion):
+        rsp = AAC.api_protection.create_definition(name=definition.name, description=definition.description, 
+                token_char_set=definition.access_token_char_set, access_token_lifetime=definition.access_token_lifetime,
+                access_token_length=defintion.token_length, authorization_code_lifetime=definition.authorizaton_code_lifetime,
+                authorization_code_length=definition.authorization_code_length, refresher_token_length=definition.refresh_token_length,
+                max_authorization_grant_lifetime=definition.max_authorization_grant_lifetime, pin_length=definition.pin_length,
+                enforce_single_use_authorization_grant=definition.enforce_single_use_grant, issue_refresh_token=definition.issue_refresh_token, 
+                enforce_single_access_token_per_grant=definition.single_token_per_grant, enable_multiple_refresh_tokens_for_fault_tolerance=defintion.multiple_refresh_tokens,
+                pin_policy_enabled=definition.pin_policy, grant_types=definition.grant_types, oidc=definition.oidc)
+        if rsp.success == True:
+            _logger.info("Successfully created {} API Protection definition".format(definition.name))
+        else:
+            _logger.error("Failed to create {} API Protection definition with config:\n{}\n{}".format(
+                definition.name, json.dumps(definition, indent=4), rsp.data))
+        if definition.pre_token_mapping_rule:
+            mapping_rule = FILE_LOADER.read_file(definition.pre_token_mapping_rule)
+            if len(mapping_rule) != 1:
+                _logger.error("Can only specify one Pre-Token Mapping Rule")
+            else:
+                mapping_rule = mapping_rule[0]
+                rsp = AAC.api_protection.create_mapping_rule(name=definition.name + "PreTokenGeneration",
+                        category="OAUTH", file_name=mapping_rule["name"], content=mapping_rule['contents'])
+                if rsp.success == True:
+                    _logger.info("Successfully uploaded {} Pre-Token Mapping Rule".foramt(definition.name))
+                else:
+                    _logger.error("Failed to upload {} Pre-Token Mapping Rule".format(defintion.name))
+        if definition.post_token_mapping_rule:
+            mapping_rule = FILE_LOADER.read_file(definition.post_token_mapping_rule)
+            if len(mapping_rule) != 1:
+                _logger.error("Can only specify one Post-Token Mapping Rule")
+            else:
+                mapping_rule = mapping_rule[0]
+                rsp = AAC.api_protection.import_mapping_rule(name=definition.name + "PostTokenGeneration",
+                        categore="OAUTH", file_name=mapping_rule['name'], content=mapping_rule['contents'])
+                if rsp.success == True:
+                    _logger.info("Successfully created {} Post-Token Mapping Rule".format(definition.name))
+                else:
+                    _logger.error("Failed to create {} Post-Token Mapping Rule".format(definition.name))
+
+    def _configure_api_protection_client(self, definitions, client):
+        for definition in definitions:
+            if definition['name'] == client.api_definition:
+                client.api_definition = definition['id']
+                break
+        rsp = AAC.api_protection.create_client(name=client.name, redirect_uri=client.redirect_uri,
+                company_name=client.company_name, company_url=client.company_url, contact_person=client.contact_person,
+                contact_type=client.contact_type, email=client.email, phone=client.phone, other_info=client.other_info,
+                definition=client.api_defintition, client_id=client.client_id, client_secret=client.client_secret)
+        if rsp.success == True:
+            _logger.info("Successfully created {} API Protection client.".format(client.name))
+        else:
+            _logger.error("Failed to create {} API Protection client with config:\n{}\n{}".format(
+                client.name, json.dumps(client, indent=4), rsp.data))
 
     def api_protection_configuration(self, aac_config):
         if aac_config.api_protection != None and aac_config.api_protection.definitions != None:
             for definition in aac_config.api_protection.definitions:
-                rsp = AAC.api_protection.create_definition(name=definition.name, description=definition.description, 
-                        token_char_set=definition.token_char_set, access_token_lifetime=definition.token_lifetime,
-                        access_token_length=defintion.token_length, authorization_code_lifetime=definition.authorizaton_code_lifetime,
-                        authorization_code_length=definition.authorization_code_length, refresher_token_length=definition.refresh_token_length,
-                        max_authorization_grant_lifetime=definition.max_authorization_grant_lifetime, pin_length=definition.pin_length,
-                        enforce_single_use_authorization_grant=definition.enforce_single_use_grant, issue_refresh_token=definition.issue_refresh_token, 
-                        enforce_single_access_token_per_grant=definition.single_token_per_grant, enable_multiple_refresh_tokens_for_fault_tolerance=defintion.multiple_refresh_tokens,
-                        pin_policy_enabled=definition.pin_policy, grant_types=definition.grant_types, oidc=definition.oidc)
-                if rsp.success == True:
-                    _logger.info("Successfully created {} API Protection definition".format(definition.name))
-                else:
-                    _logger.error("Failed to create {} API Protection definition with config:\n{}\n{}".format(
-                        definition.name, json.dumps(definition, indent=4), rsp.data))
+                self._configure_api_protection_definition(definition)
 
             if aac_config.api_protection.clients != None:
                 definitions = AAC.api_protection.list_definitions()
                 for client in aac_config.api_protection.clients:
-                    for definition in definitions:
-                        if definition['name'] == client.api_definition:
-                            client.api_definition = definition['id']
-                            break
-                    rsp = AAC.api_protection.create_client(name=client.name, redirect_uri=client.redirect_uri,
-                            company_name=client.company_name, company_url=client.company_url, contact_person=client.contact_person,
-                            contact_type=client.contact_type, email=client.email, phone=client.phone, other_info=client.other_info,
-                            definition=client.api_defintition, client_id=client.client_id, client_secret=client.client_secret)
-                    if rsp.success == True:
-                        _logger.info("Successfully created {} API Protection client.".format(client.name))
-                    else:
-                        _logger.error("Failed to create {} API Protection client with config:\n{}\n{}".format(
-                            client.name, json.dumps(client, indent=4), rsp.data))
+                    self._configure_api_protection_client(definitions, client)
 
 
     def _configure_mechanism(self, mechanism):
@@ -326,6 +344,23 @@ class AAC_Configurator(object):
             _logger.error("Failed to set configuration for {} mechanism with:\n{}\n{}".format(
                 mechanism.name, json.dumps(mechanism, indent=4), rsp.data))
 
+    def _confiugre_policy(self, existing_policies, policy):
+        #configure policy
+        rsp = None
+        old_policy = list(filter(lambda p: p['uri'] == policy.uri, existing_policies))
+        if old_policy:
+            old_policy = old_policy[0]
+            rsp = AAC.authentication.update_policy(old_policy['id'], name=policy.name, policy=policy.policy, uri=policy.uri,
+                    description=policy.description, predefined=old_policy['predefined'], enabled=policy.enabled)
+        else:
+            rsp = AAC.authentication.create_policy(name=policy.name, policy=policy.policy, uri=policy.uri, description=policy.description,
+                    enabled=policy.enabled)
+        if rsp.success == True:
+            _logger.info("Successfully set configuration for {} policy".format(policy.name))
+        else:
+            _logger.error("Failed to set configuration for {} policy with:\n{}\n{}".format(
+                policy.name, json.dumps(policy, indent=4), rsp.data))
+
     def authentication_configuration(self, aac_config):
         if aac_config.authentication != None:
             if aac_config.authentication.mechanisms != None:
@@ -334,31 +369,16 @@ class AAC_Configurator(object):
             if aac_config.authentication.policies != None:
                 existing_policies = AAC.authentication.list_policies()
                 for policy in aac_config.authentication.policies:
-                    #configure policy
-                    rsp = None
-                    old_policy = list(filter(lambda p: p['uri'] == policy.uri, existing_policies))
-                    if old_policy:
-                        old_policy = old_policy[0]
-                        rsp = AAC.authentication.update_policy(old_policy['id'], name=policy.name, policy=policy.policy, uri=policy.uri,
-                                description=policy.description, predefined=old_policy['predefined'], enabled=policy.enabled)
-                    else:
-                        rsp = AAC.authentication.create_policy(name=policy.name, policy=policy.policy, uri=policy.uri, description=policy.description,
-                                enabled=policy.enabled)
-                    if rsp.success == True:
-                        _logger.info("Successfully set configuration for {} policy".format(policy.name))
-                    else:
-                        _logger.error("Failed to set configuration for {} policy with:\n{}\n{}".format(
-                            policy.name, json.dumps(policy, indent=4), rsp.data))
-
+                    self._configure_policy(existing_policies, policy)
 
     def mmfa_configuration(self, aac_config):
-        if aac_config.mmfa != None and aac_config.api_protection != None and aac_config.api_protection.clients != None:
+        if aac_config.api_protection != None and aac_config.api_protection.clients != None:
             api_clients = AAC.api_protection.list_clients()
             for client in api_clietns:
                 if client.name == aac_config.mmfa.client_id:
                     aac_config.mmfa.client_id = client.name
                     break
-
+        if aac_config.mmfa != None:
             rsp = AAC.mmfaconfig.update(**aac_config.mmfa)
             if rsp.success == True:
                 _logger.info("Successfully updated MMFA configuration")
@@ -368,13 +388,68 @@ class AAC_Configurator(object):
 
 
     def _upload_metadata(self, metadata)
-        pass
+        metadata_list = FILE_LOADER.read_files(metadata)
+        for metadata_file in metadata_list:
+            rsp = AAC.fido2_config.create_metadata(filename=metadata_list['path'])
+            if rsp.success == True:
+                _logger.info("Successfully created {} FIDO metadata".foramt(metadata_file['name']))
+            else:
+                _logger.error("Failed to create {} FIDO metadata".format(metadata_file["name"]))
 
     def _upload_mediator(self, mediator):
-        pass
+        mediator_list = FILE_LOADER.read_files(mediator)
+        for mediator_rule in mediator_list:
+            rsp = AAC.fido2_config.create_mediator(name=mediator_rule['name'], filename=mediator_rule['path'])
+            if rsp.success == True:
+                _logger.info("Successfully created {} FIDO2 Mediator".format(mediator_rule['name']))
+            else:
+                _logger.error("Failed to create {} FIDO2 Mediator".format(mediator_rule['name']))
 
     def _create_relying_party(self, rp):
-        pass
+        if rp.metadata:
+            metadata_list = AAC.fido2_config.list_metadata().json()
+            for pos, metadata in enumerate(rp.metadata):
+                for uploaded_metadata in metadata_list:
+                    if uploaded_metadata['filename'] == metadata:
+                        rp.metadata[pos] = uploaded_metadata['id']
+                        break
+        if rp.use_all_metadata:
+            metadata_list = AAC.fido2_config.list_metadata().json()
+            for uploaded_metadata in metadata_list:
+                rp.metadata += [uploaded_metadata['id']]
+
+        if rp.mediator:
+            medaitor_list = AAC.fido2_config.list_mediator().json()
+            for mediator in mediator_list:
+                if mediator['fileName'] == rp.mediator:
+                    rp.mediator = mediator['id']
+                    break
+        methodArgs = {
+                "name": rp.name,
+                "rp_id": rp.rp_id,
+                "origins": rp.origins,
+                "metadata_set": rp.metadata,
+                "metadata_soft_fail", rp.metadata_soft_fail,
+                "mediator_mapping_rule_id": rp.mediator,
+                "relying_party_impersonation_group": rp.impersonation_group
+            }
+        if rp.attestation:
+            methodArgs.update({
+                "attestation_statement_types": rp.attestation.statement_types,
+                "attestation_statement_formats": rp.attestation.statement_formats,
+                "attestation_public_key_algorithms": rp.attestation.public_key_algorithms
+            })
+            if rp.android:
+                methodArgs.update({
+                        "attestation_android_safetynet_max_age", rp.attestation.android.safetynet_max_age,
+                        "attestation_android_safetynet_clock_skew": rp.attestation.android.safetynet_clock_skew
+                    })
+        rsp = AAC.fido2_config.create_relying_party(**methodArgs)
+        if rsp.success == True:
+            _logger.info("Successfully created {} FIDO2 Relying Party".format(rp.name))
+        else:
+            _logger.error("Failed to create {} FIDO2 Relying Party with configuration:\n{}\n{}".format(rp.name,
+                json.dumps(rp, indent=4), rsp.content))
 
     def fido2_configuration(self, aac_config):
         if aac_config.fido2 != None:
@@ -397,6 +472,7 @@ class AAC_Configurator(object):
             return
 
         upload_files(config)
+        push_notifications(config)
         server_connections(config)
         fido2_configuration(config)
         api_protection_configuration(config)

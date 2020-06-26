@@ -145,6 +145,8 @@ class ISVA_Configurator(object):
                         personal_parsed_files = FILE_LOADER.read_files(fp)
                         for parsed_file in personal_parsed_files:
                             _import_personal_certs(database.name, base_dir, parsed_file)
+                if database.load_certificates:
+                    #TODO
         deploy_pending_changes()
 
 

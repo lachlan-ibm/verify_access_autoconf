@@ -24,11 +24,10 @@ class FED_Configurator(object):
 
 
     def configure_alias_service(self, federation_config):
-        return
-
+        #TODO
 
     def configure_access_policy(self, federation_config):
-        return
+        #TODO
 
 
     def _configure_saml_partner(self, fedId, partner):
