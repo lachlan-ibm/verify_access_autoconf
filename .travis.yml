@@ -19,4 +19,4 @@ jobs:
         - ./deploy.sh
       python:
         - "3.7"
-      if: branch = master
+      if: branch = development
