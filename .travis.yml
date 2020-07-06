@@ -1,20 +1,24 @@
 dist: xenial
 language: python
-python:
-  - "3.5"
-  - "3.6"
-  - "3.7"
-  - "3.8-dev"
 
 stages:
   - test
   - deploy
 
+script:
+  - sh ./.tests/import_test.sh
+
 jobs:
   include:
     - stage: test
       script: 
-        - ./.tests/import_test.sh
+        - sh ./.tests/import_test.sh
+        - sh ./.tests/unit_test.sh
+      python:
+        - "3.5"
+        - "3.6"
+        - "3.7"
+        - "3.8-dev"
 
     - stage: deploy
       script: 
