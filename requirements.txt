@@ -4,3 +4,4 @@ kubernetes
 docker-compose
 wheel
 setuptools
+twine
