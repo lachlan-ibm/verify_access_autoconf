@@ -83,6 +83,12 @@ webseal:
         - stanza: "ba"
           key: "ba-auth"
           value: "both"
+        - stanza: "rsp-header-names"
+          key: "X-XSS-Protection"
+          value: "0"
+        - stanza: "rsp-header-names"
+          key: "X-Content-Type-Options"
+          value: "nosniff"
   users:
     - name: "testuser"
       first_name: "Test"
