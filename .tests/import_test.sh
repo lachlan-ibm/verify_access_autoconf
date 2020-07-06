@@ -5,7 +5,7 @@
 export HOME=$( realpath . )
 python setup.py sdist bdist_wheel
 
-pip install dist/*.whl
+pip install `ls $HOME/dist/*.whl`
 
 cd "`basename $0`"
 
