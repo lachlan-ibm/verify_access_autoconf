@@ -6,17 +6,19 @@ python:
   - "3.7"
   - "3.8-dev"
 
-script: 
-  - ./test.sh
-
 stages:
+  - test
   - deploy
 
 jobs:
   include:
+    - stage: test
+      script: 
+        - ./.tests/import_test.sh
+
     - stage: deploy
       script: 
-        - ./deploy.sh
+        - ./.deploy.sh
       python:
         - "3.7"
       if: branch = development
