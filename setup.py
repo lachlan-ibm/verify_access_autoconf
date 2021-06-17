@@ -21,7 +21,7 @@ class CleanCommand(Command):
                     os.system('rm -vrf {}'.format(os.path.join(root, name)))
 
 setup(
-    name='verify-access-configurator',
+    name='verify_access_configurator',
     version='0.1.%s' % os.environ.get('TRAVIS_BUILD_NUMBER', 0),
     description='YAML based configuration automation for IBM Security Verify Access',
     author='Lachlan Gleeson',
