@@ -1,3 +1,0 @@
-[submodule "pyisam"]
-	path = pyisam
-	url = git@github.ibm.com:ibm-security/pyisam.git

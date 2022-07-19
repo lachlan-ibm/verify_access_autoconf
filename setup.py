@@ -32,7 +32,7 @@ setup(
     install_requires=[
         'requests>=2.23.0'
         'PyYAML>=5.3',
-        'pyisam',
+        'pyisva>=0.1',
         'kubernetes>=10.0.1',
         'docker-compose>=1.25.4'
     ],

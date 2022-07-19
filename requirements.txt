@@ -1,6 +1,7 @@
 pyyaml
 requests
 kubernetes
+pyisva
 wheel
 setuptools
 twine

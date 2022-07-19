@@ -4,16 +4,18 @@ import os
 import logging
 import json
 import requests
+import yaml
+import pyisva
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-from .appliance.configure_appliance import Appliance_Configurator as isva_appliance
-from .docker.configure_docker import Docker_Configurator as isva_docker
-from .access_control.configure_aac import AAC_Configurator as aac
-from .webseal.configure_webseal import WEAB_Configurator as web
-from .federation.configure_fed import FED_Configurator as fed
-from .util.constants import CONFIG, CREDS, OLD_CREDS, HEADERS, CONFIG_BASE_DIR, MGMT_BASE_URL, FILE_LOADER
-from .util import constants as const
-from .util.configure_util import deploy_pending_changes
+from .appliance.configure_appliance import Appliance_Configurator as APPLIANCE
+from .docker.configure_docker import Docker_Configurator as CONTAINER
+from .access_control.configure_aac import AAC_Configurator as AAC
+from .webseal.configure_webseal import WEAB_Configurator as WEB
+from .federation.configure_fed import FED_Configurator as FED
+from .util.data_util import Map
+from .util.configure_util import deploy_pending_changes, creds, old_creds, config_base_dir, mgmt_base_url
+from .util.constants import API_HEADERS, HEADERS
 
 _logger = logging.getLogger(__name__)
 
@@ -27,7 +29,7 @@ class ISVA_Configurator(object):
 
 
     def set_admin_password(self, old, new):
-        response = const.FACTORY.get_system_setting().sysaccount.update_admin_password(old_password=old(1), password=new(1)) 
+        response = self.factory.get_system_setting().sysaccount.update_admin_password(old_password=old(1), password=new(1)) 
         if response.success == True:
             _logger.info("Successfullt updated admin password")
         else:
@@ -36,7 +38,7 @@ class ISVA_Configurator(object):
 
     def accept_eula(self, creds):
         payload = {"accepted": True}
-        rsp = const.FACTORY.get_system_setting().first_steps.set_sla_status()
+        rsp = self.factory.get_system_setting().first_steps.set_sla_status()
         if rspsuccess == True:
             _logger.info("Accepted SLA")
         else:
@@ -44,7 +46,7 @@ class ISVA_Configurator(object):
 
 
     def complete_setup(self, creds):
-        rsp = const.FACTORY.get_system_setting().first_steps.set_setup_complete()
+        rsp = self.factory.get_system_setting().first_steps.set_setup_complete()
         assert rsp.status_code == 200, "Did not complete setup"
         deploy_pending_changes()
         _logger.info("Completed setup")
@@ -52,7 +54,7 @@ class ISVA_Configurator(object):
 
     def _apply_license(self, module, code):
         # Need to activate appliance
-        rsp = const.FACTORY.get_system_settings().licensing.activate_module(code)
+        rsp = self.factory.get_system_settings().licensing.activate_module(code)
         if rsp.success == True:
             _logger.info("Successfully applied {} licence".format(module))
         else:
@@ -83,7 +85,7 @@ class ISVA_Configurator(object):
         self._apply_license("federation", code)
 
     def activate_appliance(self):
-        system = const.FACTORY.get_system_settings()
+        system = self.factory.get_system_settings()
         activations = system.licensing.get_activated_modules().json
         if not any(module.get('id', None) == 'wga' and module.get('enabled', "False") == "True" for module in activations):
             _activateBaseAppliance()
@@ -96,7 +98,7 @@ class ISVA_Configurator(object):
 
 
     def _import_signer_certs(self, database, parsed_file):
-        ssl = const.FACTORY.get_system_settings().ssl_certificates
+        ssl = self.factory.get_system_settings().ssl_certificates
         rsp = ssl.import_signer(database, os.path.abspath(base + filePointer), label=filePointer)
         if rsp.success == True:
             _logger.info("Successfully uploaded {} signer certificate to {}".format(
@@ -105,8 +107,20 @@ class ISVA_Configurator(object):
             _logger.error("Failed to upload {} signer certificate to {} database\n{}".format(
                 filePointer, database, rsp.data))
 
+
+    def _load_signer_certificates(self, database, server, port label):
+        ssl = self.factory.get_system_settings().ssl_certificates
+        rsp = ssl.load_signer(database, server, port, label)
+        if rsp.success == True:
+            _logger.info("Successfully loaded {} signer certificate to {}".format(
+                str(server) + ":" + str(port), database))
+        else:
+            _logger.error("Failed to load {} signer certificate to {}/n{}".format(
+                str(server) + ":" + str(port), database, rsp.data))
+
+
     def _import_personal_certs(self, database, parsed_file):
-        ssl = const.FACTORY.get_system_settings().ssl_certificates
+        ssl = self.factory.get_system_settings().ssl_certificates
         rsp = ssl.import_personal(database, os.path.abspath(parsed_file['path']))
         if rsp.success == True:
             _logger.info("Successfully uploaded {} personal certificate to {}".format(
@@ -121,7 +135,7 @@ class ISVA_Configurator(object):
             ssl_config = CONFIG.appliance.ssl_certificates
         elif CONFIG.docker:
             ssl_config = CONFIG.docker.ssl_certificates
-        ssl = const.FACTORY.get_system_settings().ssl_certificates
+        ssl = self.factory.get_system_settings().ssl_certificates
         if ssl_config:
             old_databases = [d['id'] for d in ssl.list_databases().json]
             print(old_databases)
@@ -146,13 +160,14 @@ class ISVA_Configurator(object):
                         for parsed_file in personal_parsed_files:
                             _import_personal_certs(database.name, base_dir, parsed_file)
                 if database.load_certificates:
-                    #TODO
+                    for item in database.load_certificates:
+                        _load_signer_cert(database.name, item.server, item.port, item.label)
         deploy_pending_changes()
 
 
     def admin_config(self, config):
         if config.admin_config != None:
-            rsp = const.FACTORY.get_system_settings().admin_settings.update(**config.admin_config)
+            rsp = self.factory.get_system_settings().admin_settings.update(**config.admin_config)
             ir rsp.success == True:
                 _logger.info("Successfullt set admin config")
             else:
@@ -164,11 +179,11 @@ class ISVA_Configurator(object):
         for user in users:
             rsp = None
             if user.operation == "add":
-                rsp = const.FACTORY.get_system_settings().sysaccount.create_user(
+                rsp = self.factory.get_system_settings().sysaccount.create_user(
                         user=user.name, password=user.password, groups=user.groups)
             elif opration == "update":
                 if user.password != None:
-                    rsp = const.FACTORY.get_system_settings().sysaccount.update_user(
+                    rsp = self.factory.get_system_settings().sysaccount.update_user(
                             user.name, password=user.password)
                     if rsp.success == True:
                         _logger.info("Successfully update passsword for {}".format(user.name))
@@ -177,7 +192,7 @@ class ISVA_Configurator(object):
                             user.name, rsp.data))
                 if user.groups != None:
                     for g in user.groups:
-                        rsp = const.FACTORY.get_system_settings().sysaccount.add_user(
+                        rsp = self.factory.get_system_settings().sysaccount.add_user(
                                 group=g, user=user.name)
                         if rsp.success == True:
                             _logger.info("Successfully added {} to {} group".format(
@@ -186,7 +201,7 @@ class ISVA_Configurator(object):
                             _logger.error("Failed to add {} to {} group:\n{}".format(
                                 user.name, g, rsp.data))
             elif operation == "delete":
-                rsp = const.FACTORY.get_system_settings().sysaccount.delete_user(user.name)
+                rsp = self.factory.get_system_settings().sysaccount.delete_user(user.name)
                 if rsp.success == True:
                     _logger.info("Successfully removed user {}".format(user.name))
                 else:
@@ -197,9 +212,9 @@ class ISVA_Configurator(object):
         for group in config.account_management.groups:
             rsp = None
             if group.operation == "add":
-                rsp = const.FACTORY.get_system_setting().sysaccount.create_group(group.id)
+                rsp = self.factory.get_system_setting().sysaccount.create_group(group.id)
             elif group.operation == "delete":
-                rsp = const.FACTORY.get_system_setting().sysaccount.delete_group(group.id)
+                rsp = self.factory.get_system_setting().sysaccount.delete_group(group.id)
             else:
                 _logger.error("oepration {} is not permited for groups".format(group.operation))
                 continue
@@ -218,14 +233,14 @@ class ISVA_Configurator(object):
 
     def _add_auth_role(self, role):
         if role.operation == "delete":
-            rsp = const.FACTORY.get_system_settings().manangemetauthorization.delete_role(role.name)
+            rsp = self.factory.get_system_settings().manangemetauthorization.delete_role(role.name)
             if rsp.success == True:
                 _logger.info("Successfully removed {} authorization role".format(role.name))
             else:
                 _logger.error("Failed to remove {} authroization role:\n{}".format(
                     role.name, rsp.data))
         elif role.operation in ["add", "update"]:
-            configured_roles = const.FACTORY.get_system_settings().managementauthorization.get_roles().json
+            configured_roles = self.factory.get_system_settings().managementauthorization.get_roles().json
             exists = False
             for r in configured_roles:
                 if r['name'] == role.name:
@@ -233,10 +248,10 @@ class ISVA_Configurator(object):
                     break
             rsp = None
             if exits == True:
-                rsp = const.FACTORY.get_system_settings().managementauthorization.update_role(
+                rsp = self.factory.get_system_settings().managementauthorization.update_role(
                         name=role.name, users=role.users, groups=role.groups, features=role.features)
             else:
-                rsp = const.FACTORY.get_system_settings().managementauthorization.create_role(
+                rsp = self.factory.get_system_settings().managementauthorization.create_role(
                         name=role.name, users=role.users, groups=role.groups, features=role.features)
             if rsp.success == True:
                 _logger.info("Successfully configured {} authprization role".format(role.name))
@@ -252,7 +267,7 @@ class ISVA_Configurator(object):
             for role in config.management_authorization.roles:
                 _add_auth_role(role)
             if config.management_authorization.authorization_enforcement:
-                rsp = const.FACTORY.get_system_settings().managementauthorization.enable(
+                rsp = self.factory.get_system_settings().managementauthorization.enable(
                         enforce=config.management_authorization.authorization_enforcement)
                 if rsp.success == True:
                     _logger.info("Successfully enabled role based authroization")
@@ -261,7 +276,7 @@ class ISVA_Configurator(object):
 
     def advanced_tuning_parameters(self, config):
         if config.advanced_tuning_parameters != None:
-            params = const.FACTORY.get_system-settings().advance_tining.list_params().json
+            params = self.factory.get_system-settings().advance_tining.list_params().json
             for atp in config.advanced_tuning_parameters:
                 if atp.operation == "delete":
                     uuid = None
@@ -269,7 +284,7 @@ class ISVA_Configurator(object):
                         if p['key'] == atp.name:
                             uuid = p['uuid']
                             break
-                    rsp = const.FACTORY.get_system_settings().advanced_tuning.delete_parameter(uuid=uuid)
+                    rsp = self.factory.get_system_settings().advanced_tuning.delete_parameter(uuid=uuid)
                     if rsp.success == True:
                         _logger.info("Successfully removed {} Advanced Tuning Parameter".format(atp.name))
                     else:
@@ -283,10 +298,10 @@ class ISVA_Configurator(object):
                             break
                     rsp = None
                     if exists == True:
-                        rsp = const.FACTORY.get_system_settings().advanced_tuning.update_parameter(
+                        rsp = self.factory.get_system_settings().advanced_tuning.update_parameter(
                             key=atp.name, value=atp.value, comment=atp.comment)
                     else:
-                        rsp = const.FACTORY.get_system_settings().advanced_tuning.create_parameter(
+                        rsp = self.factory.get_system_settings().advanced_tuning.create_parameter(
                             key=atp.name, value=atp.value, comment=atp.comment)
                     if rsp.success == True:
                         _logger.info("Successfully updated {} Advanced Tuning Parameter".format(atp.name))
@@ -294,7 +309,7 @@ class ISVA_Configurator(object):
                         _logger.error("Failed to update {} Advanced Tuning Parameter with:\n{}\n{}".format(
                             atp.name, json.dupms(atp, indent=4), rsp.data))
                 elif atp.operation == "add":
-                    rsp = const.FACTORY.get_system_settings().advanced_tuning.create_parameter(
+                    rsp = self.factory.get_system_settings().advanced_tuning.create_parameter(
                         key=atp.name, value=atp.value, comment=atp.comment)
                     if rsp.success == True:
                         _logger.info("Successfully add {} Advanced Tuning Parameter".format(atp.name))
@@ -306,7 +321,7 @@ class ISVA_Configurator(object):
                         atp.operation, json.dumps(atp, indent=4)))
 
     def date_time(self, config):
-        dateTime = const.FACTORY.get_system_setting().date_time
+        dateTime = self.factory.get_system_setting().date_time
         if config.date_time:
             dtConfig = config.date_time
             rsp =dateTime.update(enable_ntp=dtConfig.enable_ntp, ntp_servers=dtConfig.ntp_servers, 
@@ -317,46 +332,68 @@ class ISVA_Configurator(object):
                 _logger.error("Failed to set date/time configuration using:\n{}\n{}".format(
                     json.dumps(dtConfig, indent=4), rsp.content))
 
+
+    def configure_appliance(self, config, isva_appliance):
+        appliance = config.appliance
+        admin_config(appliance)
+        import_ssl_certificates(appliance)
+        account_management(appliance)
+        management_authorization(appliance)
+        advanced_tuning_parameters(appliance)
+        date_time(appliance)
+        isva_appliance().configure()
+
+
+    def configure_container(self, config, isva_container):
+        docker = config.docker
+        admin_config(docker)
+        import_ssl_certificates(docker)
+        account_management(docker)
+        management_authorization(docker)
+        advanced_tuning_parameters(docker)
+        isva_container.configure()
+
+
+    def get_modules(self, config, factory):
+        appliance = APPLIANCE(config, factory)
+        container = CONTAINER(config, factory)
+        web = WEB(config, factory.get_web_settings())
+        aac = AAC(config, factory.get_access_control())
+        fed = FED(config, factory.get_federation())
+        return appliance, container, web, aac, fed
+
+
     def configure(self, config_file=None):
+        self.config = config_yaml()
         if config_file:
-            from .util import constants, data_util
-            import yaml
-            constants.CONFIG = data_util.Map( yaml.load( open(config_file, 'r'), data_util.CustomLoader) )
-        if old_password():
-            const.FACTORY = pyisam.Factory(MGMT_BASE_URL, OLD_CREDS[0], OLD_CREDS[1])
-            accept_eula(OLD_CREDS)
-            complete_setup(OLD_CREDS)
-            set_admin_password(OLD_CREDS, CREDS)
+            _logger.info("Reading file from arg {}".format(config_file))
+            self.config = data_util.Map( yaml.load( open(config_file, 'r'), data_util.CustomLoader) )
+        else if len(config.keys()):
+            _logger.info("Reading file from env var ISVA_YAML_CONFIGURATION = {}".format(const.ISVA_CONFIGURATION))
         else:
-            const.FACTORY = pyisam.Factory(MGMT_BASE_URL, CREDS[0], CREDS[1])
-            accept_eula(CREDS)
-            complete_setup(CREDS)
-        const.FACTORY = pyisam.Factory(MGMT_BASE_URL, CREDS[0], CREDS[1])
-        const.WEB = const.FACTORY.get_web_settings()
-        const.AAC = const.FACTORY.get_access_control()
-        const.FED = const.FACTORY.get_federation()
-        if CONFIG.appliance != None:
-            admin_config(CONFIG.appliance)
-            import_ssl_certificates(CONFIG.appliance)
-            account_management(CONFIG.appliance)
-            management_authorization(CONFIG.appliance)
-            advanced_tuning_parameters(CONFIG.appliance)
-            date_time(CONFIG.appliance)
-            isva_appliance().configure()
-        elif CONFIG.docker != None:
-            admin_config(CONFIG.docker)
-            import_ssl_certificates(CONFIG.docker)
-            account_management(CONFIG.docker)
-            management_authorization(CONFIG.docker)
-            advanced_tuning_parameters(CONFIG.docker)
-            isva_docker().configure()
+            raise RuntimeError("Failed to find a YAML configuration file, help!")
+        self.factory = pyisva.Factory(mgmt_base_url(), *creds())
+        if old_password():
+            self.factory = pyisva.Factory(mgmt_base_url(), *old_creds())
+            accept_eula(old_creds())
+            complete_setup(old_creds())
+            set_admin_password(old_creds(), creds())
+            self.factory = pyisva.Factory(mgmt_base_url(), *creds())
+        else:
+            accept_eula(creds())
+            complete_setup(creds())
+        appliance, container, web, aac, fed = self.get_modules(config, factory)
+        if appliance.is_appliance():
+            self.configure_appliance(config, appliance)
+        elif container.is_container():
+            self.configure_container(config, container)
         else:
             _logger.error("Deployment model cannot be found in config.yaml, exiting")
             sys.exit(1)
         activate_appliance()
-        web().configure()
-        aac().configure()
-        fed().configure()
+        web.configure()
+        aac.configure()
+        fed.configure()
 
 if __name__ == "__main__":
     from isva_configurator import configurator

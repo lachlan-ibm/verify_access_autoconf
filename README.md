@@ -8,8 +8,8 @@ To get started several example deployments are avaliable in the [Examples](examp
 
 # Setup
 ## Environment
-
-- `ISVA_CONFIGURATION` = path to ISVA configuration yaml file. Path should be relative to `ISVA_CONFIGURATION_BASEDIR`
+- `ISVA_CONFIGURATION_BASE_DIR` = direcotry which contains the YAML configuration file as well as any http template pages, PKI, mapping rules, ect.
+- `ISVA_YAML_CONFIGURATION` = path to ISVA configuration yaml file. Path should be relative to `ISVA_CONFIGURATION_BASEDIR`
 - `MGMT_BASE_URL` = address to access ISVA LMI, eg. https://\<isva appliance\>:\<isva port\>. This propert can also be specified in the configuration yaml file. If present, this proprty will take precedence.
 - `MGMT_PASSWORD` = administrator password for the `admin` account. This property can also be specified in the configuration yaml file. If present, this property will take precedence.
 - ` MGMT_OLD_PASSWORD` = if a password change for the administrator account (eg. from the dafualt) is required, the old password can be specified with this environment variable. If present the administrator's password will be chagned from `MGMT_OLD_PASSWORD` to `MGMT_PASSWORD`

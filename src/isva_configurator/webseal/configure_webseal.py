@@ -3,14 +3,22 @@
 import logging
 import json
 
-from ..util.constants import CONFIG, WEB, deploy_pending_changes
+from ..util.constants import deploy_pending_changes
+from ..util.data_util import Map
 
 _logger = logging.getLogger(__name__)
 
 class WEB_Configurator(object):
 
+    web = None
+    self.config = Map()
+
+    def __init__(self, webFctry, config):
+        self.web = webFctry
+        self.config = config
+
     def __update_stanza(self, proxy_id, entry):
-        rsp = WEB.reverse_proxy.update_configuration_stanza_entry(
+        rsp = web.reverse_proxy.update_configuration_stanza_entry(
                 proxy_id, entry.stanza, entry.entry_id, entry.value)
         if rsp.success == True:
             _logger.info("Successfully updated stanza [{}] with [{}:{}]".format(
@@ -22,10 +30,10 @@ class WEB_Configurator(object):
     def __add_stanza(self, proxy_id, entry):
         rsp = None
         if entry.entry_id:
-            rsp = WEB.reverse_proxy.add_configuration_stanza_entry(
+            rsp = web.reverse_proxy.add_configuration_stanza_entry(
                     proxy_id, entry.stanza, entry.entry_id, entry.value)
         elif entry.stanza:
-            rsp = WEB.reverse_proxy.add_configuration_stanza(proxy_id, entry.stanza)
+            rsp = web.reverse_proxy.add_configuration_stanza(proxy_id, entry.stanza)
         else:
             _logger.error("Configuration invalid:\n{}".format(json.dumps(entry, indent=4)))
             return
@@ -37,10 +45,10 @@ class WEB_Configurator(object):
     def __detele_stanza(self, proxy_id, entry):
         rsp = None
         if entry.entry_id:
-            rsp = WEB.reverse_proxy.delete_configuration_stanza_entry(proxy_id, entry.stanza, entry.entry_id,
+            rsp = web.reverse_proxy.delete_configuration_stanza_entry(proxy_id, entry.stanza, entry.entry_id,
                     entry.value)
         elif entry.stanza:
-            rsp = WEB.reverse_proxy.delete_configuration_stanza(proxy_id, entry.stana)
+            rsp = web.reverse_proxy.delete_configuration_stanza(proxy_id, entry.stana)
         else:
             _logger.error("Stanza configuration entry invalid:\n{}".format(json.dumps(entry, indent=4)))
             return
@@ -71,7 +79,7 @@ class WEB_Configurator(object):
                 "reuse_certs": aac_config.reuse_certs,
                 "reuse_acls": aac_config.reuse_acls
             }
-        rsp = WEB.reverse_proxy.configure_aac(proxy_id, **methodArgs)
+        rsp = web.reverse_proxy.configure_aac(proxy_id, **methodArgs)
         if rsp.success == True:
             _logger.info("Successfully ran Advanced Access Control configuration wizard on {} proxy instance".format(proxy_id))
         else:
@@ -102,7 +110,7 @@ class WEB_Configurator(object):
                     "runtime_username": runtime.username,
                     "runtime_password": runtime.password
                 })
-        rsp = WEB.reverse_proxy.configure_mmfa(proxy_id, **methodArgs)
+        rsp = web.reverse_proxy.configure_mmfa(proxy_id, **methodArgs)
         if rsp.success == True:
             _logger.info("Successfully ran MMFA configuration wizard on {} proxy instance".format(proxy_id))
         else:
@@ -111,7 +119,7 @@ class WEB_Configurator(object):
 
 
     def _configure_federations(self, proxy_id, fed_config):
-        rsp = WEB.reverse_proxy.configure_fed(proxy_id, **fed_config )
+        rsp = web.reverse_proxy.configure_fed(proxy_id, **fed_config )
         if rsp.success == True:
             _logger.info("Successfully ran federation configuration utility with")
         else:
@@ -121,12 +129,12 @@ class WEB_Configurator(object):
 
     def _add_junction(self, proxy_id, junction):
         forceJunction = False
-        junctions = WEB.reverse_proxy.list_junctions(proxy_id).json
+        junctions = web.reverse_proxy.list_junctions(proxy_id).json
         for jct in junctions:
             if jct["id"] == junction.junction_point:
                 junction['force'] = "yes"
 
-        rsp = WEB.reverse_proxy.create_junction(proxy_id, **junction)
+        rsp = web.reverse_proxy.create_junction(proxy_id, **junction)
         
         if rsp.success == True:
             _logger.info("Successfully added junction to {} proxy".format(proxy_id))
@@ -136,10 +144,10 @@ class WEB_Configurator(object):
 
 
     def _wrp(self, runtime, proxy):
-        wrp_instances = WEB.reverse_proxy.list_instances().json
+        wrp_instances = web.reverse_proxy.list_instances().json
         for instance in wrp_instances:
             if instance['id'] == proxy.name:
-                rsp = WEB.reverse_proxy.delete_instance(proxy.name, 
+                rsp = web.reverse_proxy.delete_instance(proxy.name, 
                         runtime.admin_user if runtime.admin_user else "sec_master",
                         runtime.admin_password)
                 if rsp.success != True:
@@ -148,8 +156,8 @@ class WEB_Configurator(object):
                     return
         host = proxy.hostname
         if not host:
-            if CONFIG.docker and CONFIG.docker.containers and CONFIG.docker.containers.configuration:
-                host = CONFIG.docker.containers.configuration[0]
+            if self.confing.docker and self.config.docker.containers and self.config.docker.containers.configuration:
+                host = self.config.docker.containers.configuration[0]
         methodArgs = {
                         "inst_name":proxy.name, 
                         "host": host, 
@@ -171,7 +179,7 @@ class WEB_Configurator(object):
                                 "cert_label": proxy.ldap.cert_file, 
                                 "ssl_port": proxy.ldap.port,
                         })
-        rsp = WEB.reverse_proxy.create_instance(**methodArgs)
+        rsp = web.reverse_proxy.create_instance(**methodArgs)
         if rsp.success == True:
             _logger.info("Successfully configured proxy {}".format(proxy.name))
         else:
@@ -196,7 +204,7 @@ class WEB_Configurator(object):
             self._configure_stanza(proxy.name, proxy.stanza_configuration)
 
         deploy_pending_changes()
-        rsp = WEB.reverse_proxy.restart_instance(proxy.name)
+        rsp = web.reverse_proxy.restart_instance(proxy.name)
         if rsp.success == True:
             _logger.info("Successfully restart {} proxy instance after applying configuration".format(
                 proxy.name))
@@ -206,9 +214,9 @@ class WEB_Configurator(object):
 
 
     def _runtime(self, runtime):
-        rte_status = WEB.runtime_component.get_status()
+        rte_status = web.runtime_component.get_status()
         if rte_status.json['status'] == "Available":
-            rsp = WEB.runtime_component.unconfigure(ldap_dn=runtime.ldap_dn, ldap_pwd=runtime.ldap_dn, clean=runtime.clean_ldap, force=True)
+            rsp = web.runtime_component.unconfigure(ldap_dn=runtime.ldap_dn, ldap_pwd=runtime.ldap_dn, clean=runtime.clean_ldap, force=True)
             if rsp.success == True:
                 _logger.info("Successfully unconfigured RTE")
             else:
@@ -240,7 +248,7 @@ class WEB_Configurator(object):
                 config.update({
                         "ldap_ssl_label": runtime.ldap.cert_file
                     })
-        rsp = WEB.runtime_component.configure(**config)
+        rsp = web.runtime_component.configure(**config)
         if rsp.success == True:
             _logger.info("Successfullt configured RTE")
         else:
@@ -271,7 +279,7 @@ class WEB_Configurator(object):
         if acl.unauthenticated:
             pdadmiNCommands += ["acl modify {} set unauthenticated {}".format(acl.name, acl.unauthenticated)]
 
-        rsp = WEB.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
+        rsp = web.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
         if rsp.success == True:
             _logger.info("Successfullt created acl {}".format(acl.name))
         else:
@@ -303,7 +311,7 @@ class WEB_Configurator(object):
                     pdadminCommands += ["pop modify {} set ipauth {} {}".format(pop.name, network.network, 
                         network.netmask, network.auth_level)]
 
-        rsp = WEB.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
+        rsp = web.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
         if rsp.success == True:
             _logger.info("Successfullt created pop {}".format(pop.name))
         else:
@@ -322,7 +330,7 @@ class WEB_Configurator(object):
                 for junction in pop.junctions:
                     pdadminCommands += ["pop attach /{}/{} {}".format(proxy_config.host, junction, pop.name)]
 
-        rsp = WEB.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
+        rsp = web.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
         if rsp.success == True:
             _logger.info("Successfullt attached acls/pops to {}".format(proxy_config.host))
         else:
@@ -338,7 +346,7 @@ class WEB_Configurator(object):
                     user.name, user.dn, firstName, lastName, user.password),
                 "user modify {} account-valid yes".format(user.name)
             ]
-        rsp = WEB.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
+        rsp = web.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
         if rsp.success == True:
             _logger.info("Successfullt created user {}".format(user.name))
         else:
@@ -350,7 +358,7 @@ class WEB_Configurator(object):
         if group.users:
             for user in group.users:
                 pdadminCommands += ["group modify {} add user {}".format(group.name, user)]
-        rsp = WEB.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
+        rsp = web.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
         if rsp.success == True:
             _logger.info("Successfullt created group {}".format(group.name))
         else:
@@ -385,7 +393,7 @@ class WEB_Configurator(object):
         if len(cert_mapping_file) != 1:
             _logger.error("Can only specify one cert mapping file")
             return
-        rsp = WEB.client_cert_mapping.create(name=cert_mapping_file['name'], content=cert_mapping_file['content'])
+        rsp = web.client_cert_mapping.create(name=cert_mapping_file['name'], content=cert_mapping_file['content'])
         if rsp.success == True:
             _logger.info("Successfully configured certificate mapping")
         else:
@@ -396,7 +404,7 @@ class WEB_Configurator(object):
         if len(jct_mapping_file) != 1:
             _logger.error("Can only specify one jct mapping file")
             return
-        rsp = WEB.jct_mapping.create(name=jct_mapping_file['name'], jmt_config_data=jct_mapping_file['content'])
+        rsp = web.jct_mapping.create(name=jct_mapping_file['name'], jmt_config_data=jct_mapping_file['content'])
         if rsp.success == True:
             _logger.info("Successfully configured junction mapping")
         else:
@@ -407,7 +415,7 @@ class WEB_Configurator(object):
         if len(url_mapping_file) != 1:
             _logger.error("Can only specify one url mapping file")
             return
-        rsp = WEB.url_mapping.create(name=url_mapping_file['name'], dynurl_config_data=url_mapping_file['content'])
+        rsp = web.url_mapping.create(name=url_mapping_file['name'], dynurl_config_data=url_mapping_file['content'])
         if rsp.success == True:
             _logger.info("Successfully configured URL mapping")
         else:
@@ -418,7 +426,7 @@ class WEB_Configurator(object):
         if len(user_mapping_file) != 1:
             _logger.error("Can only specify one user mapping file")
             return
-        rsp = WEB.user_mapping.create(name=user_mapping_file['name'], content=user_mapping_file['content'])
+        rsp = web.user_mapping.create(name=user_mapping_file['name'], content=user_mapping_file['content'])
         if rsp.success == True:
             _logger.info("Successfully configured user mapping")
         else:
@@ -429,7 +437,7 @@ class WEB_Configurator(object):
         if len(user_mapping_file) != 1:
             _logger.error("Can only specify one FSSO configuration file")
             return
-        rsp = WEB.fsso.create(name=fsso_config_file['name'], fsso_config_data=fsso_config_file['content'])
+        rsp = web.fsso.create(name=fsso_config_file['name'], fsso_config_data=fsso_config_file['content'])
         if rsp.success == True:
             _logger.info("Successfully configured Federated Singe Sign On configuration")
         else:
@@ -439,7 +447,7 @@ class WEB_Configurator(object):
         for http_transform_file_pointer in http_transform_rules:
             http_transform_files = FILE_LOADER.read_files(http_transform_file_pointer)
             for http_transform_file in http_transform_files:
-                rsp = WEB.http_transform.create(name, http_transform_file['name'], 
+                rsp = web.http_transform.create(name, http_transform_file['name'], 
                         contents=http_transform_file['content'])
                 if rsp.success == True:
                     _logger.info("Successfully created {} HTTP transform rule".format(http_transform_file['name']))
@@ -448,7 +456,7 @@ class WEB_Configurator(object):
 
     def _kerberos(self, kerberos_config):
         for config in kerberos_config:
-            rsp = WEB.kerberos.create(_id=config.id, subsection=config.subsection, name=config.name, 
+            rsp = web.kerberos.create(_id=config.id, subsection=config.subsection, name=config.name, 
                     value=config.value)
             if rsp.success == True:
                 _logger.info("Successfully configured Kerberos {} property".format(config.name))
@@ -461,7 +469,7 @@ class WEB_Configurator(object):
         if len(pwd_mapping_file) != 1:
             _logger.error("Can only specify one password strength rule file")
             return
-        rsp = WEB.password_strength.create(name=pwd_config_file['name'], content=pwd_config_file['content'])
+        rsp = web.password_strength.create(name=pwd_config_file['name'], content=pwd_config_file['content'])
         if rsp.success == True:
             _logger.info("Successfully configured password strength rules")
         else:
@@ -472,7 +480,7 @@ class WEB_Configurator(object):
         if len(pwd_mapping_file) != 1:
             _logger.error("Can only specify one RSA configuration file")
             return
-        rsp = WEB.rsa.create(name=pwd_config_file['path'])
+        rsp = web.rsa.create(name=pwd_config_file['path'])
         if rsp.success == True:
             _logger.info("Successfully configured RSA")
         else:
@@ -561,7 +569,7 @@ class WEB_Configurator(object):
                             "jwt_certificate": jwt.certificate,
                             "jwt_claims": jwt.claims
                         })
-            rsp = WEB.api_access_control.resources.create_server(proxy_id, **methodArgs)
+            rsp = web.api_access_control.resources.create_server(proxy_id, **methodArgs)
             if rsp.success == True:
                 _logger.info("Successfully created {} API AC Resource server".format(resource.server_hostname))
             else:
@@ -591,7 +599,7 @@ class WEB_Configurator(object):
                             "documentation_content_type": doc.content_type,
                             "documentation_file": doc.file
                         })
-                    rsp = WEB.api_access_control.resources.create(proxy_id, resource.junction_point, **methodArgs)
+                    rsp = web.api_access_control.resources.create(proxy_id, resource.junction_point, **methodArgs)
                     if rsp.success == True:
                         _logger.info("Successfully created {} junctioned resource".format(junction.name))
                     else:
@@ -600,7 +608,7 @@ class WEB_Configurator(object):
 
     def __apiac_cors(self, cors_policies):
         for cors in cors_policies:
-            rsp = WEB.api_access_control.cors.create(name=cors.name, allowed_origins=cors.allowed_origins, 
+            rsp = web.api_access_control.cors.create(name=cors.name, allowed_origins=cors.allowed_origins, 
                     allow_credentials=cors.allow_credentials, exposed_headers=cors.exposed_headers, 
                     handle_preflight=cors.handle_preflight, allowed_methods=cors.allowed_methods,
                     allowed_headers=cors.allowed_headers, max_age=cors.max_age)
@@ -614,7 +622,7 @@ class WEB_Configurator(object):
         for doc_root in doc_roots:
             files = FILE_LOADER.read_files(doc_root, include_directories=True)
             for _file in files:
-                rsp = WEB.api_access_control.document_root.create(proxy_id, filename=_file['name'], 
+                rsp = web.api_access_control.document_root.create(proxy_id, filename=_file['name'], 
                         file_type=_file['type'], contents=_file.get('contents'))
                 if rsp.success == True:
                     _logger.info("Successfully uploaded {} {}".format(_file['name'], _file['type']))
@@ -622,7 +630,7 @@ class WEB_Configurator(object):
                     _logger.error("Failed to upload {} {}\n{}".format(_file["name"], _file["type"], rsp.content))
 
     def _api_access_control(self, runtime, apiac):
-        rsp = WEB.api_access.control.utilities.store_credential(admin_id=runtime.admin_user, 
+        rsp = web.api_access.control.utilities.store_credential(admin_id=runtime.admin_user, 
                 admin_pwd=runtime.admin_password, admin_doman=runtime.domain)
         if rsp.success == True:
             _logger.info("API Access Control successfully stored admin credential")
@@ -640,11 +648,11 @@ class WEB_Configurator(object):
 
 
     def configure(self):
-        websealConfig = CONFIG.webseal
+        websealConfig = self.config.webseal
         if websealConfig == None:
             _logger.info("No WebSEAL configuration detected, skipping")
             return
-        
+
         if websealConfig.client_cert_mapping != None:
             _client_cert_mapping(websealConfig.client_cert_mapping)
 

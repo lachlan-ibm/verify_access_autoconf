@@ -4,11 +4,20 @@ import logging
 import json
 import os
 
-from ..utils.constants import AAC, CONFIG_BASE_DIR, CONFIG, deploy_pending_changes
+from ..utils.configure_util import config_base_dir, deploy_pending_changes
+from ..util.data_util import Map
 
 _logger = logging.getLogger(__name__)
 
 class AAC_Configurator(object):
+
+    config = Map()
+    aac = None
+
+    def __init__(self, aacFctry, config):
+        self.aac = aacFctry
+        self.config = config
+
 
     def push_notifications(self, config):
         #TODO
@@ -27,7 +36,7 @@ class AAC_Configurator(object):
             "policy_combining_algorithm": resource.policy_combining_algorithm,
             "cache": resource.cache
         }
-        rsp = AAC.access_control.configure_resource(**methodArgs)
+        rsp = aac.access_control.configure_resource(**methodArgs)
         if rsp.success == True:
             _logger.info("Successfully configured {} resource for {}".format(resource.uri, respurce.server))
         else:
@@ -35,7 +44,7 @@ class AAC_Configurator(object):
                 json.dumps(resource, indent=4), rsp.data))
 
     def _cba_policy(self, policy):
-        old_policies = AAC.access_control.list_policies().json
+        old_policies = aac.access_control.list_policies().json
         exists = False
         for p in old_policies:
             if p['name'] == policy.name:
@@ -50,9 +59,9 @@ class AAC_Configurator(object):
             }
         rsp = None
         if exists == True:
-            rsp = AAC.access_control.update_policy(**methodArgs)
+            rsp = aac.access_control.update_policy(**methodArgs)
         else:
-            rsp = AAC.access_control.create_policy(**methodArgs)
+            rsp = aac.access_control.create_policy(**methodArgs)
         if rsp.success == True:
             _logger.info("Successfully created {} Access Control Policy")
         else:
@@ -79,7 +88,7 @@ class AAC_Configurator(object):
     def advanced_config(self, aac_config):
         if aac_config.advanced_configuration != None:
             for advConf in aac_config.advanced_configuration:
-                rsp = AAC.advanced_config.update(
+                rsp = aac.advanced_config.update(
                         advConf.id, value=advConf.value, sensitive=advConf.sensitive)
                 if rsp.success == True:
                     _logger.info("Successfully updated advanced configuration " + str(advConf.id))
@@ -92,12 +101,12 @@ class AAC_Configurator(object):
         #TODO
         if aac_config.scim != None:
             for schema in aac_config.scim:
-                rsp = AAC.scim_config.get_schema(schema.uri)
+                rsp = aac.scim_config.get_schema(schema.uri)
                 if rsp.success == False:
                     _logger.error("Failed to get config for schema [{}]".format(schema.uri))
                     return
                 config = {**rsp.json, **schema.properties}
-                rsp = AAC.scim_config.update_schema(schema.uri, config)
+                rsp = aac.scim_config.update_schema(schema.uri, config)
                 if rsp.success == True:
                     _logger.info("Successfully updated schema [{}]".format(schema.uri))
                 else:
@@ -107,14 +116,14 @@ class AAC_Configurator(object):
 
     def _ci_server_connection(self, connection):
         props = connection.properties
-        rsp = AAC.server_connections.create_ci(name=connection.name, description=connection.description, locked=connection.locked,
+        rsp = aac.server_connections.create_ci(name=connection.name, description=connection.description, locked=connection.locked,
                 connection_host_name=props.hostname, connection_client_id=props.client_id, connection_client_secret=props.client_secret,
                 connection_ssl_truststore=props.ssl_truststore)
         return rsp
 
     def _ldap_server_connection(self, connection):
         props = connection.properties
-        rsp = AAC.server_connections.create_ldap(name=connection.name, description=connection.description,
+        rsp = aac.server_connections.create_ldap(name=connection.name, description=connection.description,
                 locked=connection.locked, connection_host_name=prop.hostname, connection_bind_dn=props.bind_dn,
                 connection_bind_pwd=props.bind_password, connection_ssl_truststore=props.key_file,
                 connection_ssl_auth=props.cert_file, connection_host_port=props.port, connection_ssl=props.ssl,
@@ -123,7 +132,7 @@ class AAC_Configurator(object):
 
     def _jdbc_server_connection(self, connection):
         props = connection.properties
-        rsp = AAC.server_connections.create_jdbc(name=connection.name, description=connection.description,
+        rsp = aac.server_connections.create_jdbc(name=connection.name, description=connection.description,
                 locked=connection.locked, database_type=connection.type, connection_jndi=props.jndi, connection_hostname=props.hostname,
                 connection_port=props.port, connection_ssl=props.ssl, connection_user=props.user, connection_password=props.password, 
                 connection_type=props.type, connetion_service_name=props.service_name, conection_database_name=props.database_name, 
@@ -135,21 +144,21 @@ class AAC_Configurator(object):
 
     def _smtp_server_connection(self, connection):
         props = connection.properties
-        rsp = AAC.server_connections.create_smtp(name=connection.name, description=connection.description, connect_timeout=props.timeout,
+        rsp = aac.server_connections.create_smtp(name=connection.name, description=connection.description, connect_timeout=props.timeout,
                 connection_host_name=props.hostname, connection_host_port=props.port, connection_ssl=props.ssl, connection_user=props.user,
                 connection_password=props.password)
         return rsp
 
     def _ws_server_connection(self, connection):
         props = connection.properties
-        rsp = AAC.server_connection.screate_web_service(name=connection.name, description=connection.description,
+        rsp = aac.server_connection.screate_web_service(name=connection.name, description=connection.description,
                 locked=connection.locked, connection_url=props.url, connection_user=props.user,
                 connection_password=props.password, connection_ssl_truststore=props.key_file, 
                 connection_ssl_auth_key=props.cert_file, connection_ssl=props.ssl)
         return rsp
 
     def _remove_server_connection(self, connection):
-        configured_connections = AAC.server_connections.list_all().json
+        configured_connections = aac.server_connections.list_all().json
         print(configured_connections)
         for connectionType in configured_connections:
             print(connectionType)
@@ -160,15 +169,15 @@ class AAC_Configurator(object):
                     return False
                 elif c.get('name') == connection.name:
                     logger.info("connection {} exists, deleting before recreating".format(connection.name))
-                    rsp = {"ci": AAC.server_connections.delete_ci,
-                      "ldap": AAC.server_connections.delete_ldap,
-                      "isamruntime": AAC.server_connections.delete_runtime,
-                      "oracle": AAC.server_connections.delete_jdbc,
-                      "db2": AAC.server_connections.delete_jdbc,
-                      "soliddb": AAC.server_connections.delete_jdbc,
-                      "postgresql": AAC.server_connections.delete_jdbc,
-                      "smtp": AAC.server_connections.delete_smtp,
-                      "ws": AAC.server_connections.delete_web_service}.get(connection.type, None)(c['uuid'])
+                    rsp = {"ci": aac.server_connections.delete_ci,
+                      "ldap": aac.server_connections.delete_ldap,
+                      "isamruntime": aac.server_connections.delete_runtime,
+                      "oracle": aac.server_connections.delete_jdbc,
+                      "db2": aac.server_connections.delete_jdbc,
+                      "soliddb": aac.server_connections.delete_jdbc,
+                      "postgresql": aac.server_connections.delete_jdbc,
+                      "smtp": aac.server_connections.delete_smtp,
+                      "ws": aac.server_connections.delete_web_service}.get(connection.type, None)(c['uuid'])
                     return rsp.success
         return True
 
@@ -203,10 +212,10 @@ class AAC_Configurator(object):
         for file_pointer in template_files:
             rsp = None
             if file_pointer.get("type") == "file":
-                rsp = AAC.template_files.create_file(file_pointer['directory'], file_name=file_pointer['name'],
+                rsp = aac.template_files.create_file(file_pointer['directory'], file_name=file_pointer['name'],
                         contents=file_pointer['contents'])
             else:
-                rsp = AAC.template_files.create_directory(file_pointer['directory'], dir_name=file_ponter['name'])
+                rsp = aac.template_files.create_directory(file_pointer['directory'], dir_name=file_ponter['name'])
             if rsp.success == True:
                 _logger.info("Successfully created template file {}".format(file_pointer['path']))
             else:
@@ -214,7 +223,7 @@ class AAC_Configurator(object):
 
     def upload_mapping_rules(self, _type, maping_rules):
         for mapping_rule in mapping_rules:
-            rsp = AAC.mapping_rule.create_rule(file_name=mapping_rule["path"], rule_name=mapping_rule['name'],
+            rsp = aac.mapping_rule.create_rule(file_name=mapping_rule["path"], rule_name=mapping_rule['name'],
                     category=_type, content=mapping_rule['contents'])
             if rsp.success == True:
                 _logger.info("Successfully uploaded {} mapping rule".foramt(mapping_rule['name']))
@@ -236,7 +245,7 @@ class AAC_Configurator(object):
     def attributes_configuration(self, aac_config):
         if aac_config.attributes != None:
             for attr in aac_config.attributes:
-                rsp = AAC.attributes.create_attribute(category=attr.category, matcher=attr.matcher, issuer=attr.issuer,
+                rsp = aac.attributes.create_attribute(category=attr.category, matcher=attr.matcher, issuer=attr.issuer,
                         description=attr.description, name=attr.name, datatype=attr.datatype, uri=attr.uri,
                         storage_session=attr.storage.session, storage_behavior=attr.storage.behavior, 
                         storage_device=attr.storage.device, type_risk=attr.type.risk, type_policy=attr.type.policy)
@@ -247,7 +256,7 @@ class AAC_Configurator(object):
                         attr.name, json.dumps(attr, indent=4), rsp.data))
 
     def _configure_api_protection_definition(self, defintion):
-        rsp = AAC.api_protection.create_definition(name=definition.name, description=definition.description, 
+        rsp = aac.api_protection.create_definition(name=definition.name, description=definition.description, 
                 token_char_set=definition.access_token_char_set, access_token_lifetime=definition.access_token_lifetime,
                 access_token_length=defintion.token_length, authorization_code_lifetime=definition.authorizaton_code_lifetime,
                 authorization_code_length=definition.authorization_code_length, refresher_token_length=definition.refresh_token_length,
@@ -266,7 +275,7 @@ class AAC_Configurator(object):
                 _logger.error("Can only specify one Pre-Token Mapping Rule")
             else:
                 mapping_rule = mapping_rule[0]
-                rsp = AAC.api_protection.create_mapping_rule(name=definition.name + "PreTokenGeneration",
+                rsp = aac.api_protection.create_mapping_rule(name=definition.name + "PreTokenGeneration",
                         category="OAUTH", file_name=mapping_rule["name"], content=mapping_rule['contents'])
                 if rsp.success == True:
                     _logger.info("Successfully uploaded {} Pre-Token Mapping Rule".foramt(definition.name))
@@ -278,7 +287,7 @@ class AAC_Configurator(object):
                 _logger.error("Can only specify one Post-Token Mapping Rule")
             else:
                 mapping_rule = mapping_rule[0]
-                rsp = AAC.api_protection.import_mapping_rule(name=definition.name + "PostTokenGeneration",
+                rsp = aac.api_protection.import_mapping_rule(name=definition.name + "PostTokenGeneration",
                         categore="OAUTH", file_name=mapping_rule['name'], content=mapping_rule['contents'])
                 if rsp.success == True:
                     _logger.info("Successfully created {} Post-Token Mapping Rule".format(definition.name))
@@ -290,7 +299,7 @@ class AAC_Configurator(object):
             if definition['name'] == client.api_definition:
                 client.api_definition = definition['id']
                 break
-        rsp = AAC.api_protection.create_client(name=client.name, redirect_uri=client.redirect_uri,
+        rsp = aac.api_protection.create_client(name=client.name, redirect_uri=client.redirect_uri,
                 company_name=client.company_name, company_url=client.company_url, contact_person=client.contact_person,
                 contact_type=client.contact_type, email=client.email, phone=client.phone, other_info=client.other_info,
                 definition=client.api_defintition, client_id=client.client_id, client_secret=client.client_secret)
@@ -306,13 +315,13 @@ class AAC_Configurator(object):
                 self._configure_api_protection_definition(definition)
 
             if aac_config.api_protection.clients != None:
-                definitions = AAC.api_protection.list_definitions()
+                definitions = aac.api_protection.list_definitions()
                 for client in aac_config.api_protection.clients:
                     self._configure_api_protection_client(definitions, client)
 
 
     def _configure_mechanism(self, mechanism):
-        mechTypes = AAC.authentication.list_mechanism_types().json
+        mechTypes = aac.authentication.list_mechanism_types().json
         try:
             typeId = list(filter(lambda _type: _type['type'] == mechanism.type, mechTypes))[0]['id']
         except (IndexError, KeyError):
@@ -328,15 +337,15 @@ class AAC_Configurator(object):
             attrs = []
             for e in mechanism.attributes: 
                 attrs += [{"key": k, "value": v} for k, v in e.items()]
-        existing_mechanisms = AAC.authentication.list_mechanisms().json
+        existing_mechanisms = aac.authentication.list_mechanisms().json
         old_mech = list(filter( lambda m: m['uri'] == mechanism.uri, existing_mechanisms))
         rsp = None
         if old_mech:
             old_mech = old_mech[0]
-            rsp = AAC.authentication.update_mechanism(id=old_mech['id'], description=mechanism.description, name=mechanism.name,
+            rsp = aac.authentication.update_mechanism(id=old_mech['id'], description=mechanism.description, name=mechanism.name,
                     uri=mechanism.uri, type_id=typeId, predefined=old_mech['predefined'], properties=props, attributes=attrs)
         else:
-            rsp = AAC.authentication.create_mechanism(description=mechanism.description, name=mechanism.name,  uri=mechanism.uri,
+            rsp = aac.authentication.create_mechanism(description=mechanism.description, name=mechanism.name,  uri=mechanism.uri,
                     type_id=typeId,  properties=props, attributes=attrs)
         if rsp.success == True:
             _logger.info("Successfully set configuration for {} mechanism".format(mechanism.name))
@@ -350,10 +359,10 @@ class AAC_Configurator(object):
         old_policy = list(filter(lambda p: p['uri'] == policy.uri, existing_policies))
         if old_policy:
             old_policy = old_policy[0]
-            rsp = AAC.authentication.update_policy(old_policy['id'], name=policy.name, policy=policy.policy, uri=policy.uri,
+            rsp = aac.authentication.update_policy(old_policy['id'], name=policy.name, policy=policy.policy, uri=policy.uri,
                     description=policy.description, predefined=old_policy['predefined'], enabled=policy.enabled)
         else:
-            rsp = AAC.authentication.create_policy(name=policy.name, policy=policy.policy, uri=policy.uri, description=policy.description,
+            rsp = aac.authentication.create_policy(name=policy.name, policy=policy.policy, uri=policy.uri, description=policy.description,
                     enabled=policy.enabled)
         if rsp.success == True:
             _logger.info("Successfully set configuration for {} policy".format(policy.name))
@@ -367,19 +376,19 @@ class AAC_Configurator(object):
                 for mechanism in aac_config.authentication.mechanisms:
                     _configure_mechanism(mechanism)
             if aac_config.authentication.policies != None:
-                existing_policies = AAC.authentication.list_policies()
+                existing_policies = aac.authentication.list_policies()
                 for policy in aac_config.authentication.policies:
                     self._configure_policy(existing_policies, policy)
 
     def mmfa_configuration(self, aac_config):
         if aac_config.api_protection != None and aac_config.api_protection.clients != None:
-            api_clients = AAC.api_protection.list_clients()
+            api_clients = aac.api_protection.list_clients()
             for client in api_clietns:
                 if client.name == aac_config.mmfa.client_id:
                     aac_config.mmfa.client_id = client.name
                     break
         if aac_config.mmfa != None:
-            rsp = AAC.mmfaconfig.update(**aac_config.mmfa)
+            rsp = aac.mmfaconfig.update(**aac_config.mmfa)
             if rsp.success == True:
                 _logger.info("Successfully updated MMFA configuration")
             else:
@@ -390,7 +399,7 @@ class AAC_Configurator(object):
     def _upload_metadata(self, metadata)
         metadata_list = FILE_LOADER.read_files(metadata)
         for metadata_file in metadata_list:
-            rsp = AAC.fido2_config.create_metadata(filename=metadata_list['path'])
+            rsp = aac.fido2_config.create_metadata(filename=metadata_list['path'])
             if rsp.success == True:
                 _logger.info("Successfully created {} FIDO metadata".foramt(metadata_file['name']))
             else:
@@ -399,7 +408,7 @@ class AAC_Configurator(object):
     def _upload_mediator(self, mediator):
         mediator_list = FILE_LOADER.read_files(mediator)
         for mediator_rule in mediator_list:
-            rsp = AAC.fido2_config.create_mediator(name=mediator_rule['name'], filename=mediator_rule['path'])
+            rsp = aac.fido2_config.create_mediator(name=mediator_rule['name'], filename=mediator_rule['path'])
             if rsp.success == True:
                 _logger.info("Successfully created {} FIDO2 Mediator".format(mediator_rule['name']))
             else:
@@ -407,19 +416,19 @@ class AAC_Configurator(object):
 
     def _create_relying_party(self, rp):
         if rp.metadata:
-            metadata_list = AAC.fido2_config.list_metadata().json()
+            metadata_list = aac.fido2_config.list_metadata().json()
             for pos, metadata in enumerate(rp.metadata):
                 for uploaded_metadata in metadata_list:
                     if uploaded_metadata['filename'] == metadata:
                         rp.metadata[pos] = uploaded_metadata['id']
                         break
         if rp.use_all_metadata:
-            metadata_list = AAC.fido2_config.list_metadata().json()
+            metadata_list = aac.fido2_config.list_metadata().json()
             for uploaded_metadata in metadata_list:
                 rp.metadata += [uploaded_metadata['id']]
 
         if rp.mediator:
-            medaitor_list = AAC.fido2_config.list_mediator().json()
+            medaitor_list = aac.fido2_config.list_mediator().json()
             for mediator in mediator_list:
                 if mediator['fileName'] == rp.mediator:
                     rp.mediator = mediator['id']
@@ -444,7 +453,7 @@ class AAC_Configurator(object):
                         "attestation_android_safetynet_max_age", rp.attestation.android.safetynet_max_age,
                         "attestation_android_safetynet_clock_skew": rp.attestation.android.safetynet_clock_skew
                     })
-        rsp = AAC.fido2_config.create_relying_party(**methodArgs)
+        rsp = aac.fido2_config.create_relying_party(**methodArgs)
         if rsp.success == True:
             _logger.info("Successfully created {} FIDO2 Relying Party".format(rp.name))
         else:
@@ -466,21 +475,19 @@ class AAC_Configurator(object):
 
 
     def configure(self):
-        config = CONFIG.aac
-        if config == None:
+        if self.config.aac == None:
             _logger.info("No Access Control configuration detected, skipping")
             return
-
-        upload_files(config)
-        push_notifications(config)
-        server_connections(config)
-        fido2_configuration(config)
-        api_protection_configuration(config)
+        upload_files(self.config.aac)
+        push_notifications(self.config.aac)
+        server_connections(self.config.aac)
+        fido2_configuration(self.config.aac)
+        api_protection_configuration(self.config.aac)
         deploy_pending_changes()
 
-        attributes_configuration(config)
-        authentication_configuration(config)
-        scim_configuration(config)
-        mmfa_configuration(config)
-        advanced_config(config)
+        attributes_configuration(self.config.aac)
+        authentication_configuration(self.config.aac)
+        scim_configuration(self.config.aac)
+        mmfa_configuration(self.config.aac)
+        advanced_config(self.config.aac)
         deploy_pending_changes()

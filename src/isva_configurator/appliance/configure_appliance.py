@@ -3,11 +3,22 @@ import logging
 import requests
 import json
 
-from ..util.constants import FACTORY, CONFIG, CREDS, HEADERS, CONFIG_BASE_DIR, deploy_pending_changes
+from ..util.constants import HEADERS
+from ..util.configure_util import creds, config_base_dir, deploy_pending_changes
+from ..util.data_util import Map
 
 _logger = logging.getLogger(__name__)
 
 class Appliance_Configurator(object):
+
+    config = Map()
+    appliance = None
+
+    def __init__(self, appFctry, config):
+        self.config = config
+        self.appliance = appFctry
+
+
     def _update_routes(self, route):
         system = FACTORY.get_system_settings()
         interfaces = system.interfaces.list_interfaces().json["interfaces"]
@@ -95,8 +106,7 @@ class Appliance_Configurator(object):
                 iface.label, json.dumps(iface, indent=4), rsp.data))
 
 
-    def update_network(self):
-        config = CONFIG.appliance
+    def update_network(self, config):
         if config.network != None:
             if config.network.routes != None:
                 for route in config.network.routes:
@@ -107,8 +117,7 @@ class Appliance_Configurator(object):
         administrator_settings(config)
         deploy_pending_changes()
 
-    def date_time(self):
-        config = CONFIG.appliance
+    def date_time(self, config):
         if config.date_time != None:
             rsp = FACTORY.get_system_settings().date_time.update(enable_ntp=config.date_time.enable_ntp,
                     ntp_servers=config.date_time.ntp_servers, time_zone=config.date_time.time_zone)
@@ -119,8 +128,8 @@ class Appliance_Configurator(object):
                     json.dumps(config.date_time, indent=4), rsp.data))
 
     def configure(self):
-        update_network()
-        date_time()
+        update_network(self.config.appliance)
+        date_time(self.config.appliance)
 
 if __name__ == "__main__":
     configure()

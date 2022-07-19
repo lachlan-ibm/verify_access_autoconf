@@ -49,6 +49,7 @@ class Map(dict):
 
 
 class CustomLoader(yaml.SafeLoader):
+
     def __init__(self, path):
         self._root = os.path.split(path.name)[0]
         super(CustomLoader, self).__init__(path)

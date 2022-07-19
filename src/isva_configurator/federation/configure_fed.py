@@ -4,15 +4,26 @@ import json
 import os
 import logging
 
-from ..util.constants import CONFIG, FED, deploy_pending_changes
+from ..util.configure_util import deploy_pending_changes
+from ..util.data_util import Map
 
 _logger = logging.getLogger(__name__)
 
 class FED_Configurator(object):
+
+    fed = None
+    config = Map()
+
+
+    def __init__(self, config, fedFactory): 
+        self.fed = fedFactory
+        self.config = config
+
+
     def configure_poc(self, federation_config):
         if federation_config.points_of_contact != None:
             for poc in ederation_config.points_of_contact:
-                rsp = FED.poc.create_like_credential(name=poc.name, description=poc.description,
+                rsp = fed.poc.create_like_credential(name=poc.name, description=poc.description,
                         authenticate_callbacks=poc.authenticate_callbacks, local_id_callbacks=poc.local_id_callbacks,
                         sign_out_callbacks=poc.sign_out_callbacks, sing_in_callbacks=poc.sign_in_callbacks,
                         authn_policy_callbacks=poc.authn_policy_callbacks)
@@ -56,7 +67,7 @@ class FED_Configurator(object):
             if config.encryption_settings != None:
                 encryption = config.encryption_settings
 
-        rsp = FED.federations.create_saml_partner(fedId, **methodArgs)
+        rsp = fed.federations.create_saml_partner(fedId, **methodArgs)
         if rsp.success == True:
             _logger.info("Successfully created {} SAML {} Partner".format(
                 partner.name, partner.role))
@@ -86,7 +97,7 @@ class FED_Configurator(object):
                         "advanced_configuration_rule_id": config.advanced_configuration.mapping_rule
                     })
 
-        rsp = FED.federations.create_oidc_rp_partner(fedId, **methodArgs)
+        rsp = fed.federations.create_oidc_rp_partner(fedId, **methodArgs)
         if rsp.success == True:
             _logger.info("Successfully created {} OIDC RP Partner for Federation {}".format(
                 partner.name, fedId))
@@ -96,7 +107,7 @@ class FED_Configurator(object):
 
     def _configure_federation_partner(self, federation, partner):
         federationId = None
-        _federations = FED.federations.list_federations().json
+        _federations = fed.federations.list_federations().json
         for _federation in _federations:
             if _federation.get("name", None) == federation.name:
                 federationId = _federation['id']
@@ -165,7 +176,7 @@ class FED_Configurator(object):
                             "sign_artifact_response": sigSettings.signing_options.sign_artifact_response
                         })
             
-        rsp = FED.federations.create_saml_federation(**methodArgs)
+        rsp = fed.federations.create_saml_federation(**methodArgs)
         if rsp.success == True:
             _logger.info("Successfully created {} SAML2.0 Federation".format(federation.name))
         else:
@@ -200,7 +211,7 @@ class FED_Configurator(object):
                         "advance_configuration_delegate_id": config.advance_configuration.active_delegate_id,
                         "advanced_configuration_mapping_rule": config.advance_configuration.rule
                     })
-        rsp = FED.federations.create_oidc_rp_federation(**methodArgs)
+        rsp = fed.federations.create_oidc_rp_federation(**methodArgs)
         if rsp.success == True:
             _logger.info("Successfully created {} OIDC RP Federation".format(federation.name))
         else:
@@ -225,14 +236,13 @@ class FED_Configurator(object):
 
 
     def configure(self):
-        config = CONFIG.federation
-        if config == None:
+        if self.config.federation == None:
             _logger.info("No Federation configuration detected, skipping")
             return
-        configure_poc(config)
-        configur_alias_service(config)
-        configure_access_policy(config)
-        configure_federations(config)
+        configure_poc(self.config.federation)
+        configur_alias_service(self.config.federation)
+        configure_access_policy(self.config.federation)
+        configure_federations(self.config.federtaion)
 
 if __name__ == "__main__":
     configure()

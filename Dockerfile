@@ -15,6 +15,6 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 RUN ln -s /usr/bin/python3 /usr/bin/python && ln -s /usr/bin/pip3 /usr/bin/pip
 
-ENV PYTHONPATH "/user/src/app/pyisam:/user/src/app/src"
+#ENV PYTHONPATH "/user/src/app/pyisam:/user/src/app/src"
 
 CMD ["python", "./src/configure.py"]
