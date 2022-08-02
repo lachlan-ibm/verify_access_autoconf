@@ -33,7 +33,7 @@ setup(
                       'PyYAML>=5.3',
                       'pyisva>=0.1',
                       'kubernetes>=10.0.1',
-                      'docker-compose
+                      'docker-compose'
     ],
     url='https://github.ibm.com/lgleeson/ISVAConfigurationAutomation',
     zip_safe=False,
