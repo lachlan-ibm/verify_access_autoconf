@@ -5,11 +5,11 @@ export PYTHONPATH="$PYTHONPATH:$(pwd)/build/lib"
 
 python <<EOF
 print("Test")
-import verify_access_configurator
-assert verify_access_configurator.configurator != None
-assert verify_access_configurator.appliance != None
-assert verify_access_configurator.container != None
-assert verify_access_configurator.webseal != None
-assert verify_access_configurator.access_control != None
-assert verify_access_configurator.federation != None
+import verify-access-autoconf
+assert verify-access-autoconf.configurator != None
+assert verify-access-autoconf.appliance != None
+assert verify-access-autoconf.container != None
+assert verify-access-autoconf.webseal != None
+assert verify-access-autoconf.access_control != None
+assert verify-access-autoconf.federation != None
 EOF
