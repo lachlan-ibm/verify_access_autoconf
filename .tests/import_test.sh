@@ -4,11 +4,12 @@ python setup.py sdist bdist_wheel
 export PYTHONPATH="$PYTHONPATH:$(pwd)/build/lib"
 
 python <<EOF
-import verify-access-configurator
-assert verify-access-configurator.configurator != None
-assert verify-access-configurator.appliance != None
-assert verify-access-configurator.container != None
-assert verify-access-configurator.webseal != None
-assert verify-access-configurator.access_control != None
-assert verify-access-configurator.federation != None
+print("Test")
+import verify_access_configurator
+assert verify_access_configurator.configurator != None
+assert verify_access_configurator.appliance != None
+assert verify_access_configurator.container != None
+assert verify_access_configurator.webseal != None
+assert verify_access_configurator.access_control != None
+assert verify_access_configurator.federation != None
 EOF
