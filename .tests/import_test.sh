@@ -3,8 +3,13 @@
 #!/bin/bash
 
 cat <<EOF > ${HOME}/pip.conf
+[global]
+trusted-host = pypi.org
+               na.artifactory.swg-devops.com
 extra-index-url = https://${ART_API_USER}:${ART_API_KEY}@na.artifactory.swg-devops.com/artifactory/api/pypi/sec-iam-isam-devops-team-pypi-local/simple
 EOF
+
+cat $HOME/pip.conf
 
 export HOME=$( realpath . )
 python setup.py sdist bdist_wheel
