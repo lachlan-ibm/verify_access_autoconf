@@ -29,6 +29,7 @@ setup(
     license='MIT',
     package_dir={"": "src"},
     packages=find_packages(where="src"),
+    dependency_links=['https://na.artifactory.swg-devops.com/artifactory/api/pypi/sec-iam-isam-devops-team-pypi-local/']
     install_requires=[
         'requests>=2.23.0'
         'PyYAML>=5.3',

@@ -25,4 +25,4 @@ jobs:
         - ./.deploy.sh
       python:
         - "3.7"
-      if: branch = development
+      if: branch = stable
