@@ -10,14 +10,11 @@ pip install `ls $HOME/dist/*.whl`
 cd "`dirname $0`"
 
 python <<EOF
-try:
-    import verify-access-configurator
-    assert verify-access-configurator.configurator != None
-    assert verify-access-configurator.appliance != None
-    assert verify-access-configurator.container != None
-    assert verify-access-configurator.webseal != None
-    assert verify-access-configurator.access_control != None
-    assert verify-access-configurator.federation != None
-except:
-    assert False, "Import test failed"
+import verify-access-configurator
+assert verify-access-configurator.configurator != None
+assert verify-access-configurator.appliance != None
+assert verify-access-configurator.container != None
+assert verify-access-configurator.webseal != None
+assert verify-access-configurator.access_control != None
+assert verify-access-configurator.federation != None
 EOF
