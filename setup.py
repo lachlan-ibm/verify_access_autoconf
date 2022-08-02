@@ -29,13 +29,11 @@ setup(
     license='MIT',
     package_dir={"": "src"},
     packages=find_packages(where="src"),
-    dependency_links=['https://na.artifactory.swg-devops.com/artifactory/api/pypi/sec-iam-isam-devops-team-pypi-local/']
-    install_requires=[
-        'requests>=2.23.0',
-        'PyYAML>=5.3',
-        'pyisva>=0.1',
-        'kubernetes>=10.0.1',
-        'docker-compose>=1.25.4'
+    install_requires=['requests>=2.23.0',
+                      'PyYAML>=5.3',
+                      'pyisva>=0.1',
+                      'kubernetes>=10.0.1',
+                      'docker-compose>=1.25.4'
     ],
     url='https://github.ibm.com/lgleeson/ISVAConfigurationAutomation',
     zip_safe=False,
