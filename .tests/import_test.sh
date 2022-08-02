@@ -14,14 +14,13 @@ cd "`dirname $0`"
 
 python <<EOF
 try:
-    import ivsa_configurator
-    assert isva_configurator.configurator != None
-    assert isva_configurator.appliance != None
-    assert isva_configurator.docker != None
-    assert isva_configurator.appliance != None
-    assert isva_configurator.web != None
-    assert isva_configurator.aac != None
-    assert isva_configurator.fed != None
+    import verify_access_configurator
+    assert verify_access_configurator.configurator != None
+    assert verify_access_configurator.appliance != None
+    assert verify_access_configurator.container != None
+    assert verify_access_configurator.webseal != None
+    assert verify_access_configurator.access_control != None
+    assert verify_access_configurator.federation != None
 except:
     assert False, "Import test failed"
 EOF
