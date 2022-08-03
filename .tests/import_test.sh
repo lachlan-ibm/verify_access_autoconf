@@ -4,7 +4,6 @@ python setup.py sdist bdist_wheel
 export PYTHONPATH="$PYTHONPATH:$(pwd)/build/lib"
 
 python <<EOF
-print("Test")
 import verify_access_autoconf
 assert verify_access_autoconf.configurator != None
 assert verify_access_autoconf.appliance != None

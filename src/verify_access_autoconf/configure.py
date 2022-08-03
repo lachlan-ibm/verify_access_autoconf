@@ -260,7 +260,7 @@ class ISVA_Configurator(object):
                     role.name, rsp.data))
         else:
             _logger.error("Unknown operation {} for role configuration:\n{}".format(
-                role.operation, json.dumps(role, indent=4))
+                role.operation, json.dumps(role, indent=4)))
 
     def management_authorization(self, config):
         if config.management_authorization != None and config.management_authorization.roles != None:
