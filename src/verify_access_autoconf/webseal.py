@@ -40,7 +40,7 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully created stanza entry")
         else:
-            _logger.error("Failed to create stanza entry:\n{}\n{}".format(json.dumps(entry, indent=4) rsp.content))
+            _logger.error("Failed to create stanza entry:\n{}\n{}".format(json.dumps(entry, indent=4), rsp.content))
 
     def __detele_stanza(self, proxy_id, entry):
         rsp = None
