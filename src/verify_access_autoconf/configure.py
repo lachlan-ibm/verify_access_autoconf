@@ -222,7 +222,7 @@ class ISVA_Configurator(object):
                 _logger.info("Successfully {} group {}".format(group.operation, group.id))
             else:
                 _logger.error("Faield to {} group {}:\n{}\n{}".format(
-                    group.operation, group.id, json.dumps(group indent=4), rsp.data))
+                    group.operation, group.id, json.dumps(group, indent=4), rsp.data))
 
     def account_management(self):
         if config.acount_management != None:
