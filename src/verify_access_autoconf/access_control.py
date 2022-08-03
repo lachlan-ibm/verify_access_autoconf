@@ -453,7 +453,7 @@ class AAC_Configurator(object):
             })
             if rp.android:
                 methodArgs.update({
-                        "attestation_android_safetynet_max_age", rp.attestation.android.safetynet_max_age,
+                        "attestation_android_safetynet_max_age": rp.attestation.android.safetynet_max_age,
                         "attestation_android_safetynet_clock_skew": rp.attestation.android.safetynet_clock_skew
                     })
         rsp = aac.fido2_config.create_relying_party(**methodArgs)
