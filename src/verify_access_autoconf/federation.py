@@ -36,10 +36,11 @@ class FED_Configurator(object):
 
     def configure_alias_service(self, federation_config):
         #TODO
+        return
 
     def configure_access_policy(self, federation_config):
         #TODO
-
+        return
 
     def _configure_saml_partner(self, fedId, partner):
         methodArgs = {
