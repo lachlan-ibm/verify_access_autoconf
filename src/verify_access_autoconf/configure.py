@@ -108,7 +108,7 @@ class ISVA_Configurator(object):
                 filePointer, database, rsp.data))
 
 
-    def _load_signer_certificates(self, database, server, port label):
+    def _load_signer_certificates(self, database, server, port, label):
         ssl = self.factory.get_system_settings().ssl_certificates
         rsp = ssl.load_signer(database, server, port, label)
         if rsp.success == True:
