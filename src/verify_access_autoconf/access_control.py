@@ -399,7 +399,7 @@ class AAC_Configurator(object):
                     json.dumps(aac_config.mmfa, indent=4), rsp.data))
 
 
-    def _upload_metadata(self, metadata)
+    def _upload_metadata(self, metadata):
         metadata_list = FILE_LOADER.read_files(metadata)
         for metadata_file in metadata_list:
             rsp = aac.fido2_config.create_metadata(filename=metadata_list['path'])
