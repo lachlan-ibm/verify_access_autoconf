@@ -62,26 +62,26 @@ class ISVA_Configurator(object):
 
     def _activateBaseAppliance(self):
         code = None
-        if CONFIG.appliance and CONFIG.appliance.activation
-            code = CONFIG.appliance.activation.wga
-        if not code and CONFIG.docker and CONFIG.docker.activation:
-            code = CONFIG.docker.activation.wga
+        if self.config.appliance and self.config.appliance.activation
+            code = self.config.appliance.activation.wga
+        if not code and self.config.docker and self.config.docker.activation:
+            code = self.config.docker.activation.wga
         self._apply_license("wga", code)
 
     def _activateAdvancedAccessControl(self):
         code = None
-        if CONFIG.appliance and CONFIG.appliance.activation
-            code = CONFIG.appliance.activation.mga
-        if not code and CONFIG.docker and CONFIG.docker.activation:
-            code = CONFIG.docker.activation.mga
+        if self.config.appliance and self.config.appliance.activation
+            code = self.config.appliance.activation.mga
+        if not code and self.config.docker and self.config.docker.activation:
+            code = self.config.docker.activation.mga
         self._apply_license("mga", code)
 
     def _activateFederation(self):
         code = None
-        if CONFIG.appliance and CONFIG.appliance.activation
-            code = CONFIG.appliance.activation.federation
-        if not code and CONFIG.docker and CONFIG.docker.activation:
-            code = CONFIG.docker.activation.federation
+        if self.config.appliance and self.config.appliance.activation
+            code = self.config.appliance.activation.federation
+        if not code and self.config.docker and self.config.docker.activation:
+            code = self.config.docker.activation.federation
         self._apply_license("federation", code)
 
     def activate_appliance(self):
@@ -131,10 +131,10 @@ class ISVA_Configurator(object):
 
     def import_ssl_certificates(self):
         ssl_config = None
-        if CONFIG.appliance:
-            ssl_config = CONFIG.appliance.ssl_certificates
-        elif CONFIG.docker:
-            ssl_config = CONFIG.docker.ssl_certificates
+        if self.config.appliance:
+            ssl_config = self.config.appliance.ssl_certificates
+        elif self.config.docker:
+            ssl_config = self.config.docker.ssl_certificates
         ssl = self.factory.get_system_settings().ssl_certificates
         if ssl_config:
             old_databases = [d['id'] for d in ssl.list_databases().json]
