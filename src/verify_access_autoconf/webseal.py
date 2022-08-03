@@ -397,7 +397,7 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully configured certificate mapping")
         else:
-            _logger.error("Failed to configure certificate mapping using {} config file".format(cert_mapping_file['name'}))
+            _logger.error("Failed to configure certificate mapping using {} config file".format(cert_mapping_file['name']))
 
     def _junction_mapping(self, junction_mapping):
         jct_mapping_file = FILE_LOADER.read_file(junction_mapping)
@@ -408,7 +408,7 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully configured junction mapping")
         else:
-            _logger.error("Failed to configure junction mapping using {} config file".format(jct_mapping_file['name'}))
+            _logger.error("Failed to configure junction mapping using {} config file".format(jct_mapping_file['name']))
 
     def _url_mapping(self, url_mapping):
         url_mapping_file = FILE_LOADER.read_file(url_mapping)
@@ -419,7 +419,7 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully configured URL mapping")
         else:
-            _logger.error("Failed to configure URL mapping using {} config file".format(url_mapping_file['name'}))
+            _logger.error("Failed to configure URL mapping using {} config file".format(url_mapping_file['name']))
 
     def _user_mapping(self, user_mapping):
         user_mapping_file = FILE_LOADER.read_file(user_mapping)
@@ -430,7 +430,7 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully configured user mapping")
         else:
-            _logger.error("Failed to configure user mapping using {} config file".format(user_mapping_file['name'}))
+            _logger.error("Failed to configure user mapping using {} config file".format(user_mapping_file['name']))
 
     def _federated_sso(self, fsso_config):
         fsso_config_file = FILE_LOADER.read_file(fsso_config)
@@ -441,7 +441,7 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully configured Federated Singe Sign On configuration")
         else:
-            _logger.error("Failed to configure FSSO using {} config file".format(user_mapping_file['name'}))
+            _logger.error("Failed to configure FSSO using {} config file".format(user_mapping_file['name']))
 
     def _http_transform(self, http_transform_rules):
         for http_transform_file_pointer in http_transform_rules:
@@ -461,7 +461,7 @@ class WEB_Configurator(object):
             if rsp.success == True:
                 _logger.info("Successfully configured Kerberos {} property".format(config.name))
             else:
-                _logger.error("Failed to configure Kerberos config:\n{}\n{}".format(json.dumps(config,indent=4),
+                _logger.error("Failed to configure Kerberos config:\n{}\n{}".format(json.dumps(config, indent=4),
                     rsp.content))
 
     def _password_strength(self, password_strength_rules):
@@ -473,7 +473,7 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully configured password strength rules")
         else:
-            _logger.error("Failed to configure password strength rules using {}".format(pwd_mapping_file['name'}))
+            _logger.error("Failed to configure password strength rules using {}".format(pwd_mapping_file['name']))
 
     def _rsa(self, rsa_config):
         rsa_config_file = FILE_LOADER.read_file(rsa_config)
@@ -484,7 +484,7 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully configured RSA")
         else:
-            _logger.error("Failed to configure RSA using {}".format(rsa_config_file['name'}))
+            _logger.error("Failed to configure RSA using {}".format(rsa_config_file['name']))
 
     def __apiac_resources(self, proxy_id, resources):
         for resource in resources:
@@ -580,7 +580,7 @@ class WEB_Configurator(object):
                 for junction in resource.junctions:
                     methodArgs = {
                             "server_type": junction.server_type,
-                            "method", junction.method,
+                            "method": junction.method,
                             "path": junction.path,
                             "name": junction.name,
                             "static_response_headers": junction.static_response_headers,
