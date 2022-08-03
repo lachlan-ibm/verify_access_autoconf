@@ -441,7 +441,7 @@ class AAC_Configurator(object):
                 "rp_id": rp.rp_id,
                 "origins": rp.origins,
                 "metadata_set": rp.metadata,
-                "metadata_soft_fail", rp.metadata_soft_fail,
+                "metadata_soft_fail": rp.metadata_soft_fail,
                 "mediator_mapping_rule_id": rp.mediator,
                 "relying_party_impersonation_group": rp.impersonation_group
             }
