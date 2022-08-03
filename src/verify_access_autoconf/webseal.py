@@ -3,7 +3,7 @@
 import logging
 import json
 
-from .util.constants import deploy_pending_changes
+from .util.configure_util import deploy_pending_changes
 from .util.data_util import Map
 
 _logger = logging.getLogger(__name__)
