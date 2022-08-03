@@ -80,7 +80,7 @@ class FileLoader():
         if os.path.isdir(path):
             if include_directories == True:
                 contents += [{"name": os.path.basename(path), "path": path, "type": "dir", 
-                    "directory": os.path.dirname(path).replace(self.config_base_dir), ''}]
+                    "directory": os.path.dirname(path).replace(self.config_base_dir, '')}]
             for file_pointer in os.listdir(path):
                 contents += [self.read_file(path + file_pointer)]
         else:
@@ -88,7 +88,7 @@ class FileLoader():
                 contents = _file.read()
                 result = {"name": os.path.basename(path), "contents": contents, "path": path, "type": "file",
                         "directory": os.path.dirname(path),
-                        "directory": os.path.dirname(path).replace(self.config_base_dir), '')}
+                        "directory": os.path.dirname(path).replace(self.config_base_dir, '')}
                 try:
                     result['text'] = contents.decode()
                 except Exception:
