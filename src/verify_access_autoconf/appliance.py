@@ -3,9 +3,9 @@ import logging
 import requests
 import json
 
-from ..util.constants import HEADERS
-from ..util.configure_util import creds, config_base_dir, deploy_pending_changes
-from ..util.data_util import Map
+from .util.constants import HEADERS
+from .util.configure_util import creds, config_base_dir, deploy_pending_changes
+from .util.data_util import Map
 
 _logger = logging.getLogger(__name__)
 
