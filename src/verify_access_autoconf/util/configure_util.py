@@ -1,6 +1,6 @@
 #!/bin/python
 import os, kubernetes
-import .util.constants as const
+import .constants as const
 
 
 def config_base_dir():
