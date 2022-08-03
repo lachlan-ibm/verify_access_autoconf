@@ -168,7 +168,7 @@ class ISVA_Configurator(object):
     def admin_config(self, config):
         if config.admin_config != None:
             rsp = self.factory.get_system_settings().admin_settings.update(**config.admin_config)
-            ir rsp.success == True:
+            if rsp.success == True:
                 _logger.info("Successfullt set admin config")
             else:
                 _logger.error("Failed to set admin config using:\n{}\n{}".format(
