@@ -11,7 +11,7 @@ _logger = logging.getLogger(__name__)
 class WEB_Configurator(object):
 
     web = None
-    self.config = Map()
+    config = Map()
 
     def __init__(self, webFctry, config):
         self.web = webFctry
