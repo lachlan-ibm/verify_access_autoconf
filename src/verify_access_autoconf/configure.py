@@ -368,7 +368,7 @@ class ISVA_Configurator(object):
         if config_file:
             _logger.info("Reading file from arg {}".format(config_file))
             self.config = data_util.Map( yaml.load( open(config_file, 'r'), data_util.CustomLoader) )
-        else if len(config.keys()):
+        elif len(config.keys()):
             _logger.info("Reading file from env var ISVA_YAML_CONFIGURATION = {}".format(const.ISVA_CONFIGURATION))
         else:
             raise RuntimeError("Failed to find a YAML configuration file, help!")
