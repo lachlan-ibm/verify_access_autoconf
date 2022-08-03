@@ -62,7 +62,7 @@ class ISVA_Configurator(object):
 
     def _activateBaseAppliance(self):
         code = None
-        if self.config.appliance and self.config.appliance.activation
+        if self.config.appliance and self.config.appliance.activation:
             code = self.config.appliance.activation.wga
         if not code and self.config.docker and self.config.docker.activation:
             code = self.config.docker.activation.wga
@@ -70,7 +70,7 @@ class ISVA_Configurator(object):
 
     def _activateAdvancedAccessControl(self):
         code = None
-        if self.config.appliance and self.config.appliance.activation
+        if self.config.appliance and self.config.appliance.activation:
             code = self.config.appliance.activation.mga
         if not code and self.config.docker and self.config.docker.activation:
             code = self.config.docker.activation.mga
@@ -78,7 +78,7 @@ class ISVA_Configurator(object):
 
     def _activateFederation(self):
         code = None
-        if self.config.appliance and self.config.appliance.activation
+        if self.config.appliance and self.config.appliance.activation:
             code = self.config.appliance.activation.federation
         if not code and self.config.docker and self.config.docker.activation:
             code = self.config.docker.activation.federation
