@@ -21,12 +21,15 @@ class AAC_Configurator(object):
 
     def push_notifications(self, config):
         #TODO
+        return
 
     def _cba_obligation(self, obligation):
         #TODO
+        return
 
     def _cba_attribute(self, attribute):
         #TODO
+        return
 
     def _cba_resource(self, resource):
         methodArgs = {
