@@ -22,7 +22,7 @@ _logger = logging.getLogger(__name__)
 class ISVA_Configurator(object):
 
     def old_password(self):
-        rsp = requests.get(MGMT_BASE_URL, auth=OLD_CREDS, headers=HEADERS, verify=False)
+        rsp = requests.get(mgmt_base_url(), auth=old_creds(), headers=HEADERS, verify=False)
         if rsp.status_code == 403:
             return False
         return True
@@ -63,17 +63,17 @@ class ISVA_Configurator(object):
     def _activateBaseAppliance(self):
         code = None
         if self.config.appliance and self.config.appliance.activation:
-            code = self.config.appliance.activation.wga
+            code = self.config.appliance.activation.webseal
         if not code and self.config.docker and self.config.docker.activation:
-            code = self.config.docker.activation.wga
+            code = self.config.docker.activation.webseal
         self._apply_license("wga", code)
 
     def _activateAdvancedAccessControl(self):
         code = None
         if self.config.appliance and self.config.appliance.activation:
-            code = self.config.appliance.activation.mga
+            code = self.config.appliance.activation.access_control
         if not code and self.config.docker and self.config.docker.activation:
-            code = self.config.docker.activation.mga
+            code = self.config.docker.activation.access_control
         self._apply_license("mga", code)
 
     def _activateFederation(self):

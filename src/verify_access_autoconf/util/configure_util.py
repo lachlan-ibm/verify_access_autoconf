@@ -1,7 +1,10 @@
 #!/bin/python
-import os, kubernetes
+import os, kubernetes, logging
 from . import constants as const
+from .data_util import Map, FileLoader
 
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+_logger = logging.getLogger(__name__)
 
 def config_base_dir():
     if const.CONFIG_BASE_DIR in os.environ.keys():
@@ -9,19 +12,42 @@ def config_base_dir():
     return os.path.expanduser("~") #Default is home directory
 
 
-def config_yaml():
-    if const.CONFIG_YAML_ENV_VAR in os.environ.keys():
+def config_yaml(config_file=None):
+    if config_file:
+        _logger.info("Reading file from arg {}".format(config_file))
+        config = data_util.Map( yaml.load( open(config_file, 'r'), data_util.CustomLoader) )
+    elif const.CONFIG_YAML_ENV_VAR in os.environ.keys():
+        _logger.info("Reading file from env var ISVA_YAML_CONFIGURATION = {}".format(
+            os.environ.get(const.CONFIG_YAML_ENV_VAR)))
         return Map(yaml.load(
             os.environ.get(const.CONFIG_YAML_ENV_VAR), 'r'), data_util.CustomLoader)
     elif config_base_dir() and const.CONFIG_YAML in os.lsdir(config_base_dir()):
         return Map(yaml.load(
             os.path.join(config_base_dir(), const.CONFIG_YAML), 'r'), data_util.CustomLoader)
     else:
-        return Map()
+        raise RuntimeError("Failed to find a YAML configuration file, help!")
+
+
+def read_files(base):
+    contents = []
+    if base.startswith("/"):
+        contents = FileLoader("").read_files(base.lstrip("/"))
+    else:
+        contents = FileLoaser(config_base_dir()).read_files(base)
+    return contents
+
+
+def read_file(fp):
+    contents = None
+    if fp.startswith("/"):
+        contents = FileLoaser("").read_file(fp.lstrip('/'))
+    else:
+        contents = FileLoader(config_base_dir()).read_file(fp)
+    return contents
 
 
 def mgmt_base_url():
-    return os.environ.get(const.MGMT_BASE_URL_ENV_VAR, "https://localhost")
+    return os.environ.get(const.MGMT_BASE_URL_ENV_VAR, config_yaml().mgmt_base_url)
 
 def creds():
     if const.MGMT_USER_ENV_VAR in os.environ.keys():
