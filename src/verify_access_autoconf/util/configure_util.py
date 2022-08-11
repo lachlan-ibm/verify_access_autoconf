@@ -1,5 +1,5 @@
 #!/bin/python
-import os, kubernetes, logging
+import os, kubernetes, logging, sys
 from . import constants as const
 from .data_util import Map, FileLoader
 
