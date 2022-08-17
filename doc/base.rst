@@ -28,9 +28,8 @@ have sufficient permission to complete all of the configuration required.
 
 
 .. code-block:: yaml
-  mgmg_base_url: 'https://isva.mgmt.lmi'
-  mgmt_password: 'Passw0rd'
-  mgmt_old_password: 'admin'
+  mgmt_pwd: 'Passw0rd'
+  mgmt_old_pwd: 'admin'
 
 
 .. _system-settings::
@@ -39,11 +38,16 @@ System settings
 ^^^^^^^^^^^^^^^
 System wide settings such as LMI log file configuration, account management and advanced tuning parameters.
 
+To set system administrator settings use the ``admin_config`` key. A complete list of the available configuration 
+properties can be found `here <https://ibm-security.github.io/pyisva>`_. An example configuration is:
+
 
 .. code-block:: yaml
-lmi: #Local Management Interface settings
-  timeout: 720
-  timezone: "Australia/Brisbane"
+   admin_cfg:
+     session_timeout: 7200
+     sshd_client_alive: 300
+     console_log_level: "AUDIT"
+     accept_client_certs: true
 
 
 .. _ssl-database::
@@ -57,7 +61,8 @@ files are imported.
 
 SSL certificates are imported into the appliance by reading files from the file system. Therefore any PKI which is to 
 be imported into the appliance must specify the fully-qualified path or be a path relative to the ``ISVA_CONFIG_BASE`` 
-environment variable.
+environment variable. A complete list of the available configuration properties can be found 
+`here <https://ibm-security.github.io/pyisva>`_. An example configuration is:
 
 
 .. code-block:: yaml
@@ -72,6 +77,44 @@ environment variable.
         - "ssl/rt_profile_keys/signer"
 
 
+Administrator Account Management
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Administrator accounts, groups and permissions for managing Verify Access features can be defined in two configuration
+entries. The first entry allows for the creation of users and groups which can be used to authenticate to the 
+management interface. A complete list of the available configuration properties can be found 
+`here <https://ibm-security.github.io/pyisva>`_. An example configuration is:
+
+
+.. code-block:: yaml
+   account_management:
+    users:
+    - name: "cfgsvc"
+      operation: "update"
+      password: "Passw0rd"
+
+
+Administrators are also able to manage access to Verify Access features. This allows for more fine grained control 
+over which accounts are permitted to modify a deployment. Administrators are not able to create new features, however 
+they can create "roles" which contains permissions for one or more features. Each feature in a role has two permission
+levels: read access (can view but cannot modify); and write access (permission to modify). A complete list of the 
+available configuration properties can be found `here <https://ibm-security.github.io/pyisva>`_. An example 
+configuration is:
+
+
+.. code-block:: yaml
+   management_authorization:
+    authorization_enforcement: True
+    roles:
+    - operation: update
+      name: "Configuration Service"
+      users:
+      - name: "cfgsvc"
+        type: "local"
+      features:
+      - name: "shared_volume"
+        access: "w"
+
+
 .. _cluster-configuration::
 
 Cluster Configuration
@@ -79,20 +122,36 @@ Cluster Configuration
 The cluster configuration options can be used to add additional servers to the Verify Access deployment. Currently only
  external databases (HVDB and config) as well as Verify Access HA servers are supported.
 
-This option is typically used in a contianer deployment to configure the HVDB container.
+This option is typically used in a container deployment to configure the HVDB container. A complete list of the available 
+configuration properties can be found `here <https://ibm-security.github.io/pyisva>`_. An example configuration is:
 
 .. note:: PKI required to connect to any servers should be imported in the previuos step.
 
 .. code-block:: yaml
-  cluster: #High Avaliablity/Extensal Services configuration
-    config_database:
-      address: "127.0.0.1"
-      port: 1234
-      username: "database_user"
-      password: "database_password"
-      ssl: True
-      ssl_keystore: "lmi_trust_store.kdb"
-      ssl_keyfile: "server.cer"
+   config_db:
+     address: "127.0.10.1"
+     port: 1234
+     username: "database_user"
+     password: "database_password"
+     ssl: True
+     ssl_keystore: "lmi_trust_store.kdb"
+     ssl_keyfile: "server.cer"
+   runtime_db:
+     address: "postgresql"
+     port: 5432
+     type: "Postgresql"
+     user: "postgres"
+     password: @secrets/isva-secrets:postgres-passwd
+     ssl: True
+     db_name: "isva"
+  cluster:
+    sig_file: cluster/signature_file
+    primary_master: "isva.primary.master"
+    secondary_master: "isva.secondary.master"
+    nodes:
+    - "isva.node"
+    resitrcted_nodes:
+    - "isva.restricted.node"
 
 
 
@@ -101,7 +160,8 @@ This option is typically used in a contianer deployment to configure the HVDB co
 Module Activation
 ^^^^^^^^^^^^^^^^^
 License files to activate the Advanced Access Control, Federation and WebSEAL Reverse Proxy modules are imported in 
-this step.
+this step. Subsequent module configuration is dependant on one or more of these licenses being applied to an appliance
+or container. An example configuration is:
 
 
 .. code-block:: yaml
@@ -115,7 +175,10 @@ this step.
 
 Advanced tuning parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-Advanced Tuning Parameters can be set on an appliance to configure additional settings not exposed by the LMI.
+Advanced Tuning Parameters can be set on an appliance to configure additional settings not exposed by the LMI. Any 
+required advanced tuning parameters for your deployment will be communicated to you via support. An example 
+configuration is:
+
 
 .. code-block:: yaml
   advanced_tuning_parameters:

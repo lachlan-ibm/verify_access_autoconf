@@ -36,10 +36,10 @@ class Docker_Configurator(object):
 
     def configure_database(self):
         system = FACTORY.get_system_settings()
-        if self.config.docker.cluster != None and self.config.docker.cluster.runtime_database == None:
+        if self.config.docker.runtime_db == None:
             _logger.info("Cannot find HVDB configuration, in a docker environment this is probably bad")
             return
-        database = self.config.docker.database
+        database = self.config.docker.runtime_db
         rsp = system.runtime_db.set_db(db_type=database.type, host=database.host, port=database.port,
                 secure=database.ssl, user=database.username, passwd=database.password, db_name=database.db_name)
         if rsp.success == True:

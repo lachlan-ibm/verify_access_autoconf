@@ -388,49 +388,53 @@ class WEB_Configurator(object):
         deploy_pending_changes()
 
 
-    def _client_cert_mapping(self, cert_mapping):
-        cert_mapping_file = FILE_LOADER.read_file(cert_mapping)
-        if len(cert_mapping_file) != 1:
-            _logger.error("Can only specify one cert mapping file")
-            return
-        rsp = web.client_cert_mapping.create(name=cert_mapping_file['name'], content=cert_mapping_file['content'])
-        if rsp.success == True:
-            _logger.info("Successfully configured certificate mapping")
-        else:
-            _logger.error("Failed to configure certificate mapping using {} config file".format(cert_mapping_file['name']))
+    def _client_cert_mapping(self, config):
+        for cert_mapping in config:
+            cert_mapping_file = FILE_LOADER.read_file(cert_mapping)
+            if len(cert_mapping_file) != 1:
+                _logger.error("Can only specify one cert mapping file")
+                return
+            rsp = web.client_cert_mapping.create(name=cert_mapping_file['name'], content=cert_mapping_file['content'])
+            if rsp.success == True:
+                _logger.info("Successfully configured certificate mapping")
+            else:
+                _logger.error("Failed to configure certificate mapping using {} config file".format(cert_mapping_file['name']))
 
-    def _junction_mapping(self, junction_mapping):
-        jct_mapping_file = FILE_LOADER.read_file(junction_mapping)
-        if len(jct_mapping_file) != 1:
-            _logger.error("Can only specify one jct mapping file")
-            return
-        rsp = web.jct_mapping.create(name=jct_mapping_file['name'], jmt_config_data=jct_mapping_file['content'])
-        if rsp.success == True:
-            _logger.info("Successfully configured junction mapping")
-        else:
-            _logger.error("Failed to configure junction mapping using {} config file".format(jct_mapping_file['name']))
+    def _junction_mapping(self, config):
+        for junction_mapping in config:
+            jct_mapping_file = FILE_LOADER.read_file(junction_mapping)
+            if len(jct_mapping_file) != 1:
+                _logger.error("Can only specify one jct mapping file")
+                return
+            rsp = web.jct_mapping.create(name=jct_mapping_file['name'], jmt_config_data=jct_mapping_file['content'])
+            if rsp.success == True:
+                _logger.info("Successfully configured junction mapping")
+            else:
+                _logger.error("Failed to configure junction mapping using {} config file".format(jct_mapping_file['name']))
 
-    def _url_mapping(self, url_mapping):
-        url_mapping_file = FILE_LOADER.read_file(url_mapping)
-        if len(url_mapping_file) != 1:
-            _logger.error("Can only specify one url mapping file")
-            return
-        rsp = web.url_mapping.create(name=url_mapping_file['name'], dynurl_config_data=url_mapping_file['content'])
-        if rsp.success == True:
-            _logger.info("Successfully configured URL mapping")
-        else:
-            _logger.error("Failed to configure URL mapping using {} config file".format(url_mapping_file['name']))
+    def _url_mapping(self, config):
+        for url_mapping in config:
+            url_mapping_file = FILE_LOADER.read_file(url_mapping)
+            if len(url_mapping_file) != 1:
+                _logger.error("Can only specify one url mapping file")
+                return
+            rsp = web.url_mapping.create(name=url_mapping_file['name'], dynurl_config_data=url_mapping_file['content'])
+            if rsp.success == True:
+                _logger.info("Successfully configured URL mapping")
+            else:
+                _logger.error("Failed to configure URL mapping using {} config file".format(url_mapping_file['name']))
 
-    def _user_mapping(self, user_mapping):
-        user_mapping_file = FILE_LOADER.read_file(user_mapping)
-        if len(user_mapping_file) != 1:
-            _logger.error("Can only specify one user mapping file")
-            return
-        rsp = web.user_mapping.create(name=user_mapping_file['name'], content=user_mapping_file['content'])
-        if rsp.success == True:
-            _logger.info("Successfully configured user mapping")
-        else:
-            _logger.error("Failed to configure user mapping using {} config file".format(user_mapping_file['name']))
+    def _user_mapping(self, config):
+        for user_mapping in config:
+            user_mapping_file = FILE_LOADER.read_file(user_mapping)
+            if len(user_mapping_file) != 1:
+                _logger.error("Can only specify one user mapping file")
+                return
+            rsp = web.user_mapping.create(name=user_mapping_file['name'], content=user_mapping_file['content'])
+            if rsp.success == True:
+                _logger.info("Successfully configured user mapping")
+            else:
+                _logger.error("Failed to configure user mapping using {} config file".format(user_mapping_file['name']))
 
     def _federated_sso(self, fsso_config):
         fsso_config_file = FILE_LOADER.read_file(fsso_config)

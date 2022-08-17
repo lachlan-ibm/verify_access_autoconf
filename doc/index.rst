@@ -38,7 +38,6 @@ in a WebSEAL reverse proxy).
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-   base
    appliance
    container
    access-control

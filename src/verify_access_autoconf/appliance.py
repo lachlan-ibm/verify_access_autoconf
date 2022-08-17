@@ -127,9 +127,35 @@ class Appliance_Configurator(object):
                 _logger.error("Failed to update the Date/Time settings on the appliance with:\n{}\n{}".format(
                     json.dumps(config.date_time, indent=4), rsp.data))
 
+
+    def cluster(self, config):
+        if config.config_db != None:
+            rsp = self.appliance.get_system_settings().cluster.set_config_db(**config.config_db)
+            if rsp.success == True:
+                _logger.info("Successfully set the configuration databaase")
+            else:
+                _logger.error("Failed to set the configuration database with:{}\n{}".format(
+                    json.dumps(config.config_db, indent=4), rsp.content))
+        if config.runtime_db != None:
+            rsp = self.appliance.get_system_settings().cluster.set_runtime_db(**config.runtime_db)
+            if rsp.success == True:
+                _logger.info("Successfully set the runtime database")
+            else:
+                _logger.error("Failed to set the runtime database with: {}\n{}".format(json.dumps(
+                    config.runtime_db, indent=4), rsp.content))
+        if config.cluster != None:
+            rsp = self.appliance.get_system_settings().cluster.update_cluster(**config.cluster)
+            if rsp.success == True:
+                _logger.info("Successfully set the cluster configuration")
+            else:
+                _logger.error("Failed to set the cluster configuration with:{}\n{}".format(
+                    json.dumps(config.cluster, indent=4), rsp.content))
+
+
     def configure(self):
         update_network(self.config.appliance)
         date_time(self.config.appliance)
+        cluster(self.config.appliance)
 
 if __name__ == "__main__":
     configure()

@@ -333,8 +333,20 @@ class ISVA_Configurator(object):
                     json.dumps(dtConfig, indent=4), rsp.content))
 
 
+    def apply_snapshot(self, config):
+        if config != None and config.snapshot != None:
+            snapshotConfig = config.snapshot
+            rsp = self.factory.get_system_setting().snapshot.upload(snapshotConfig.snapshot)
+            if rsp.success == True:
+                _logger.info("Successfully applied snapsnot [{}]".format(snapshotConfig.snapshot))
+            else:
+                _logger.error("Failed to apply snapshot [{}]\n{}".foramt(snapshotConfig.snapshot),
+                        rsp.content)
+
+
     def configure_appliance(self, config, isva_appliance):
         appliance = config.appliance
+        apply_snapshot(appliance)
         admin_config(appliance)
         import_ssl_certificates(appliance)
         account_management(appliance)
@@ -346,6 +358,7 @@ class ISVA_Configurator(object):
 
     def configure_container(self, config, isva_container):
         docker = config.docker
+        apply_snapshot(docker)
         admin_config(docker)
         import_ssl_certificates(docker)
         account_management(docker)
