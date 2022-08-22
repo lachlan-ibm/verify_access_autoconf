@@ -225,8 +225,7 @@ class WEB_Configurator(object):
 
         config = {"ps_mode": runtime.policy_server,
                   "user_registry": runtime.user_registry,
-                  "ldap_dn": runtime.ldap_dn,
-                  "ldap_suffix": runtime.ldap_suffix,
+                  "ldap_suffix": runtime.suffix,
                   "clean_ldap": runtime.clean_ldap,
                   "isam_domain": runtime.domain,
                   "admin_password": runtime.admin_password,
@@ -436,37 +435,66 @@ class WEB_Configurator(object):
             else:
                 _logger.error("Failed to configure user mapping using {} config file".format(user_mapping_file['name']))
 
-    def _federated_sso(self, fsso_config):
-        fsso_config_file = FILE_LOADER.read_file(fsso_config)
-        if len(user_mapping_file) != 1:
-            _logger.error("Can only specify one FSSO configuration file")
-            return
-        rsp = web.fsso.create(name=fsso_config_file['name'], fsso_config_data=fsso_config_file['content'])
-        if rsp.success == True:
-            _logger.info("Successfully configured Federated Singe Sign On configuration")
-        else:
-            _logger.error("Failed to configure FSSO using {} config file".format(user_mapping_file['name']))
+    def _federated_sso(self, config):
+        for fsso_config in config:
+            fsso_config_file = FILE_LOADER.read_file(fsso_config)
+            if len(user_mapping_file) != 1:
+                _logger.error("Can only specify one FSSO configuration file")
+                return
+            rsp = web.fsso.create(name=fsso_config_file['name'], fsso_config_data=fsso_config_file['content'])
+            if rsp.success == True:
+                _logger.info("Successfully configured Federated Singe Sign On configuration")
+            else:
+                _logger.error("Failed to configure FSSO using {} config file".format(user_mapping_file['name']))
 
     def _http_transform(self, http_transform_rules):
         for http_transform_file_pointer in http_transform_rules:
             http_transform_files = FILE_LOADER.read_files(http_transform_file_pointer)
             for http_transform_file in http_transform_files:
-                rsp = web.http_transform.create(name, http_transform_file['name'], 
+                rsp = web.http_transform.create(name=http_transform_file['name'], 
                         contents=http_transform_file['content'])
                 if rsp.success == True:
                     _logger.info("Successfully created {} HTTP transform rule".format(http_transform_file['name']))
                 else:
                     _logger.error("Failed to create {} HTTP transform rule".format(http_transform_file['name']))
 
-    def _kerberos(self, kerberos_config):
-        for config in kerberos_config:
-            rsp = web.kerberos.create(_id=config.id, subsection=config.subsection, name=config.name, 
-                    value=config.value)
-            if rsp.success == True:
-                _logger.info("Successfully configured Kerberos {} property".format(config.name))
-            else:
-                _logger.error("Failed to configure Kerberos config:\n{}\n{}".format(json.dumps(config, indent=4),
-                    rsp.content))
+
+    def __create_kerberos_property(self, _id, subsection, name, value):
+        rsp = web.kerberos.create(_id=_id, name=name, value=value)
+        if rsp.success == True:
+            _logger.info("Successfully configured Kerberos property"))
+        else:
+            _logger.error("Failed to configure Kerberos property:\nsubsection: {} name: {} value:{}\n{}".format(subsection, 
+                name, value, rsp.content))
+
+    def _kerberos(self, config):
+        if config.libdefault != None:
+            for kerbdef, value in config.libdefault: self.__create_kerberos_property('libdefault', kerbdef, kerbdef, value)
+        if config.realms != None:
+            for realm in config.realms:
+                self.__create_kerberos_property("realms", realm.name, None, None)
+                if realm.properties != None:
+                    for k, v in realm.properties: self.__create_property("realms/" + realm.name, None, k, v)
+        if config.domain_realms != None:
+            for domain_realm in config.domain_realms: self.__create_kerberos_property("domain_realm", None, 
+                    domain_ream.name, domain_realm.dns)
+        if config.capaths != None:
+            for capath in config.capaths:
+                self.__create_kerberos_property("capaths", capath.name, None, None)
+                if capath.properties != None:
+                    for prop, value  in capath.properties: elf.__create_kerberos_property("capaths/" + capath.name, 
+                            None, prop, value)
+        if config.keytabs != None:
+            for kf in config.keytabs:
+                if not kf.startswith('/'):
+                    kf = config_base_dir() + kf
+                rsp = web.kerberos.import_keytab(kf)
+                if rsp.success == True:
+                    _logger.info("Successfully imported Kerberos Keytab file"))
+                else:
+                    _logger.error("Failed to import Kerberos Keytab file:\n{}\n{}".format(json.dumps(prop, indent=4),
+                        rsp.content))
+
 
     def _password_strength(self, password_strength_rules):
         pwd_config_file = FILE_LOADER.read_file(password_strength_rules)
@@ -479,16 +507,18 @@ class WEB_Configurator(object):
         else:
             _logger.error("Failed to configure password strength rules using {}".format(pwd_mapping_file['name']))
 
+
     def _rsa(self, rsa_config):
-        rsa_config_file = FILE_LOADER.read_file(rsa_config)
-        if len(pwd_mapping_file) != 1:
-            _logger.error("Can only specify one RSA configuration file")
-            return
-        rsp = web.rsa.create(name=pwd_config_file['path'])
+        rsp = web.rsa.create(name=rsa_config.server_config if rsa_config.server_config.startswith("/") else
+              config_base_dir() + rsa_config.server_config)
         if rsp.success == True:
             _logger.info("Successfully configured RSA")
         else:
-            _logger.error("Failed to configure RSA using {}".format(rsa_config_file['name']))
+            _logger.error("Failed to configure RSA using {}".format(rsa_config.server_config))
+        rsa_optional_config_file = None
+        if rsa_config.optional_server_config != None:
+            rsa_optional_config_file = rsa_config.optional_server_config
+
 
     def __apiac_resources(self, proxy_id, resources):
         for resource in resources:
