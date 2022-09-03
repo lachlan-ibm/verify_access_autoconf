@@ -273,6 +273,24 @@ options which can be specified for this section. A reverse proxy isntance typica
 protected application servers. This section can also be used to define configuration for the ``webseal.conf`` file as well 
 as run the integration wizards for MMFA, AAC and Federation capabilities from the Federated Runtime Server. A detailed 
 list of all of the avaliable configuration properties can be found `here <https://ibm-security.github.io/pyisva>`_. 
+
+
+Stanza configuration
+""""""""""""""""""""
+For each WebSEAL reverse proxy instance, administrators are able to define section/key/value entries to modify the 
+``webseal.conf`` file for that instance. Each stanza modification must also include an operation to either: add an 
+entry, creating duplicate entries if the particular section/key combination already exists; update an entry if it already 
+exists, or add it if it does not; and remove an entry if it exists.
+
+
+Junction configuration
+""""""""""""""""""""""
+For each WebSEAL instance, administrators will typically define one or more standard or virtual junctions. Junctions are 
+how an administrator defines the relationship and behavior between a WebSEAL server and an application server (for whom 
+TCP traffic is being proxied by WebSEAL). Some advanced configuratioin options cannot be set in this entry and the Stanza 
+configuration must be used to set key/value entries in the reverse proxy config file.
+
+
 An example configuration is:
 
 .. code-block:: yaml
