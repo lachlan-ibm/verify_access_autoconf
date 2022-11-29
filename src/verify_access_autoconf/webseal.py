@@ -490,7 +490,7 @@ class WEB_Configurator(object):
                     kf = config_base_dir() + kf
                 rsp = web.kerberos.import_keytab(kf)
                 if rsp.success == True:
-                    _logger.info("Successfully imported Kerberos Keytab file"))
+                    _logger.info("Successfully imported Kerberos Keytab file")
                 else:
                     _logger.error("Failed to import Kerberos Keytab file:\n{}\n{}".format(json.dumps(prop, indent=4),
                         rsp.content))
