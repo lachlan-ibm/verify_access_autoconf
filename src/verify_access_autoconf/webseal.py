@@ -462,7 +462,7 @@ class WEB_Configurator(object):
     def __create_kerberos_property(self, _id, subsection, name, value):
         rsp = web.kerberos.create(_id=_id, name=name, value=value)
         if rsp.success == True:
-            _logger.info("Successfully configured Kerberos property"))
+            _logger.info("Successfully configured Kerberos property")
         else:
             _logger.error("Failed to configure Kerberos property:\nsubsection: {} name: {} value:{}\n{}".format(subsection, 
                 name, value, rsp.content))
