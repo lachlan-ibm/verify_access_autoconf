@@ -6,7 +6,7 @@ stages:
   - deploy
 
 install:
-  - pip install -r dev-requirements.txt
+  - pip install -r dev-requirements.txt --extra-index https://${ART_API_USER}:${ART_API_KEY}@eu.artifactory.swg-devops.com/artifactory/api/pypi/sec-iam-isam-devops-team-pypi-local/simple
 
 script:
   - sh ./.tests/import_test.sh
