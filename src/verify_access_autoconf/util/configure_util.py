@@ -15,16 +15,16 @@ def config_base_dir():
 def config_yaml(config_file=None):
     if config_file:
         _logger.info("Reading file from provided path {}".format(config_file))
-        config = data_util.Map( yaml.load( open(config_file, 'r'), data_util.CustomLoader) )
+        config = data_util.Map(yaml.load(open(config_file, 'r'), data_util.CustomLoader) )
     elif const.CONFIG_YAML_ENV_VAR in os.environ.keys():
         _logger.info("Reading file from env var {} = {}".format(
             const.CONFIG_YAML_ENV_VAR, os.environ.get(const.CONFIG_YAML_ENV_VAR)))
-        return Map(yaml.load(
-            os.environ.get(const.CONFIG_YAML_ENV_VAR), 'r'), data_util.CustomLoader)
+        return Map(yaml.load(open(
+            os.environ.get(const.CONFIG_YAML_ENV_VAR), 'r')), data_util.CustomLoader)
     elif config_base_dir() and const.CONFIG_YAML in os.listdir(config_base_dir()):
         _logger.info("Reading config file from {}".format(const.CONFIG_BASE_DIR))
-        return Map(yaml.load(
-            os.path.join(config_base_dir(), const.CONFIG_YAML), 'r'), data_util.CustomLoader)
+        return Map(yaml.load(open(
+            os.path.join(config_base_dir(), const.CONFIG_YAML), 'r')), data_util.CustomLoader)
     else:
         raise RuntimeError("Failed to find a YAML configuration file, help!")
 
