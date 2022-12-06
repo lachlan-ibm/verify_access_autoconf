@@ -21,7 +21,7 @@ def config_yaml(config_file=None):
             const.CONFIG_YAML_ENV_VAR, os.environ.get(const.CONFIG_YAML_ENV_VAR)))
         return Map(yaml.load(
             os.environ.get(const.CONFIG_YAML_ENV_VAR), 'r'), data_util.CustomLoader)
-    elif config_base_dir() and const.CONFIG_YAML in os.lsdir(config_base_dir()):
+    elif config_base_dir() and const.CONFIG_YAML in os.listdir(config_base_dir()):
         _logger.info("Reading config file from {}".format(const.CONFIG_BASE_DIR))
         return Map(yaml.load(
             os.path.join(config_base_dir(), const.CONFIG_YAML), 'r'), data_util.CustomLoader)
