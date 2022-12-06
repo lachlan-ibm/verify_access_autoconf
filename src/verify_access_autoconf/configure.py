@@ -14,7 +14,7 @@ from .access_control import AAC_Configurator as AAC
 from .webseal import WEB_Configurator as WEB
 from .federation import FED_Configurator as FED
 from .util.data_util import Map
-from .util.configure_util import deploy_pending_changes, creds, old_creds, config_base_dir, mgmt_base_url
+from .util.configure_util import deploy_pending_changes, creds, old_creds, config_base_dir, mgmt_base_url, config_yaml
 from .util.constants import API_HEADERS, HEADERS
 
 _logger = logging.getLogger(__name__)
@@ -377,14 +377,7 @@ class ISVA_Configurator(object):
 
 
     def configure(self, config_file=None):
-        self.config = config_yaml()
-        if config_file:
-            _logger.info("Reading file from arg {}".format(config_file))
-            self.config = data_util.Map( yaml.load( open(config_file, 'r'), data_util.CustomLoader) )
-        elif len(config.keys()):
-            _logger.info("Reading file from env var ISVA_YAML_CONFIGURATION = {}".format(const.ISVA_CONFIGURATION))
-        else:
-            raise RuntimeError("Failed to find a YAML configuration file, help!")
+        self.config = config_yaml(config_file)
         self.factory = pyisva.Factory(mgmt_base_url(), *creds())
         if old_password():
             self.factory = pyisva.Factory(mgmt_base_url(), *old_creds())
