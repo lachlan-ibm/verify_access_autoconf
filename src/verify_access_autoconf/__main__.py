@@ -1,5 +1,5 @@
 #!/bin/python3
 
-from __init__ import configurator
+from verify_access_autoconf import configurator
 
 configurator.configure()
