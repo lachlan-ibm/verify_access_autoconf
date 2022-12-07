@@ -22,7 +22,8 @@ def config_yaml(config_file=None):
         return Map(yaml.load(open(
             os.environ.get(const.CONFIG_YAML_ENV_VAR), 'r'), Loader=CustomLoader))
     elif config_base_dir() and const.CONFIG_YAML in os.listdir(config_base_dir()):
-        _logger.info("Reading config file from {}".format(const.CONFIG_BASE_DIR))
+        _logger.info("Reading config file from {} env var: {}/config.yaml".format(
+            const.CONFIG_BASE_DIR, os.environ.get(const.CONFIG_BASE_DIR)))
         return Map(yaml.load(open(
             os.path.join(config_base_dir(), const.CONFIG_YAML), 'r'), Loader=CustomLoader))
     else:
@@ -47,26 +48,29 @@ def read_file(fp):
     return contents
 
 
-def mgmt_base_url():
-    return os.environ.get(const.MGMT_URL_ENV_VAR, config_yaml().mgmt_base_url)
+def mgmt_base_url(cfg=None):
+    if cfg == None:
+        cfg = config_yaml()
+    return os.environ.get(const.MGMT_URL_ENV_VAR, cfg.mgmt_base_url)
 
-def creds():
+def creds(cfg=None):
     if const.MGMT_USER_ENV_VAR in os.environ.keys():
         return (os.environ.get(const.MGMT_USER_ENV_VAR, "admin"), 
                     os.environ.get(const.MGMT_PWD_ENV_VAR, "admin"))
     else:
-        cfg = config_yaml()
+        if cfg == None:
+            cfg = config_yaml()
         return (cfg.mgmt_user, cfg.mgmt_pwd)
 
 
-def old_creds():
+def old_creds(cfg=None):
     if const.MGMT_OLD_PASSWORD_ENV_VAR in os.environ.keys():
         return (os.environ.get(const.MGMT_USER_ENV_VAR, "admin"), 
                     os.environ.get(const.MGMT_OLD_PASSWORD_ENV_VAR, "admin"))
     else:
-        mgmtUser = creds()(0)
-        oldPwd = config_yaml().mgmt_old_pwd
-        return (mgmtUser, oldPwd)
+        if cfg == None:
+            cfg = config_yaml()
+        return(creds(cfg)(0), cfg.mgmt_old_pwd)
 
 
 def update_container_names(isvaConfig):

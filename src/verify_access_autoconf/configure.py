@@ -21,8 +21,8 @@ _logger = logging.getLogger(__name__)
 
 class ISVA_Configurator(object):
 
-    def old_password(self):
-        rsp = requests.get(mgmt_base_url(), auth=old_creds(), headers=HEADERS, verify=False)
+    def old_password(self, config_file):
+        rsp = requests.get(mgmt_base_url(config_file), auth=old_creds(config_file), headers=HEADERS, verify=False)
         if rsp.status_code == 403:
             return False
         return True
@@ -378,21 +378,21 @@ class ISVA_Configurator(object):
 
     def configure(self, config_file=None):
         self.config = config_yaml(config_file)
-        self.factory = pyisva.Factory(mgmt_base_url(), *creds())
-        if old_password():
-            self.factory = pyisva.Factory(mgmt_base_url(), *old_creds())
-            accept_eula(old_creds())
-            complete_setup(old_creds())
-            set_admin_password(old_creds(), creds())
-            self.factory = pyisva.Factory(mgmt_base_url(), *creds())
+        self.factory = pyisva.Factory(mgmt_base_url(self.config), *creds(self.config))
+        if old_password(self.config):
+            self.factory = pyisva.Factory(mgmt_base_url(), *old_creds(self.config))
+            accept_eula(old_creds(self.config))
+            complete_setup(old_creds(self.config))
+            set_admin_password(old_creds(self.config), creds(self.config))
+            self.factory = pyisva.Factory(mgmt_base_url(self.config), *creds(self.config))
         else:
-            accept_eula(creds())
-            complete_setup(creds())
+            accept_eula(creds(self.config))
+            complete_setup(creds(self.config))
         appliance, container, web, aac, fed = self.get_modules(config, factory)
         if appliance.is_appliance():
-            self.configure_appliance(config, appliance)
+            self.configure_appliance(self.config, appliance)
         elif container.is_container():
-            self.configure_container(config, container)
+            self.configure_container(self.config, container)
         else:
             _logger.error("Deployment model cannot be found in config.yaml, exiting")
             sys.exit(1)
