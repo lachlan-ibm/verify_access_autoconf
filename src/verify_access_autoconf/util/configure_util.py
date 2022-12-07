@@ -1,7 +1,7 @@
 #!/bin/python
 import os, kubernetes, logging, sys, yaml
 from . import constants as const
-from .data_util import Map, FileLoader
+from .data_util import Map, FileLoader, CustomLoader
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 _logger = logging.getLogger(__name__)
@@ -15,16 +15,16 @@ def config_base_dir():
 def config_yaml(config_file=None):
     if config_file:
         _logger.info("Reading file from provided path {}".format(config_file))
-        config = data_util.Map(yaml.load(open(config_file, 'r'), Loader=data_util.CustomLoader))
+        config = data_util.Map(yaml.load(open(config_file, 'r'), Loader=CustomLoader))
     elif const.CONFIG_YAML_ENV_VAR in os.environ.keys():
         _logger.info("Reading file from env var {} = {}".format(
             const.CONFIG_YAML_ENV_VAR, os.environ.get(const.CONFIG_YAML_ENV_VAR)))
         return Map(yaml.load(open(
-            os.environ.get(const.CONFIG_YAML_ENV_VAR), 'r'), Loader=data_util.CustomLoader))
+            os.environ.get(const.CONFIG_YAML_ENV_VAR), 'r'), Loader=CustomLoader))
     elif config_base_dir() and const.CONFIG_YAML in os.listdir(config_base_dir()):
         _logger.info("Reading config file from {}".format(const.CONFIG_BASE_DIR))
         return Map(yaml.load(open(
-            os.path.join(config_base_dir(), const.CONFIG_YAML), 'r'), Loader=data_util.CustomLoader))
+            os.path.join(config_base_dir(), const.CONFIG_YAML), 'r'), Loader=CustomLoader))
     else:
         raise RuntimeError("Failed to find a YAML configuration file, help!")
 
