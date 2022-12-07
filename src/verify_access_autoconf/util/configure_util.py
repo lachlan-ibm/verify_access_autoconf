@@ -48,7 +48,7 @@ def read_file(fp):
 
 
 def mgmt_base_url():
-    return os.environ.get(const.MGMT_BASE_URL_ENV_VAR, config_yaml().mgmt_base_url)
+    return os.environ.get(const.MGMT_URL_ENV_VAR, config_yaml().mgmt_base_url)
 
 def creds():
     if const.MGMT_USER_ENV_VAR in os.environ.keys():
