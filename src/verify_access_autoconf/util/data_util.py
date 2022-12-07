@@ -57,8 +57,10 @@ class CustomLoader(yaml.SafeLoader):
 
     def _get_kube_client(self):
         if self.kubeClient  == None:
-            kubernetes_config = os.environ.get(const.KUBERNETES_CONFIG) #If none config will be loaded from default location
-            kubernetes.config.load_kube_config(config_file=kubernetes_config)
+            if const.KUBERNETES_CONFIG in  os.environ: #If none config will be loaded from default location
+                kubernetes.config.load_kube_config(config_file=os.environ.get(const.KUBERNETES_CONFIG))
+            else:
+                kubernetes.config.load_kube_config() # This will use the default ~/.kube/config or k8s cluster config
             self.kubeClient = kubernetes.client.CoreV1Api()
         return self.kubeClient
 
