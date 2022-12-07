@@ -15,16 +15,16 @@ def config_base_dir():
 def config_yaml(config_file=None):
     if config_file:
         _logger.info("Reading file from provided path {}".format(config_file))
-        config = data_util.Map(yaml.load(open(config_file, 'r'), data_util.CustomLoader) )
+        config = data_util.Map(yaml.load(open(config_file, 'r'), Loader=data_util.CustomLoader))
     elif const.CONFIG_YAML_ENV_VAR in os.environ.keys():
         _logger.info("Reading file from env var {} = {}".format(
             const.CONFIG_YAML_ENV_VAR, os.environ.get(const.CONFIG_YAML_ENV_VAR)))
         return Map(yaml.load(open(
-            os.environ.get(const.CONFIG_YAML_ENV_VAR), 'r')), data_util.CustomLoader)
+            os.environ.get(const.CONFIG_YAML_ENV_VAR), 'r')), Loader=data_util.CustomLoader)
     elif config_base_dir() and const.CONFIG_YAML in os.listdir(config_base_dir()):
         _logger.info("Reading config file from {}".format(const.CONFIG_BASE_DIR))
         return Map(yaml.load(open(
-            os.path.join(config_base_dir(), const.CONFIG_YAML), 'r')), data_util.CustomLoader)
+            os.path.join(config_base_dir(), const.CONFIG_YAML), 'r')), Loader=data_util.CustomLoader)
     else:
         raise RuntimeError("Failed to find a YAML configuration file, help!")
 
@@ -72,11 +72,8 @@ def old_creds():
 def update_container_names(isvaConfig):
     #Try update kubernetes containers with generated names
     if isvaConfig.docker != None and isvaConfig.docker.orchestration == 'kubernetes':
-        kubernetes_config = os.environ.get(const.KUBERNETES_CONFIG) #If none config will be loaded from default location
-        kubernetes.config.load_kube_config(config_file=kubernetes_config)
-        kubeClient = kubernetes.client.CoreV1Api()
         pods = []
-        ret = kubeClient.list_pod_for_all_namespaces(watch=False)
+        ret = _get_kube_client().list_pod_for_all_namespaces(watch=False)
         for e in ret.items:
             if e.metadata.namespace == isvaConfig.docker.containers.namespace:
                 pods += [e.metadata.name]
@@ -110,7 +107,7 @@ def update_container_names(isvaConfig):
 def _kube_reload_container(client, namespace, container):
     from kubernetes.stream import stream
     exec_commands = ['isam_cli', '-c', 'reload', 'all']
-    response = stream(client.connect_get_namespaced_pod_exec,
+    response = stream(_get_kube_client().connect_get_namespaced_pod_exec,
             container,
             namespace,
             command=exec_commands,
@@ -129,8 +126,9 @@ def _kube_rollout_restart(client, namespace, deployment):
     return
 
 def _get_kube_client():
-    #TODO
-    return
+    kubernetes_config = os.environ.get(const.KUBERNETES_CONFIG) #If none config will be loaded from default location
+    kubernetes.config.load_kube_config(config_file=kubernetes_config)
+    return kubernetes.client.CoreV1Api()
 
 def deploy_pending_changes(factory=None, isvaConfig=None):
     if not factory:

@@ -1,6 +1,8 @@
 #!/bin/python 
 import os
 import yaml
+import base64
+import kubernetes
 
 class Map(dict):
     def __init__(self, *args, **kwargs):
@@ -50,15 +52,34 @@ class Map(dict):
 
 class CustomLoader(yaml.SafeLoader):
 
+    kubeClient = None
+
+    def _get_kube_client(self):
+        if self.kubeClient  == None:
+            kubernetes_config = os.environ.get(const.KUBERNETES_CONFIG) #If none config will be loaded from default location
+            kubernetes.config.load_kube_config(config_file=kubernetes_config)
+            self.kubeClient = kubernetes.client.CoreV1Api()
+        return self.kubeClient
+
     def __init__(self, path):
         self._root = os.path.split(path.name)[0]
         super(CustomLoader, self).__init__(path)
         CustomLoader.add_constructor('!include', CustomLoader.include)
+        CustomLoader.add_constructor('!secret', CustomLoader.k8s_secret)
 
     def include(self, node):
         filename = os.path.join(self._root, self.construct_scalar(node))
         with open(filename, 'r') as f:
             return yaml.load(f, CustomLoader)
+
+    def k8s_secret(self, node):
+        secret = self.construct_scalar(node)
+        #Split secret into name and ke
+        namespaceName, key = secret.split(':')
+        namespace, name = namespaceName.split('/')
+        #Use k8s API to look up secret
+        k8sSecret = self._get_kube_client().read_namespaced_secret(name, namespace)
+        return base64.b64decode(k8sSecret.data[key]).decode()
 
 class FileLoader():
 
