@@ -20,11 +20,11 @@ def config_yaml(config_file=None):
         _logger.info("Reading file from env var {} = {}".format(
             const.CONFIG_YAML_ENV_VAR, os.environ.get(const.CONFIG_YAML_ENV_VAR)))
         return Map(yaml.load(open(
-            os.environ.get(const.CONFIG_YAML_ENV_VAR), 'r')), Loader=data_util.CustomLoader)
+            os.environ.get(const.CONFIG_YAML_ENV_VAR), 'r'), Loader=data_util.CustomLoader))
     elif config_base_dir() and const.CONFIG_YAML in os.listdir(config_base_dir()):
         _logger.info("Reading config file from {}".format(const.CONFIG_BASE_DIR))
         return Map(yaml.load(open(
-            os.path.join(config_base_dir(), const.CONFIG_YAML), 'r')), Loader=data_util.CustomLoader)
+            os.path.join(config_base_dir(), const.CONFIG_YAML), 'r'), Loader=data_util.CustomLoader))
     else:
         raise RuntimeError("Failed to find a YAML configuration file, help!")
 
