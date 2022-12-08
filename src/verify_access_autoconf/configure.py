@@ -388,19 +388,19 @@ class ISVA_Configurator(object):
 
     def configure(self, config_file=None):
         self.config = config_yaml(config_file)
-        if not lmi_responding(self.config):
+        if not self.lmi_responding(self.config) == True:
             _logger.error("Unable to contact LMI, exiting")
             sys.exit(1)
         self.factory = pyisva.Factory(mgmt_base_url(self.config), *creds(self.config))
-        if old_password(self.config):
+        if self.old_password(self.config):
             self.factory = pyisva.Factory(mgmt_base_url(), *old_creds(self.config))
-            accept_eula(old_creds(self.config))
-            complete_setup(old_creds(self.config))
-            set_admin_password(old_creds(self.config), creds(self.config))
+            self.accept_eula(old_creds(self.config))
+            self.complete_setup(old_creds(self.config))
+            self.set_admin_password(old_creds(self.config), creds(self.config))
             self.factory = pyisva.Factory(mgmt_base_url(self.config), *creds(self.config))
         else:
-            accept_eula(creds(self.config))
-            complete_setup(creds(self.config))
+            self.accept_eula(creds(self.config))
+            self.complete_setup(creds(self.config))
         appliance, container, web, aac, fed = self.get_modules(config, factory)
         if appliance.is_appliance():
             self.configure_appliance(self.config, appliance)
