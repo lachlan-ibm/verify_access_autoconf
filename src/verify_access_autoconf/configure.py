@@ -30,9 +30,12 @@ class ISVA_Configurator(object):
 
     def lmi_responding(self, config_file):
         for _ in range(10):
-            rsp = requests.get(mgmt_base_url(config_file), headers=HEADERS, verify=False)
-            if rsp.status_code == 302 and 'Location' in rsp.haders and '/core/login' in rsp.headers['Location']:
-                return True
+            try:
+                rsp = requests.get(mgmt_base_url(config_file), headers=HEADERS, verify=False)
+                if rsp.status_code == 302 and 'Location' in rsp.haders and '/core/login' in rsp.headers['Location']:
+                    return True
+            except:
+                pass # Wait and try again
             time.sleep(10)
         return False
 
