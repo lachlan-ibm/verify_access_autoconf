@@ -28,6 +28,16 @@ class ISVA_Configurator(object):
         return True
 
 
+    def lmi_responding(self, config_file):
+        for _ in range(10):
+            rsp = requests.get(mgmt_base_url(config_file), headers=HEADERS, verify=False)
+            if rsp.status_code == 302 and 'Location' in rsp.haders and '/core/login' in rsp.headers['Location']:
+                return True
+            time.sleep(10)
+        return False
+
+
+
     def set_admin_password(self, old, new):
         response = self.factory.get_system_setting().sysaccount.update_admin_password(old_password=old(1), password=new(1)) 
         if response.success == True:
@@ -378,6 +388,9 @@ class ISVA_Configurator(object):
 
     def configure(self, config_file=None):
         self.config = config_yaml(config_file)
+        if not lmi_responding(self.config):
+            _logger.error("Unable to contact LMI, exiting")
+            sys.exit(1)
         self.factory = pyisva.Factory(mgmt_base_url(self.config), *creds(self.config))
         if old_password(self.config):
             self.factory = pyisva.Factory(mgmt_base_url(), *old_creds(self.config))
