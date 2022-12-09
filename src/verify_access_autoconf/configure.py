@@ -32,7 +32,7 @@ class ISVA_Configurator(object):
     def lmi_responding(self, config_file):
         for _ in range(10):
             try:
-                rsp = requests.get(mgmt_base_url(config_file), verify=False)
+                rsp = requests.get(mgmt_base_url(config_file), verify=False, allow_redirects=False)
                 if rsp.status_code == 302 and rsp.url != None and '/core/login' in rsp.url:
                     return True
             except:
