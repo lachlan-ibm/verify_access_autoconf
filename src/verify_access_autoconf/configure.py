@@ -33,7 +33,8 @@ class ISVA_Configurator(object):
         for _ in range(10):
             try:
                 rsp = requests.get(mgmt_base_url(config_file), verify=False, allow_redirects=False)
-                if rsp.status_code == 302 and rsp.url != None and '/core/login' in rsp.url:
+                if rsp.status_code == 302 and 'Location' in rsp.headers and '/core/login' in rsp.headers['Location']:
+                    _logger.info("LMI returning login page")
                     return True
             except:
                 pass # Wait and try again
@@ -392,7 +393,7 @@ class ISVA_Configurator(object):
 
     def configure(self, config_file=None):
         self.config = config_yaml(config_file)
-        if not self.lmi_responding(self.config) == True:
+        if self.lmi_responding(self.config) == False:
             _logger.error("Unable to contact LMI, exiting")
             sys.exit(1)
         self.factory = pyisva.Factory(mgmt_base_url(self.config), *creds(self.config))
