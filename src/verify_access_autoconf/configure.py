@@ -33,9 +33,7 @@ class ISVA_Configurator(object):
         for _ in range(10):
             try:
                 rsp = requests.get(mgmt_base_url(config_file), verify=False)
-                _logger.error("{} {}\n{}".format(rsp.status_code, rsp.headers, rsp.content))
-                _logger.error("{}".format(rsp.url))
-                if rsp.status_code == 302 and 'Location' in rsp.headers and '/core/login' in rsp.headers['Location']:
+                if rsp.status_code == 302 and rsp.url != None and '/core/login' in rsp.url:
                     return True
             except:
                 pass # Wait and try again
