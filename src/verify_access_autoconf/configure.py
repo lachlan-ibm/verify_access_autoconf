@@ -34,6 +34,7 @@ class ISVA_Configurator(object):
         for _ in range(12):
             try:
                 rsp = requests.get(url, verify=False, allow_redirects=False, timeout=6)
+                _logger.debug("\trsp.sc={}; rsp.url={}".format(rsp.status_code, rsp.headers.get('Location', 'NULL')))
                 if rsp.status_code == 302 and 'Location' in rsp.headers and '/core/login' in rsp.headers['Location']:
                     _logger.info("LMI returning login page")
                     return True
