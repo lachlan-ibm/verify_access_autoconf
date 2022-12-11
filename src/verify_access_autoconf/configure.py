@@ -46,7 +46,7 @@ class ISVA_Configurator(object):
 
 
     def set_admin_password(self, old, new):
-        response = self.factory.get_system_setting().sysaccount.update_admin_password(old_password=old(1), password=new(1)) 
+        response = self.factory.get_system_settings().sysaccount.update_admin_password(old_password=old(1), password=new(1)) 
         if response.success == True:
             _logger.info("Successfullt updated admin password")
         else:
@@ -55,7 +55,7 @@ class ISVA_Configurator(object):
 
     def accept_eula(self):
         payload = {"accepted": True}
-        rsp = self.factory.get_system_setting().first_steps.set_sla_status()
+        rsp = self.factory.get_system_settings().first_steps.set_sla_status()
         if rsp.success == True:
             _logger.info("Accepted SLA")
         else:
@@ -63,7 +63,7 @@ class ISVA_Configurator(object):
 
 
     def complete_setup(self):
-        rsp = self.factory.get_system_setting().first_steps.set_setup_complete()
+        rsp = self.factory.get_system_settings().first_steps.set_setup_complete()
         assert rsp.status_code == 200, "Did not complete setup"
         deploy_pending_changes()
         _logger.info("Completed setup")
@@ -229,9 +229,9 @@ class ISVA_Configurator(object):
         for group in config.account_management.groups:
             rsp = None
             if group.operation == "add":
-                rsp = self.factory.get_system_setting().sysaccount.create_group(group.id)
+                rsp = self.factory.get_system_settings().sysaccount.create_group(group.id)
             elif group.operation == "delete":
-                rsp = self.factory.get_system_setting().sysaccount.delete_group(group.id)
+                rsp = self.factory.get_system_settings().sysaccount.delete_group(group.id)
             else:
                 _logger.error("oepration {} is not permited for groups".format(group.operation))
                 continue
@@ -338,7 +338,7 @@ class ISVA_Configurator(object):
                         atp.operation, json.dumps(atp, indent=4)))
 
     def date_time(self, config):
-        dateTime = self.factory.get_system_setting().date_time
+        dateTime = self.factory.get_system_settings().date_time
         if config.date_time:
             dtConfig = config.date_time
             rsp =dateTime.update(enable_ntp=dtConfig.enable_ntp, ntp_servers=dtConfig.ntp_servers, 
@@ -353,7 +353,7 @@ class ISVA_Configurator(object):
     def apply_snapshot(self, config):
         if config != None and config.snapshot != None:
             snapshotConfig = config.snapshot
-            rsp = self.factory.get_system_setting().snapshot.upload(snapshotConfig.snapshot)
+            rsp = self.factory.get_system_settings().snapshot.upload(snapshotConfig.snapshot)
             if rsp.success == True:
                 _logger.info("Successfully applied snapsnot [{}]".format(snapshotConfig.snapshot))
             else:
