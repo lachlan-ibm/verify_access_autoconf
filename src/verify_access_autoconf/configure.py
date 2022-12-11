@@ -51,16 +51,16 @@ class ISVA_Configurator(object):
             _logger.error("Failed to update admin password:/n{}".format(response.data))
 
 
-    def accept_eula(self, creds):
+    def accept_eula(self):
         payload = {"accepted": True}
         rsp = self.factory.get_system_setting().first_steps.set_sla_status()
-        if rspsuccess == True:
+        if rsp.success == True:
             _logger.info("Accepted SLA")
         else:
             _logger.error("Failed to accept SLA:\n{}".format(rsp.data))
 
 
-    def complete_setup(self, creds):
+    def complete_setup(self):
         rsp = self.factory.get_system_setting().first_steps.set_setup_complete()
         assert rsp.status_code == 200, "Did not complete setup"
         deploy_pending_changes()
@@ -392,20 +392,23 @@ class ISVA_Configurator(object):
 
 
     def configure(self, config_file=None):
+        _logger.info("Reading configuration file")
         self.config = config_yaml(config_file)
+        _logger.info("Testing LMI connectivity")
         if self.lmi_responding(self.config) == False:
             _logger.error("Unable to contact LMI, exiting")
             sys.exit(1)
+        _logger.info("LMI responding, begin configuration")
         self.factory = pyisva.Factory(mgmt_base_url(self.config), *creds(self.config))
         if self.old_password(self.config):
             self.factory = pyisva.Factory(mgmt_base_url(), *old_creds(self.config))
-            self.accept_eula(old_creds(self.config))
-            self.complete_setup(old_creds(self.config))
+            self.accept_eula()
+            self.complete_setup()
             self.set_admin_password(old_creds(self.config), creds(self.config))
             self.factory = pyisva.Factory(mgmt_base_url(self.config), *creds(self.config))
         else:
-            self.accept_eula(creds(self.config))
-            self.complete_setup(creds(self.config))
+            self.accept_eula()
+            self.complete_setup()
         appliance, container, web, aac, fed = self.get_modules(config, factory)
         if appliance.is_appliance():
             self.configure_appliance(self.config, appliance)
