@@ -7,7 +7,6 @@ import requests
 import yaml
 import pyisva
 import time
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 from .appliance import Appliance_Configurator as APPLIANCE
 from .container import Docker_Configurator as CONTAINER
@@ -18,6 +17,7 @@ from .util.data_util import Map
 from .util.configure_util import deploy_pending_changes, creds, old_creds, config_base_dir, mgmt_base_url, config_yaml
 from .util.constants import API_HEADERS, HEADERS
 
+logging.basicConfig(stream=sys.stdout, level=os.environ.get(const.LOG_LEVEL, logging.DEBUG))
 _logger = logging.getLogger(__name__)
 
 class ISVA_Configurator(object):
