@@ -66,7 +66,7 @@ def creds(cfg=None):
         if user == None:
             user = cfg.get('mgmt_user', "admin")
         if secret == None:
-            secret cfg.get('mgmt_pwd', "admin")
+            secret = cfg.get('mgmt_pwd', "admin")
     return (user, secret)
 
 
