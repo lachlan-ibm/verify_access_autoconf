@@ -38,6 +38,7 @@ class ISVA_Configurator(object):
                     return True
             except:
                 pass # Wait and try again
+            _logger.debug("\tLMI not responding yet")
             time.sleep(10)
         return False
 
