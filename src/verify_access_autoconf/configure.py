@@ -31,16 +31,16 @@ class ISVA_Configurator(object):
 
     def lmi_responding(self, config_file):
         url = mgmt_base_url(config_file)
-        for _ in range(10):
+        for _ in range(12):
             try:
-                rsp = requests.get(url, verify=False, allow_redirects=False, timeout=5)
+                rsp = requests.get(url, verify=False, allow_redirects=False, timeout=6)
                 if rsp.status_code == 302 and 'Location' in rsp.headers and '/core/login' in rsp.headers['Location']:
                     _logger.info("LMI returning login page")
                     return True
             except:
                 pass # Wait and try again
             _logger.debug("\t{} not responding yet".format(url))
-            time.sleep(10)
+            time.sleep(15)
         return False
 
 
