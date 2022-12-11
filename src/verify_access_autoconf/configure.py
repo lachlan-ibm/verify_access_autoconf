@@ -404,7 +404,7 @@ class ISVA_Configurator(object):
         _logger.info("LMI responding, begin configuration")
         self.factory = pyisva.Factory(mgmt_base_url(self.config), *creds(self.config))
         if self.old_password(self.config):
-            self.factory = pyisva.Factory(mgmt_base_url(), *old_creds(self.config))
+            self.factory = pyisva.Factory(mgmt_base_url(self.config), *old_creds(self.config))
             self.accept_eula()
             self.complete_setup()
             self.set_admin_password(old_creds(self.config), creds(self.config))
