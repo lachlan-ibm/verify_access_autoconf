@@ -15,9 +15,9 @@ from .webseal import WEB_Configurator as WEB
 from .federation import FED_Configurator as FED
 from .util.data_util import Map
 from .util.configure_util import deploy_pending_changes, creds, old_creds, config_base_dir, mgmt_base_url, config_yaml
-from .util.constants import API_HEADERS, HEADERS
+from .util.constants import API_HEADERS, HEADERS, LOG_LEVEL
 
-logging.basicConfig(stream=sys.stdout, level=os.environ.get(const.LOG_LEVEL, logging.DEBUG))
+logging.basicConfig(stream=sys.stdout, level=os.environ.get(LOG_LEVEL, logging.DEBUG))
 _logger = logging.getLogger(__name__)
 
 class ISVA_Configurator(object):
