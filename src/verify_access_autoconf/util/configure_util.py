@@ -54,23 +54,35 @@ def mgmt_base_url(cfg=None):
     return os.environ.get(const.MGMT_URL_ENV_VAR, cfg.mgmt_base_url)
 
 def creds(cfg=None):
+    user = None
+    secret = None
     if const.MGMT_USER_ENV_VAR in os.environ.keys():
-        return (os.environ.get(const.MGMT_USER_ENV_VAR, "admin"), 
-                    os.environ.get(const.MGMT_PWD_ENV_VAR, "admin"))
-    else:
+        user = os.environ.get(const.MGMT_USER_ENV_VAR)
+    if const.MGMT_PWD_ENV_VAR in os.environ.keys():
+        secret = os.environ.get(const.MGMT_PWD_ENV_VAR)
+    if user == None or secret == None:
         if cfg == None:
             cfg = config_yaml()
-        return (cfg.mgmt_user, cfg.mgmt_pwd)
+        if user == None:
+            user = cfg.get('mgmt_user', "admin")
+        if secret == None:
+            secret cfg.get('mgmt_pwd', "admin")
+    return (user, secret)
 
 
 def old_creds(cfg=None):
+    user = None
+    secret = None
     if const.MGMT_OLD_PASSWORD_ENV_VAR in os.environ.keys():
-        return (os.environ.get(const.MGMT_USER_ENV_VAR, "admin"), 
-                    os.environ.get(const.MGMT_OLD_PASSWORD_ENV_VAR, "admin"))
-    else:
-        if cfg == None:
-            cfg = config_yaml()
-        return(creds(cfg)(0), cfg.mgmt_old_pwd)
+        user = os.environ.get(const.MGMT_USER_ENV_VAR)
+    if const.MGMT_OLD_PASSWORD_ENV_VAR in os.environ.keys():
+        secret = os.environ.get(const.MGMT_OLD_PASSWORD_ENV_VAR)
+    if user == None or secret == None:
+        if user == None:
+            user = cfg.get('mgmt_user', "admin")
+        if secret == None:
+            secret = cfg.get('mgmt_old_pwd', "admin")
+    return (user, secret)
 
 
 def update_container_names(isvaConfig):
