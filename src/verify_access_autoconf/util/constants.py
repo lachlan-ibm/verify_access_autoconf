@@ -33,15 +33,18 @@ LOG_LEVEL = "ISVA_CONFIGURATOR_LOG_LEVEL"
 
 class ISVA_Kube_Client:
     _client = None
+    _caught = False
 
     @classmethod
     def get_client(cls):
-        if cls._client == None:
-            print("Creating client")
+        if cls._client == None and cls._caught == False:
             if KUBERNETES_CONFIG in os.environ.keys():
                 cls._client = kubernetes.config.load_kube_config(config_file=os.environ.get(KUBERNETES_CONFIG))
-            else:
-                cls._client = kubernetes.config.load_config()
+            elif cls._caught == False:
+                try:
+                    cls._client = kubernetes.config.load_config()
+                except kubernetes.config.config_exception.ConfigException:
+                    cls._caught = True
         print(cls._client)
         return cls._client
 
