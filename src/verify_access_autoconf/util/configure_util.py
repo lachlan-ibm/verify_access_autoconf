@@ -138,13 +138,13 @@ def deploy_pending_changes(factory=None, isvaConfig=None):
 
         if isvaConfig.container.orchestration == "kubernetes":
             #Are we restarting the containers or rolling out a restard to the deployment descriptor
-            if isvaConfig.container.deployments is not None:
-                namespace = isvaConfig.docker.container.deployment.namespace
-                for deployment in isvaConfig.docker.deployments.webseal:
+            if isvaConfig.container.k8s_deployments is not None:
+                namespace = isvaConfig.docker.container.k8s_deployment.namespace
+                for deployment in isvaConfig.docker.k8s_deployments.webseal:
                     _kube_rollout_restart(kube_client, namespace, deployment)
-                for deployment in isvaConfig.docker.deployments.runtime:
+                for deployment in isvaConfig.docker.k8s_deployments.runtime:
                     _kube_rollout_restart(kube_client, namespace, deployment)
-                for deployment in isvaConfig.docker.deployments.dsc:
+                for deployment in isvaConfig.docker.k8s_deployments.dsc:
                     _kube_rollout_restart(kube_client, namespace, deployment)
 
             if isvaConfig.container.pods is not None:
