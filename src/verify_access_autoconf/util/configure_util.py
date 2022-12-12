@@ -172,6 +172,7 @@ def deploy_pending_changes(factory=None, isvaConfig=None):
                 _compose_restart_container(container, isvaConfig)
         elif isvaConfig.container.orchestration == "docker":
             #TODO
+            pass
         else:
             _logger.error("Unable to perform container restart, this may lead to errors")
 
