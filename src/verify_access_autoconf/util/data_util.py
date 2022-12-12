@@ -69,7 +69,7 @@ class CustomLoader(yaml.SafeLoader):
         namespaceName, key = secret.split(':')
         namespace, name = namespaceName.split('/')
         #Use k8s API to look up secret
-        k8sSecret = const.KUBE_CLIENT.get_client().CoreV1Api().read_namespaced_secret(name, namespace)
+        k8sSecret = const.KUBE_CLIENT.CoreV1Api().read_namespaced_secret(name, namespace)
         return base64.b64decode(k8sSecret.data[key]).decode()
 
 

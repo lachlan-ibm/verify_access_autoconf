@@ -45,4 +45,4 @@ class ISVA_Kube_Client:
         print(cls._client)
         return cls._client
 
-KUBE_CLIENT = ISVA_Kube_Client()
+KUBE_CLIENT = ISVA_Kube_Client.get_client()

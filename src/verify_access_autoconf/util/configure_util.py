@@ -150,7 +150,7 @@ def deploy_pending_changes(factory=None, isvaConfig=None):
     if factory.isDocker() == True and isvaConfig.container is not None:
         #We know about containers and have a k8s client that can control them
         factory.get_system_settings().docker.publish()
-        kube_client = const.KUBE_CLIENT.get_client()
+        kube_client = const.KUBE_CLIENT
 
         if isvaConfig.container.orchestration == "kubernetes":
             #Are we restarting the containers or rolling out a restard to the deployment descriptor
