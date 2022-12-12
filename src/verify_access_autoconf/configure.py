@@ -66,7 +66,7 @@ class ISVA_Configurator(object):
     def complete_setup(self):
         rsp = self.factory.get_system_settings().first_steps.set_setup_complete()
         assert rsp.status_code == 200, "Did not complete setup"
-        deploy_pending_changes()
+        deploy_pending_changes(self.factory, self.config)
         _logger.info("Completed setup")
 
 
@@ -111,7 +111,7 @@ class ISVA_Configurator(object):
             _activateAdvancedAccessControl()
         if not any(module.get('id', None) == 'federation' and module.get('enabled', "False") == "True" for module in activations):
             _activateFederation()
-        deploy_pending_changes()
+        deploy_pending_changes(self.factory, self.config)
         _logger.info("appliance activated")
 
 
@@ -180,7 +180,7 @@ class ISVA_Configurator(object):
                 if database.load_certificates:
                     for item in database.load_certificates:
                         _load_signer_cert(database.name, item.server, item.port, item.label)
-        deploy_pending_changes()
+        deploy_pending_changes(self.factory, self.config)
 
 
     def admin_config(self, config):

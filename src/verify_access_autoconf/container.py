@@ -4,7 +4,7 @@ import requests
 import json
 
 from .util.constants import HEADERS
-from .util.configure_util import update_container_names, deploy_pending_changes
+from .util.configure_util import deploy_pending_changes
 from .util.data_util import Map
 
 _logger = logging.getLogger(__name__)
@@ -50,7 +50,6 @@ class Docker_Configurator(object):
 
 
     def configure(self):
-        update_container_names()
         _logger.info(json.dumps(self.config, indent=4))
         configure_snapshot_publishing()
         configure_database()

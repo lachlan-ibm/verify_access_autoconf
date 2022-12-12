@@ -1,7 +1,8 @@
 #!/bin/python
-import os, kubernetes, logging, sys, yaml
+import os, kubernetes, logging, sys, yaml, pyisva, datetime
 from . import constants as const
-from .data_util import Map, FileLoader, CustomLoader
+from .data_util import Map, FileLoader, CustomLoader, ISVA_Kube_Client
+from kubernetes.stream import stream
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 _logger = logging.getLogger(__name__)
@@ -85,45 +86,9 @@ def old_creds(cfg=None):
     return (user, secret)
 
 
-def update_container_names(isvaConfig):
-    #Try update kubernetes containers with generated names
-    if isvaConfig.docker != None and isvaConfig.docker.orchestration == 'kubernetes':
-        pods = []
-        ret = _get_kube_client().list_pod_for_all_namespaces(watch=False)
-        for e in ret.items:
-            if e.metadata.namespace == isvaConfig.docker.containers.namespace:
-                pods += [e.metadata.name]
-        config_pods = []
-        webseal_pods = []
-        runtime_pods = []
-        dsc_pods = []
-        for pod in pods:
-            if isvaConfig.docker.containers.webseal != None and isinstance( isvaConfig.docker.containers.webseal, str):
-                if isvaConfig.docker.containers.webseal in pod:
-                    webseal_pods += [pod]
-            if isvaConfig.docker.containers.runtime != None and isinstance( isvaConfig.docker.containers.runtime, str):
-                if isvaConfig.docker.containers.runtime in pod:
-                    runtime_pods += [pod]
-            if isvaConfig.docker.containers.configuration != None and isinstance( isvaConfig.docker.containers.configuration, str):
-                if isvaConfig.docker.containers.configuration in pod:
-                    config_pods += [pod]
-            if isvaConfig.docker.containers.dsc != None and isinstance( isvaConfig.docker.containers.dsc, str):
-                if isvaConfig.docker.containers.dsc in pod:
-                    dsc_pods += [pod]
-        if config_pods:
-            isvaConfig.docker.containers.configuration = config_pods
-        if webseal_pods:
-            isvaConfig.docker.containers.webseal = webseal_pods
-        if runtime_pods:
-            isvaConfig.docker.containers.runtime = runtime_pods
-        if dsc_pods:
-            isvaConfig.docker.containers.dsc = dsc_pods
-
-
 def _kube_reload_container(client, namespace, container):
-    from kubernetes.stream import stream
     exec_commands = ['isam_cli', '-c', 'reload', 'all']
-    response = stream(_get_kube_client().connect_get_namespaced_pod_exec,
+    response = stream(client.CoreV1Api().connect_get_namespaced_pod_exec,
             container,
             namespace,
             command=exec_commands,
@@ -138,25 +103,58 @@ def _kube_reload_container(client, namespace, container):
 
 
 def _kube_rollout_restart(client, namespace, deployment):
-    #TODO
+    now = datetime.datetime.utcnow()
+    now = str(now.isoformat("T") + "Z")
+    body = {
+        'spec': {
+            'template':{
+                'metadata': {
+                    'annotations': {
+                        'kubectl.kubernetes.io/restartedAt': now
+                    }
+                }
+            }
+        }
+    }
+    try:
+        client.AppsV1Api().patch_namespaced_deployment(deployment, namespace, body, pretty='true')
+    except kubernetes.client.rest.ApiException as e:
+        _logger.error("Exception when calling AppsV1Api->patch_namespaced_deployment: %s\n" % e)
+        sys.exit(1)
     return
 
-def _get_kube_client():
-    kubernetes_config = os.environ.get(const.KUBERNETES_CONFIG) #If none config will be loaded from default location
-    kubernetes.config.load_kube_config(config_file=kubernetes_config)
-    return kubernetes.client.CoreV1Api()
 
 def deploy_pending_changes(factory=None, isvaConfig=None):
+    if not isvaConfig:
+        isvaConfig = config_yaml()
     if not factory:
-        factory = pyisva.Factory(mgmt_base_url(), *creds())
+        factory = pyisva.Factory(mgmt_base_url(isvaConfig), *creds(isvaConfig))
+
     factory.get_system_settings().configuration.deploy_pending_changes()
-    kube_client = _get_kube_client()
-    if factory.is_docker() == True and kube_client is not None:
-        namespace = isvaConfig.docker.containers.namespace
+    if factory.isDocker() == True and isvaConfig.container is not None:
+        #We know about containers and have a k8s client that can control them
         factory.get_system_settings().docker.publish()
-        for container in isvaConfig.docker.containers.webseal:
-            _kube_reload_container(kube_client, namespace, container)
-        for container in isvaConfig.docker.containers.runtime:
-            _kube_reload_container(kube_client, namespace, container)
-        for container in isvaConfig.docker.containers.dsc:
-            _kube_reload_container(kube_client, namespace, container)
+        kube_client = ISVA_Kube_Client.get_client()
+
+        if isvaConfig.container.orchestration == "kubernetes":
+            #Are we restarting the containers or rolling out a restard to the deployment descriptor
+            if isvaConfig.container.deployments is not None:
+                namespace = isvaConfig.docker.container.deployment.namespace
+                for deployment in isvaConfig.docker.deployments.webseal:
+                    _kube_rollout_restart(kube_client, namespace, deployment)
+                for deployment in isvaConfig.docker.deployments.runtime:
+                    _kube_rollout_restart(kube_client, namespace, deployment)
+                for deployment in isvaConfig.docker.deployments.dsc:
+                    _kube_rollout_restart(kube_client, namespace, deployment)
+
+            if isvaConfig.container.pods is not None:
+                for pod in isvaConfig.container.pods:
+                    _kube_restart_container(kube_client, namespace, pod)
+
+        elif isvaConfig.container.orchestration == "docker-compose":
+            #TODO
+            continue
+
+        else:
+            _logger.error("Unable to perform container restart, this may lead to errors")
+
