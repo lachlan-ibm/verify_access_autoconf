@@ -37,8 +37,10 @@ class ISVA_Kube_Client(object):
     @classmethod
     def get_client(cls):
         if cls._client is None:
+            print("Creating client")
             if KUBERNETES_CONFIG in os.environ.keys():
                 cls._client = kubernetes.config.load_kube_config(config_file=os.environ.get(KUBERNETES_CONFIG))
             else:
                 cls._client = kubernetes.config.load_config()
+        print(cls._client)
         return cls._client
