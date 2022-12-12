@@ -82,7 +82,7 @@ def old_creds(cfg=None):
         if user == None:
             user = cfg.get('mgmt_user', "admin")
         if secret == None:
-            secret = cfg.get('mgmt_old_pwd', "admin")
+            secret = cfg.get('mgmt_old_pwd', None)
     return (user, secret)
 
 

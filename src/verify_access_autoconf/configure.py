@@ -47,7 +47,7 @@ class ISVA_Configurator(object):
 
 
     def set_admin_password(self, old, new):
-        response = self.factory.get_system_settings().sysaccount.update_admin_password(old_password=old(1), password=new(1)) 
+        response = self.factory.get_system_settings().sysaccount.update_admin_password(old_password=old[1], password=new[1]) 
         if response.success == True:
             _logger.info("Successfullt updated admin password")
         else:
@@ -385,12 +385,12 @@ class ISVA_Configurator(object):
         isva_container.configure()
 
 
-    def get_modules(self, config, factory):
-        appliance = APPLIANCE(config, factory)
-        container = CONTAINER(config, factory)
-        web = WEB(config, factory.get_web_settings())
-        aac = AAC(config, factory.get_access_control())
-        fed = FED(config, factory.get_federation())
+    def get_modules(self):
+        appliance = APPLIANCE(self.config, self.factory)
+        container = CONTAINER(self.config, self.factory)
+        web = WEB(self.config, self.factory.get_web_settings())
+        aac = AAC(self.config, self.factory.get_access_control())
+        fed = FED(self.config, self.factory.get_federation())
         return appliance, container, web, aac, fed
 
 
@@ -402,7 +402,6 @@ class ISVA_Configurator(object):
             _logger.error("Unable to contact LMI, exiting")
             sys.exit(1)
         _logger.info("LMI responding, begin configuration")
-        self.factory = pyisva.Factory(mgmt_base_url(self.config), *creds(self.config))
         if self.old_password(self.config):
             self.factory = pyisva.Factory(mgmt_base_url(self.config), *old_creds(self.config))
             self.accept_eula()
@@ -410,9 +409,10 @@ class ISVA_Configurator(object):
             self.set_admin_password(old_creds(self.config), creds(self.config))
             self.factory = pyisva.Factory(mgmt_base_url(self.config), *creds(self.config))
         else:
+            self.factory = pyisva.Factory(mgmt_base_url(self.config), *creds(self.config))
             self.accept_eula()
             self.complete_setup()
-        appliance, container, web, aac, fed = self.get_modules(config, factory)
+        appliance, container, web, aac, fed = self.get_modules()
         if appliance.is_appliance():
             self.configure_appliance(self.config, appliance)
         elif container.is_container():
