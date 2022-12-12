@@ -147,7 +147,7 @@ def deploy_pending_changes(factory=None, isvaConfig=None):
         factory = pyisva.Factory(mgmt_base_url(isvaConfig), *creds(isvaConfig))
 
     factory.get_system_settings().configuration.deploy_pending_changes()
-    if factory.isDocker() == True and isvaConfig.container is not None:
+    if factory.is_docker() == True and isvaConfig.container is not None:
         #We know about containers and have a k8s client that can control them
         factory.get_system_settings().docker.publish()
         kube_client = const.KUBE_CLIENT
