@@ -1,7 +1,7 @@
 #!/bin/python
 import os, kubernetes, logging, sys, yaml, pyisva, datetime, subprocess, shutil
 from . import constants as const
-from .data_util import Map, FileLoader, CustomLoader, ISVA_Kube_Client
+from .data_util import Map, FileLoader, CustomLoader
 from kubernetes.stream import stream
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
@@ -150,7 +150,7 @@ def deploy_pending_changes(factory=None, isvaConfig=None):
     if factory.isDocker() == True and isvaConfig.container is not None:
         #We know about containers and have a k8s client that can control them
         factory.get_system_settings().docker.publish()
-        kube_client = ISVA_Kube_Client.get_client()
+        kube_client = const.ISVA_Kube_Client.get_client()
 
         if isvaConfig.container.orchestration == "kubernetes":
             #Are we restarting the containers or rolling out a restard to the deployment descriptor

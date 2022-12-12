@@ -51,25 +51,6 @@ class Map(dict):
         del self.__dict__[k]
 
 
-class ISVA_Kube_Client(object):
-    _client = None
-    _instance = None
-
-    def __new__(cls):
-        if cls._instance is None:
-            _logger.debug("Creating kubernetes client")
-            cls._instance = super(ISVA_Kube_Client, cls).__new__(cls)
-            if const.KUBERNETES_CONFIG in os.environ.keys():
-                cls._client = kubernetes.config.load_kube_config(config_file=os.environ.get(const.KUBERNETES_CONFIG))
-            else:
-                cls._client = kubernetes.config.load_config()
-        return cls._instance
-
-    @classmethod
-    def get_client(cls):
-        return cls._client
-
-
 class CustomLoader(yaml.SafeLoader):
 
     def __init__(self, path):
@@ -89,7 +70,7 @@ class CustomLoader(yaml.SafeLoader):
         namespaceName, key = secret.split(':')
         namespace, name = namespaceName.split('/')
         #Use k8s API to look up secret
-        k8sSecret = ISVA_Kube_Client.get_client().CoreV1Api().read_namespaced_secret(name, namespace)
+        k8sSecret = const.ISVA_Kube_Client.get_client().CoreV1Api().read_namespaced_secret(name, namespace)
         return base64.b64decode(k8sSecret.data[key]).decode()
 
 
