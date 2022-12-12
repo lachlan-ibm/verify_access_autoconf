@@ -2,7 +2,6 @@
 import os
 import yaml
 import base64
-import kubernetes
 from . import constants as const
 
 class Map(dict):

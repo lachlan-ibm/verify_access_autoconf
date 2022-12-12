@@ -1,4 +1,5 @@
 #!/bin/python
+import os, kubernetes
 
 HEADERS = {
             "Content-Type":"application/json",
