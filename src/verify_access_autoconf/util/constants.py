@@ -39,13 +39,13 @@ class ISVA_Kube_Client:
     def get_client(cls):
         if cls._client == None and cls._caught == False:
             if KUBERNETES_CONFIG in os.environ.keys():
-                cls._client = kubernetes.config.load_kube_config(config_file=os.environ.get(KUBERNETES_CONFIG))
+                kubernetes.config.load_kube_config(config_file=os.environ.get(KUBERNETES_CONFIG))
             elif cls._caught == False:
                 try:
-                    cls._client = kubernetes.config.load_config()
+                    kubernetes.config.load_config()
                 except kubernetes.config.config_exception.ConfigException:
                     cls._caught = True
-        print(cls._client)
+            cls._client = kubernetes.client
         return cls._client
 
 KUBE_CLIENT = ISVA_Kube_Client.get_client()
