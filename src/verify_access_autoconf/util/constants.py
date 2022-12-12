@@ -31,12 +31,12 @@ MGMT_OLD_PASSWORD_ENV_VAR = "ISVA_MGMT_OLD_PWD"
 
 LOG_LEVEL = "ISVA_CONFIGURATOR_LOG_LEVEL"
 
-class ISVA_Kube_Client(object):
+class ISVA_Kube_Client:
     _client = None
 
     @classmethod
     def get_client(cls):
-        if cls._client is None:
+        if cls._client == None:
             print("Creating client")
             if KUBERNETES_CONFIG in os.environ.keys():
                 cls._client = kubernetes.config.load_kube_config(config_file=os.environ.get(KUBERNETES_CONFIG))
@@ -44,3 +44,5 @@ class ISVA_Kube_Client(object):
                 cls._client = kubernetes.config.load_config()
         print(cls._client)
         return cls._client
+
+KUBE_CLIENT = ISVA_Kube_Client()
