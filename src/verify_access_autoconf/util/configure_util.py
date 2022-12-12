@@ -1,5 +1,5 @@
 #!/bin/python
-import os, kubernetes, logging, sys, yaml, pyisva, datetime
+import os, kubernetes, logging, sys, yaml, pyisva, datetime, subprocess, shutil
 from . import constants as const
 from .data_util import Map, FileLoader, CustomLoader, ISVA_Kube_Client
 from kubernetes.stream import stream
@@ -123,6 +123,22 @@ def _kube_rollout_restart(client, namespace, deployment):
         sys.exit(1)
     return
 
+def _compose_restart_container(container, config):
+    if shutil.which("docker-compose") == None:
+        _logger.error("docker-compose not found on $PATH")
+        sys.exit(1)
+    composeYaml = None
+    if const.DOCKER_COMPOSE_CONFIG in os.environ.keys():
+        composeYaml = os.environ.get(const.DOCKER_COMPOSE_CONFIG)
+    elif config.containers.docker_compose_yaml is not None:
+        composeYaml = config.containers.docker_compose_yaml
+    else:
+        _logger.error("Unable to find docekr-compose YAML configuration")
+        sys.exit(1)
+    ps = subprocess.run(['docker-compose', '-f' , composeYaml, 'restart', container])
+    if ps.returncode != 0:
+        _logger.error("Error restarting docker-compose container:\nstdout: {}\nstderr{}".format(ps.stdout, ps.stderr))
+        sys.exit(1)
 
 def deploy_pending_changes(factory=None, isvaConfig=None):
     if not isvaConfig:
@@ -152,9 +168,10 @@ def deploy_pending_changes(factory=None, isvaConfig=None):
                     _kube_restart_container(kube_client, namespace, pod)
 
         elif isvaConfig.container.orchestration == "docker-compose":
+            for container in isvaConfig.docker.container.compose_containers:
+                _compose_restart_container(container, isvaConfig)
+        elif isvaConfig.container.orchestration == "docker":
             #TODO
-            continue
-
         else:
             _logger.error("Unable to perform container restart, this may lead to errors")
 
