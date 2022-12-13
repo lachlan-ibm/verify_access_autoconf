@@ -153,9 +153,9 @@ class Appliance_Configurator(object):
 
 
     def configure(self):
-        update_network(self.config.appliance)
-        date_time(self.config.appliance)
-        cluster(self.config.appliance)
+        self.update_network(self.config.appliance)
+        self.date_time(self.config.appliance)
+        self.cluster(self.config.appliance)
 
 if __name__ == "__main__":
     configure()

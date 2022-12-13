@@ -21,27 +21,28 @@ class Docker_Configurator(object):
 
     def configure_snapshot_publishing(self):
         system = self.factory.get_system_settings()
-        if self.config.docker.configuration_publishing == None:
+        if self.config.container.configuration_publishing == None:
             _logger.info("Cannot find configuration publishing user, will use admin user to publish configurations")
             return
-        rsp = system.sysaccount.update_user(self.config.docker.configuration_publishing.user, 
-                password=self.config.docker.configuration_publishing.password)
+        rsp = system.sysaccount.update_user(self.config.container.configuration_publishing.user, 
+                password=self.config.container.configuration_publishing.password)
         if rsp.success == True:
             _logger.info("Successfully updated {} password".format(
-                self.config.docker.configuration_publishing.user))
+                self.config.container.configuration_publishing.user))
         else:
             _logger.error("Failed to update password for {}\n{}".format(
-                self.config.docker.configuration_publishing.user, rsp.data))
+                self.config.container.configuration_publishing.user, rsp.data))
 
 
     def configure_database(self):
         system = FACTORY.get_system_settings()
-        if self.config.docker.runtime_db == None:
+        if self.config.container.cluster == None or self.config.container.cluster.runtime_database == None:
             _logger.info("Cannot find HVDB configuration, in a docker environment this is probably bad")
             return
-        database = self.config.docker.runtime_db
-        rsp = system.runtime_db.set_db(db_type=database.type, host=database.host, port=database.port,
-                secure=database.ssl, user=database.username, passwd=database.password, db_name=database.db_name)
+        database = self.config.container.cluster.runtime_database
+        rsp = system.cluster.seti_runtime_db(db_type=database.type, host=database.host, port=database.port,
+                secure=database.ssl, user=database.username, passwd=database.password, db_name=database.db_name,
+                db_key_store=database.ssl_keystore)
         if rsp.success == True:
             _logger.info("Successfully configured HVDB")
         else:
@@ -50,9 +51,11 @@ class Docker_Configurator(object):
 
 
     def configure(self):
-        _logger.info(json.dumps(self.config, indent=4))
-        configure_snapshot_publishing()
-        configure_database()
+        if self.config.container == None:
+            _logger.info("Unable to find container specific configuration")
+            return
+        self.configure_snapshot_publishing()
+        self.configure_database()
         deploy_pending_changes()
 
 if __name__ == "__main__":
