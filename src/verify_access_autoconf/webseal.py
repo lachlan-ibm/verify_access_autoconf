@@ -4,7 +4,7 @@ import logging
 import json
 
 from .util.configure_util import deploy_pending_changes
-from .util.data_util import Map
+from .util.data_util import Map, FILE_LOADER
 
 _logger = logging.getLogger(__name__)
 

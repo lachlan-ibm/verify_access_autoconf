@@ -13,7 +13,7 @@ from .container import Docker_Configurator as CONTAINER
 from .access_control import AAC_Configurator as AAC
 from .webseal import WEB_Configurator as WEB
 from .federation import FED_Configurator as FED
-from .util.data_util import Map
+from .util.data_util import Map, FILE_LOADER
 from .util.configure_util import deploy_pending_changes, creds, old_creds, config_base_dir, mgmt_base_url, config_yaml
 from .util.constants import API_HEADERS, HEADERS, LOG_LEVEL
 

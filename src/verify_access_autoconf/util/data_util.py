@@ -108,3 +108,5 @@ class FileLoader():
                     result['text'] = 'undefined'
                 contents += [result]
         return contents 
+
+FILE_LOADER = FileLoader(os.environ.get(const.CONFIG_BASE_DIR))

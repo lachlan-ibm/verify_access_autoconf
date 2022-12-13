@@ -5,7 +5,7 @@ import json
 import os
 
 from .util.configure_util import config_base_dir, deploy_pending_changes
-from .util.data_util import Map
+from .util.data_util import Map, FILE_LOADER
 
 _logger = logging.getLogger(__name__)
 
