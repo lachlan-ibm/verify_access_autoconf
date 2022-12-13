@@ -79,7 +79,7 @@ class FileLoader():
 
     def __init__(self, config_base_dir=None):
         self.config_base_dir = config_base_dir if config_base_dir else str(pathlib.Path.home())
-        if config_base_dir.endswith('/') == False:
+        if self.config_base_dir.endswith('/') == False:
             self.config_base_dir += '/'
 
     def read_files(self, paths, include_directories=False):
