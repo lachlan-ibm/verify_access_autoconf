@@ -94,11 +94,11 @@ class ISVA_Configurator(object):
         system = self.factory.get_system_settings()
         activations = system.licensing.get_activated_modules().json
         if not any(module.get('id', None) == 'wga' and module.get('enabled', "False") == "True" for module in activations):
-            _activateBaseAppliance(config)
+            self._activateBaseAppliance(config)
         if not any(module.get('id', None) == 'mga' and module.get('enabled', "False") == "True" for module in activations):
-            _activateAdvancedAccessControl(config)
+            self._activateAdvancedAccessControl(config)
         if not any(module.get('id', None) == 'federation' and module.get('enabled', "False") == "True" for module in activations):
-            _activateFederation(config)
+            self._activateFederation(config)
         deploy_pending_changes(self.factory, self.config)
         _logger.info("appliance activated")
 
@@ -154,15 +154,15 @@ class ISVA_Configurator(object):
                     for fp in database.signer_certificates:
                         signer_parsed_files = FILE_LOADER.read_files(fp)
                         for parsed_file in signer_parsed_files:
-                            _import_signer_certs(database.name, parsed_file)
+                            self._import_signer_certs(database.name, parsed_file)
                 if database.personal_certificates:
                     for fp in database.personal_certificates:
                         personal_parsed_files = FILE_LOADER.read_files(fp)
                         for parsed_file in personal_parsed_files:
-                            _import_personal_certs(database.name, base_dir, parsed_file)
+                            self._import_personal_certs(database.name, base_dir, parsed_file)
                 if database.load_certificates:
                     for item in database.load_certificates:
-                        _load_signer_cert(database.name, item.server, item.port, item.label)
+                        self._load_signer_cert(database.name, item.server, item.port, item.label)
         deploy_pending_changes(self.factory, self.config)
 
 
@@ -228,9 +228,9 @@ class ISVA_Configurator(object):
     def account_management(self, config):
         if config.acount_management != None:
             if config.account_management.groups != None:
-                _system_groups(config.account_management.groups)
+                self._system_groups(config.account_management.groups)
             if config.account_management.users != None:
-                _system_users(config.account_management.users)
+                self._system_users(config.account_management.users)
 
     def _add_auth_role(self, role):
         if role.operation == "delete":
