@@ -83,7 +83,7 @@ class FileLoader():
 
     def read_files(self, paths, include_directories=False):
         result = []
-        for path in path:
+        for path in paths:
             result += self.read_file(path, include_directories=include_directories)
         return result
 
