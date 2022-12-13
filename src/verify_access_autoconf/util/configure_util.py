@@ -170,7 +170,7 @@ def deploy_pending_changes(factory=None, isvaConfig=None):
             for container in isvaConfig.container.compose_containers:
                 _compose_restart_container(container, isvaConfig)
 
-        elif isvaConfig.container.containers is not None::
+        elif isvaConfig.container.containers is not None:
             #TODO
             pass
 
