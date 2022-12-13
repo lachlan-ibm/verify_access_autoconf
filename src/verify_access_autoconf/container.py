@@ -35,7 +35,7 @@ class Docker_Configurator(object):
 
 
     def configure_database(self):
-        system = FACTORY.get_system_settings()
+        system = self.factory.get_system_settings()
         if self.config.container.cluster == None or self.config.container.cluster.runtime_database == None:
             _logger.info("Cannot find HVDB configuration, in a docker environment this is probably bad")
             return
