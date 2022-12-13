@@ -78,39 +78,27 @@ class ISVA_Configurator(object):
         else:
             _logger.error("Failed to apply {} license:\n{}".format(module, rsp.data))
 
-    def _activateBaseAppliance(self):
-        code = None
-        if self.config.appliance and self.config.appliance.activation:
-            code = self.config.appliance.activation.webseal
-        if not code and self.config.docker and self.config.docker.activation:
-            code = self.config.docker.activation.webseal
-        self._apply_license("wga", code)
+    def _activateBaseAppliance(self, config):
+        if config.activation is not None and config.activation.webseal is not None:
+            self._apply_license("wga", config.activation.webseal)
 
     def _activateAdvancedAccessControl(self):
-        code = None
-        if self.config.appliance and self.config.appliance.activation:
-            code = self.config.appliance.activation.access_control
-        if not code and self.config.docker and self.config.docker.activation:
-            code = self.config.docker.activation.access_control
-        self._apply_license("mga", code)
+        if config.activation is not None and config.activation.access_control is not None:
+            self._apply_license("mga", config.activation.access_control)
 
-    def _activateFederation(self):
-        code = None
-        if self.config.appliance and self.config.appliance.activation:
-            code = self.config.appliance.activation.federation
-        if not code and self.config.docker and self.config.docker.activation:
-            code = self.config.docker.activation.federation
-        self._apply_license("federation", code)
+    def _activateFederation(self, config):
+        if config.activation is not None and config.activation.federation is not None:
+            self._apply_license("federation", config.activation.federation)
 
-    def activate_appliance(self):
+    def activate_appliance(self, config):
         system = self.factory.get_system_settings()
         activations = system.licensing.get_activated_modules().json
         if not any(module.get('id', None) == 'wga' and module.get('enabled', "False") == "True" for module in activations):
-            _activateBaseAppliance()
+            _activateBaseAppliance(config)
         if not any(module.get('id', None) == 'mga' and module.get('enabled', "False") == "True" for module in activations):
-            _activateAdvancedAccessControl()
+            _activateAdvancedAccessControl(config)
         if not any(module.get('id', None) == 'federation' and module.get('enabled', "False") == "True" for module in activations):
-            _activateFederation()
+            _activateFederation(config)
         deploy_pending_changes(self.factory, self.config)
         _logger.info("appliance activated")
 
@@ -147,12 +135,8 @@ class ISVA_Configurator(object):
             _logger.error("Failed to upload {} personal certificate to {}/n{}".format(
                 parsed_file['name'], database, rsp.data))
 
-    def import_ssl_certificates(self):
-        ssl_config = None
-        if self.config.appliance:
-            ssl_config = self.config.appliance.ssl_certificates
-        elif self.config.docker:
-            ssl_config = self.config.docker.ssl_certificates
+    def import_ssl_certificates(self, config):
+        ssl_config = config.ssl_certificates
         ssl = self.factory.get_system_settings().ssl_certificates
         if ssl_config:
             old_databases = [d['id'] for d in ssl.list_databases().json]
@@ -242,7 +226,7 @@ class ISVA_Configurator(object):
                 _logger.error("Faield to {} group {}:\n{}\n{}".format(
                     group.operation, group.id, json.dumps(group, indent=4), rsp.data))
 
-    def account_management(self):
+    def account_management(self, config):
         if config.acount_management != None:
             if config.account_management.groups != None:
                 _system_groups(config.account_management.groups)
@@ -370,7 +354,7 @@ class ISVA_Configurator(object):
         self.advanced_tuning_parameters(base_config)
         model.configure()
 
-        activate_appliance()
+        activate_appliance(base_config)
 
 
     def get_modules(self):
