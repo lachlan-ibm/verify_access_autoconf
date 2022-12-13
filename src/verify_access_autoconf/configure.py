@@ -338,18 +338,6 @@ class ISVA_Configurator(object):
                     _logger.error("Unknown operation {} for Advanced Tuning Parameter:\n{}".format(
                         atp.operation, json.dumps(atp, indent=4)))
 
-    def date_time(self, config):
-        dateTime = self.factory.get_system_settings().date_time
-        if config.date_time:
-            dtConfig = config.date_time
-            rsp =dateTime.update(enable_ntp=dtConfig.enable_ntp, ntp_servers=dtConfig.ntp_servers, 
-                    time_zone=dtConfig.time_zone, date_time=dtConfig.date_time)
-            if rsp.success == True:
-                _logger.info("Successfullt set date/time configuration")
-            else:
-                _logger.error("Failed to set date/time configuration using:\n{}\n{}".format(
-                    json.dumps(dtConfig, indent=4), rsp.content))
-
 
     def apply_snapshot(self, config):
         if config != None and config.snapshot != None:
@@ -362,27 +350,27 @@ class ISVA_Configurator(object):
                         rsp.content)
 
 
-    def configure_appliance(self, isva_appliance):
-        appliance = self.config.appliance
-        apply_snapshot(appliance)
-        admin_config(appliance)
-        import_ssl_certificates(appliance)
-        account_management(appliance)
-        management_authorization(appliance)
-        advanced_tuning_parameters(appliance)
-        date_time(appliance)
-        isva_appliance().configure()
+    def configure_base(self, appliance, container):
+        base_config = None
+        model = None
+        if self.config.appliance is not None:
+            base_config = self.config.applianc
+            model = appliance
+        elif self.config.container is not None:
+            base_config = self.config.container
+            model = container
+        else:
+            _logger.error("Deployment model cannot be found in config.yaml, exiting")
+            sys.exit(1)
+        self.apply_snapshot(base_config)
+        self.admin_config(base_config)
+        self.import_ssl_certificates(base_config)
+        self.account_management(base_config)
+        self.management_authorization(base_config)
+        self.advanced_tuning_parameters(base_config)
+        model.configure()
 
-
-    def configure_container(self, isva_container):
-        docker = self.config.docker
-        apply_snapshot(docker)
-        admin_config(docker)
-        import_ssl_certificates(docker)
-        account_management(docker)
-        management_authorization(docker)
-        advanced_tuning_parameters(docker)
-        isva_container.configure()
+        activate_appliance()
 
 
     def get_modules(self):
@@ -413,14 +401,7 @@ class ISVA_Configurator(object):
             self.accept_eula()
             self.complete_setup()
         appliance, container, web, aac, fed = self.get_modules()
-        if self.config.appliance is not None:
-            self.configure_appliance(appliance)
-        elif self.config.container is not None:
-            self.configure_container(container)
-        else:
-            _logger.error("Deployment model cannot be found in config.yaml, exiting")
-            sys.exit(1)
-        activate_appliance()
+        self.configure_base(appliance, container)
         web.configure()
         aac.configure()
         fed.configure()
