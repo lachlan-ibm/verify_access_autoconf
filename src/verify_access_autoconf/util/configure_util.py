@@ -159,10 +159,9 @@ def deploy_pending_changes(factory=None, isvaConfig=None):
                 for deployment in isvaConfig.container.k8s_deployments.deployments:
                     _kube_rollout_restart(kube_client, namespace, deployment)
 
-        elif isvaConfig.container.k8s_deployments.pods is not None:
-            namespace = isvaConfig.container.k8s_deployments.namespace
-            for pod in isvaConfig.container.pods:
-                _kube_restart_container(kube_client, namespace, pod)
+            elif isvaConfig.container.k8s_deployments.pods is not None:
+                for pod in isvaConfig.container.pods:
+                    _kube_restart_container(kube_client, namespace, pod)
 
         elif isvaConfig.container.compose_containers:
             for container in isvaConfig.container.compose_containers:
