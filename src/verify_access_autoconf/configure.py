@@ -105,13 +105,13 @@ class ISVA_Configurator(object):
 
     def _import_signer_certs(self, database, parsed_file):
         ssl = self.factory.get_system_settings().ssl_certificates
-        rsp = ssl.import_signer(database, os.path.abspath(base + filePointer), label=filePointer)
+        rsp = ssl.import_signer(database, os.path.abspath(parsed_file['path']), label=parsed_file['name'])
         if rsp.success == True:
             _logger.info("Successfully uploaded {} signer certificate to {}".format(
-                filePointer, database))
+                parsed_file['name'], database))
         else:
             _logger.error("Failed to upload {} signer certificate to {} database\n{}".format(
-                filePointer, database, rsp.data))
+                parsed_file['name'], database, rsp.data))
 
 
     def _load_signer_certificates(self, database, server, port, label):
@@ -140,7 +140,6 @@ class ISVA_Configurator(object):
         ssl = self.factory.get_system_settings().ssl_certificates
         if ssl_config:
             old_databases = [d['id'] for d in ssl.list_databases().json]
-            print(old_databases)
             for database in ssl_config:
                 if database.name not in old_databases:
                     rsp = ssl.create_database(database.name, type='kdb')

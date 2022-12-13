@@ -90,27 +90,26 @@ class FileLoader():
         return result
 
     def read_file(self, path, include_directories=False):
-        contents = []
+        parsed_files = []
         if not os.path.isabs(path):
             path = self.config_base_dir + path
         if os.path.isdir(path):
             if include_directories == True:
-                contents += [{"name": os.path.basename(path), "path": path, "type": "dir", 
+                parsed_files += [{"name": os.path.basename(path), "path": path, "type": "dir", 
                     "directory": os.path.dirname(path).replace(self.config_base_dir, '')}]
             for file_pointer in os.listdir(path):
-                contents += [self.read_file(path + file_pointer)]
+                parsed_files += [self.read_file(path + file_pointer)]
         else:
             with open(path, 'rb') as _file:
                 contents = _file.read()
                 result = {"name": os.path.basename(path), "contents": contents, "path": path, "type": "file",
-                        "directory": os.path.dirname(path),
                         "directory": os.path.dirname(path).replace(self.config_base_dir, '')}
                 try:
                     result['text'] = contents.decode()
                 except Exception:
                     result['text'] = 'undefined'
-                contents += [result]
-        return contents 
+                parsed_files += [result]
+        return parsed_files 
 
 FILE_LOADER = FileLoader(os.environ.get(const.CONFIG_BASE_DIR))
 
