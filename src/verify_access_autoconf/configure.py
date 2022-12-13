@@ -362,8 +362,8 @@ class ISVA_Configurator(object):
                         rsp.content)
 
 
-    def configure_appliance(self, config, isva_appliance):
-        appliance = config.appliance
+    def configure_appliance(self, isva_appliance):
+        appliance = self.config.appliance
         apply_snapshot(appliance)
         admin_config(appliance)
         import_ssl_certificates(appliance)
@@ -374,8 +374,8 @@ class ISVA_Configurator(object):
         isva_appliance().configure()
 
 
-    def configure_container(self, config, isva_container):
-        docker = config.docker
+    def configure_container(self, isva_container):
+        docker = self.config.docker
         apply_snapshot(docker)
         admin_config(docker)
         import_ssl_certificates(docker)
@@ -413,10 +413,10 @@ class ISVA_Configurator(object):
             self.accept_eula()
             self.complete_setup()
         appliance, container, web, aac, fed = self.get_modules()
-        if appliance.is_appliance():
-            self.configure_appliance(self.config, appliance)
-        elif container.is_container():
-            self.configure_container(self.config, container)
+        if self.config.appliance is not None:
+            self.configure_appliance(appliance)
+        elif self.config.container is not None:
+            self.configure_container(container)
         else:
             _logger.error("Deployment model cannot be found in config.yaml, exiting")
             sys.exit(1)
