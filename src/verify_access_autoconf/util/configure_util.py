@@ -152,27 +152,28 @@ def deploy_pending_changes(factory=None, isvaConfig=None):
         factory.get_system_settings().docker.publish()
         kube_client = const.KUBE_CLIENT
 
-        if isvaConfig.container.orchestration == "kubernetes":
-            #Are we restarting the containers or rolling out a restard to the deployment descriptor
-            if isvaConfig.container.k8s_deployments is not None:
-                namespace = isvaConfig.docker.container.k8s_deployment.namespace
-                for deployment in isvaConfig.docker.k8s_deployments.webseal:
-                    _kube_rollout_restart(kube_client, namespace, deployment)
-                for deployment in isvaConfig.docker.k8s_deployments.runtime:
-                    _kube_rollout_restart(kube_client, namespace, deployment)
-                for deployment in isvaConfig.docker.k8s_deployments.dsc:
-                    _kube_rollout_restart(kube_client, namespace, deployment)
+        #Are we restarting the containers or rolling out a restard to the deployment descriptor
+        if isvaConfig.container.k8s_deployments is not None:
+            namespace = isvaConfig.container.k8s_deployments.namespace
+            for deployment in isvaConfig.k8s_deployments.webseal:
+                _kube_rollout_restart(kube_client, namespace, deployment)
+            for deployment in isvaConfig.k8s_deployments.runtime:
+                _kube_rollout_restart(kube_client, namespace, deployment)
+            for deployment in isvaConfig.k8s_deployments.dsc:
+                _kube_rollout_restart(kube_client, namespace, deployment)
 
-            if isvaConfig.container.pods is not None:
-                for pod in isvaConfig.container.pods:
-                    _kube_restart_container(kube_client, namespace, pod)
+        elif isvaConfig.container.pods is not None:
+            for pod in isvaConfig.container.pods:
+                _kube_restart_container(kube_client, namespace, pod)
 
-        elif isvaConfig.container.orchestration == "docker-compose":
-            for container in isvaConfig.docker.container.compose_containers:
+        elif isvaConfig.container.compose_containers:
+            for container in isvaConfig.container.compose_containers:
                 _compose_restart_container(container, isvaConfig)
-        elif isvaConfig.container.orchestration == "docker":
+
+        elif isvaConfig.container.containers is not None::
             #TODO
             pass
+
         else:
             _logger.error("Unable to perform container restart, this may lead to errors")
 
