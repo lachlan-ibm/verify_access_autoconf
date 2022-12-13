@@ -266,7 +266,7 @@ class ISVA_Configurator(object):
     def management_authorization(self, config):
         if config.management_authorization != None and config.management_authorization.roles != None:
             for role in config.management_authorization.roles:
-                _add_auth_role(role)
+                self._add_auth_role(role)
             if config.management_authorization.authorization_enforcement:
                 rsp = self.factory.get_system_settings().managementauthorization.enable(
                         enforce=config.management_authorization.authorization_enforcement)
