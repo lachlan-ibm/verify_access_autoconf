@@ -40,7 +40,7 @@ class Docker_Configurator(object):
             _logger.info("Cannot find HVDB configuration, in a docker environment this is probably bad")
             return
         database = self.config.container.cluster.runtime_database
-        rsp = system.cluster.seti_runtime_db(db_type=database.type, host=database.host, port=database.port,
+        rsp = system.cluster.set_runtime_db(db_type=database.type, host=database.host, port=database.port,
                 secure=database.ssl, user=database.username, passwd=database.password, db_name=database.db_name,
                 db_key_store=database.ssl_keystore)
         if rsp.success == True:
