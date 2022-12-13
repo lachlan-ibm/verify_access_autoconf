@@ -155,17 +155,12 @@ def deploy_pending_changes(factory=None, isvaConfig=None):
         #Are we restarting the containers or rolling out a restard to the deployment descriptor
         if isvaConfig.container.k8s_deployments is not None:
             namespace = isvaConfig.container.k8s_deployments.namespace
-            if isvaConfig.container.k8s_deployments.webseal is not None:
-                for deployment in isvaConfig.container.k8s_deployments.webseal:
-                    _kube_rollout_restart(kube_client, namespace, deployment)
-            if isvaConfig.container.k8s_deployments.runtime is not None:
-                for deployment in isvaConfig.container.k8s_deployments.runtime:
-                    _kube_rollout_restart(kube_client, namespace, deployment)
-            if isvaConfig.container.k8s_deployments.dsc is not None:
-                for deployment in isvaConfig.container.k8s_deployments.dsc:
+            if isvaConfig.container.k8s_deployments.deployments is not None:
+                for deployment in isvaConfig.container.k8s_deployments.deployments:
                     _kube_rollout_restart(kube_client, namespace, deployment)
 
-        elif isvaConfig.container.pods is not None:
+        elif isvaConfig.container.k8s_deployments.pods is not None:
+            namespace = isvaConfig.container.k8s_deployments.namespace
             for pod in isvaConfig.container.pods:
                 _kube_restart_container(kube_client, namespace, pod)
 
