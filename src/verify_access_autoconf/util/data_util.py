@@ -3,6 +3,7 @@ import os
 import yaml
 import base64
 import kubernetes
+import pathlib
 from . import constants as const
 
 class Map(dict):
@@ -76,8 +77,8 @@ class CustomLoader(yaml.SafeLoader):
 
 class FileLoader():
 
-    def __init__(self, config_base_dir):
-        self.config_base = config_base_dir
+    def __init__(self, config_base_dir=None):
+        self.config_base_dir = config_base_dir if config_base_dir else str(pathlib.Path.home())
         if config_base_dir.endswith('/') == False:
             self.config_base_dir += '/'
 
@@ -90,7 +91,7 @@ class FileLoader():
     def read_file(self, path, include_directories=False):
         contents = []
         if not os.path.isabs(path):
-            path = self.config_base + path
+            path = self.config_base_dir + path
         if os.path.isdir(path):
             if include_directories == True:
                 contents += [{"name": os.path.basename(path), "path": path, "type": "dir", 
