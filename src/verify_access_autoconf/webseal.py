@@ -688,43 +688,43 @@ class WEB_Configurator(object):
             return
 
         if websealConfig.client_cert_mapping != None:
-            _client_cert_mapping(websealConfig.client_cert_mapping)
+            self._client_cert_mapping(websealConfig.client_cert_mapping)
 
         if websealConfig.junction_mapping != None:
-            _junction_mapping(websealConfig.junction_mapping)
+            self._junction_mapping(websealConfig.junction_mapping)
 
         if websealConfig.url_mapping != None:
-            _url_mapping(websealConfig.url_mapping)
+            self._url_mapping(websealConfig.url_mapping)
 
         if websealConfig.user_mapping != None:
-            _user_mapping(websealConfig.user_mapping)
+            self._user_mapping(websealConfig.user_mapping)
 
         if websealConfig.fsso != None:
-            _federated_sso(websealConfig.fsso)
+            self._federated_sso(websealConfig.fsso)
 
         if websealConfig.http_transform != None:
-            _http_transform(websealConfig.http_transform)
+            self._http_transform(websealConfig.http_transform)
 
         if websealConfig.kerberos != None:
-            _kerberos(websealConfig.kerberos)
+            self._kerberos(websealConfig.kerberos)
 
         if websealConfig.password_strength != None:
-            _password_strength(websealConfig.password_strength)
+            self._password_strength(websealConfig.password_strength)
 
         if websealConfig.rsa_config != None:
-            _rsa(websealConfig.rsa_config)
+            self._rsa(websealConfig.rsa_config)
 
         if websealConfig.runtime != None:
-            _runtime(runtime)
+            self._runtime(runtime)
             if websealConfig.reverse_proxy != None:
                 for proxy in websealConfig.reverse_proxy:
-                    _wrp(runtime, proxy)
+                    self._wrp(runtime, proxy)
 
             if websealConfig.api_access_control != None:
-                _api_access_control(websealConfig.api_access_control)
+                self._api_access_control(websealConfig.api_access_control)
 
             if websealConfig.pdadmin != None:
-                _pdadmin(runtime, websealConfig.pdadmin)
+                self._pdadmin(runtime, websealConfig.pdadmin)
 
         else:
             _logger.info("No runtime configuration detected, unable to set up any reverse proxy config or run pdadmin commands")

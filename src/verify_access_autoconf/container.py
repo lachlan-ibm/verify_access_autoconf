@@ -19,27 +19,24 @@ class Docker_Configurator(object):
         self.factory = factory
 
 
-    def configure_snapshot_publishing(self):
+    def configure_snapshot_publishing(self, snapshotConfig):
         system = self.factory.get_system_settings()
-        if self.config.container.configuration_publishing == None:
+        if snapshotConfig == None:
             _logger.info("Cannot find configuration publishing user, will use admin user to publish configurations")
             return
-        rsp = system.sysaccount.update_user(self.config.container.configuration_publishing.user, 
-                password=self.config.container.configuration_publishing.password)
+        rsp = system.sysaccount.update_user(snapshotConfig.user, password=snapshotConfig.password)
         if rsp.success == True:
-            _logger.info("Successfully updated {} password".format(
-                self.config.container.configuration_publishing.user))
+            _logger.info("Successfully updated {} password".format(snapshotConfig.user))
         else:
-            _logger.error("Failed to update password for {}\n{}".format(
-                self.config.container.configuration_publishing.user, rsp.data))
+            _logger.error("Failed to update password for {}\n{}".format(snapshotConfig.user, rsp.data))
 
 
-    def configure_database(self):
+    def configure_database(self, clusterConfig):
         system = self.factory.get_system_settings()
-        if self.config.container.cluster == None or self.config.container.cluster.runtime_database == None:
+        if clusterConfig == None or clusterConfig.runtime_database == None:
             _logger.info("Cannot find HVDB configuration, in a docker environment this is probably bad")
             return
-        database = self.config.container.cluster.runtime_database
+        database = clusterConfig.runtime_database
         rsp = system.cluster.set_runtime_db(db_type=database.type, host=database.host, port=database.port,
                 secure=database.ssl, user=database.user, passwd=database.password, db_name=database.db_name,
                 db_key_store=database.ssl_keystore)
@@ -51,11 +48,12 @@ class Docker_Configurator(object):
 
 
     def configure(self):
-        if self.config.container == None:
+        containerConfig = self.config.container
+        if containerConfig == None:
             _logger.info("Unable to find container specific configuration")
             return
-        self.configure_snapshot_publishing()
-        self.configure_database()
+        self.configure_snapshot_publishing(containerConfig.configuration_publishing)
+        self.configure_database(containerConfig.cluster)
         deploy_pending_changes()
 
 if __name__ == "__main__":
