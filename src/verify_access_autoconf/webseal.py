@@ -682,11 +682,11 @@ class WEB_Configurator(object):
 
 
     def configure(self):
-        websealConfig = self.config.webseal
-        if websealConfig == None:
+ 
+        if self.config.webseal == None:
             _logger.info("No WebSEAL configuration detected, skipping")
             return
-
+        websealConfig = self.config.webseal
         if websealConfig.client_cert_mapping != None:
             self._client_cert_mapping(websealConfig.client_cert_mapping)
 
