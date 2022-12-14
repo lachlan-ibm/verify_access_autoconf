@@ -14,7 +14,7 @@ class AAC_Configurator(object):
     config = Map()
     aac = None
 
-    def __init__(self, aacFctry, config):
+    def __init__(self, config, aacFctry):
         self.aac = aacFctry
         self.config = config
 

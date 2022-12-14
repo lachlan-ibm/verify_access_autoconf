@@ -13,7 +13,7 @@ class WEB_Configurator(object):
     web = None
     config = Map()
 
-    def __init__(self, webFctry, config):
+    def __init__(self, config, webFctry):
         self.web = webFctry
         self.config = config
 
