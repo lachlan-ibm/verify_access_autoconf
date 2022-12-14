@@ -715,16 +715,16 @@ class WEB_Configurator(object):
             self._rsa(websealConfig.rsa_config)
 
         if websealConfig.runtime != None:
-            self._runtime(runtime)
+            self._runtime(websealConfig.runtime)
             if websealConfig.reverse_proxy != None:
                 for proxy in websealConfig.reverse_proxy:
-                    self._wrp(runtime, proxy)
+                    self._wrp(websealConfig.runtime, proxy)
 
             if websealConfig.api_access_control != None:
                 self._api_access_control(websealConfig.api_access_control)
 
             if websealConfig.pdadmin != None:
-                self._pdadmin(runtime, websealConfig.pdadmin)
+                self._pdadmin(websealConfig.runtime, websealConfig.pdadmin)
 
         else:
             _logger.info("No runtime configuration detected, unable to set up any reverse proxy config or run pdadmin commands")
