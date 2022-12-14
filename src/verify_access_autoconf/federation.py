@@ -23,7 +23,7 @@ class FED_Configurator(object):
     def configure_poc(self, federation_config):
         if federation_config.points_of_contact != None:
             for poc in ederation_config.points_of_contact:
-                rsp = fed.poc.create_like_credential(name=poc.name, description=poc.description,
+                rsp = self.fed.poc.create_like_credential(name=poc.name, description=poc.description,
                         authenticate_callbacks=poc.authenticate_callbacks, local_id_callbacks=poc.local_id_callbacks,
                         sign_out_callbacks=poc.sign_out_callbacks, sing_in_callbacks=poc.sign_in_callbacks,
                         authn_policy_callbacks=poc.authn_policy_callbacks)
@@ -68,7 +68,7 @@ class FED_Configurator(object):
             if config.encryption_settings != None:
                 encryption = config.encryption_settings
 
-        rsp = fed.federations.create_saml_partner(fedId, **methodArgs)
+        rsp = self.fed.federations.create_saml_partner(fedId, **methodArgs)
         if rsp.success == True:
             _logger.info("Successfully created {} SAML {} Partner".format(
                 partner.name, partner.role))
@@ -98,7 +98,7 @@ class FED_Configurator(object):
                         "advanced_configuration_rule_id": config.advanced_configuration.mapping_rule
                     })
 
-        rsp = fed.federations.create_oidc_rp_partner(fedId, **methodArgs)
+        rsp = self.fed.federations.create_oidc_rp_partner(fedId, **methodArgs)
         if rsp.success == True:
             _logger.info("Successfully created {} OIDC RP Partner for Federation {}".format(
                 partner.name, fedId))
@@ -108,7 +108,7 @@ class FED_Configurator(object):
 
     def _configure_federation_partner(self, federation, partner):
         federationId = None
-        _federations = fed.federations.list_federations().json
+        _federations = self.fed.federations.list_federations().json
         for _federation in _federations:
             if _federation.get("name", None) == federation.name:
                 federationId = _federation['id']
@@ -177,7 +177,7 @@ class FED_Configurator(object):
                             "sign_artifact_response": sigSettings.signing_options.sign_artifact_response
                         })
             
-        rsp = fed.federations.create_saml_federation(**methodArgs)
+        rsp = self.fed.federations.create_saml_federation(**methodArgs)
         if rsp.success == True:
             _logger.info("Successfully created {} SAML2.0 Federation".format(federation.name))
         else:
@@ -212,7 +212,7 @@ class FED_Configurator(object):
                         "advance_configuration_delegate_id": config.advance_configuration.active_delegate_id,
                         "advanced_configuration_mapping_rule": config.advance_configuration.rule
                     })
-        rsp = fed.federations.create_oidc_rp_federation(**methodArgs)
+        rsp = self.fed.federations.create_oidc_rp_federation(**methodArgs)
         if rsp.success == True:
             _logger.info("Successfully created {} OIDC RP Federation".format(federation.name))
         else:
