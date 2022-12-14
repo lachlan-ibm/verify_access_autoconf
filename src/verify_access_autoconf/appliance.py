@@ -114,7 +114,7 @@ class Appliance_Configurator(object):
             if config.network.interfaces != None:
                 for iface in config.network.interfaces:
                     self._update_interface(iface)
-        deploy_pending_changes()
+        deploy_pending_changes(self.factory, self.config)
 
     def date_time(self, config):
         if config.date_time != None:

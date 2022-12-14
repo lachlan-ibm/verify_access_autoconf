@@ -42,6 +42,7 @@ class Docker_Configurator(object):
                       'db_name': database.pop('db_name'), 'db_key_store': database.pop('ssl_keystore'),
                       'extra_config': database
             }
+        print(methodArgs)
         rsp = system.cluster.set_runtime_db(**methodArgs)
         if rsp.success == True:
             _logger.info("Successfully configured HVDB")
@@ -57,7 +58,7 @@ class Docker_Configurator(object):
             return
         self.configure_snapshot_publishing(containerConfig.configuration_publishing)
         self.configure_database(containerConfig.cluster)
-        deploy_pending_changes()
+        deploy_pending_changes(self.factory, self.config)
 
 if __name__ == "__main__":
     configure()
