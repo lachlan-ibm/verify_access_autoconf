@@ -42,7 +42,6 @@ class Docker_Configurator(object):
                       'db_name': database.pop('db_name'), 'db_key_store': database.pop('ssl_keystore'),
                       'extra_config': database
             }
-        print(methodArgs)
         rsp = system.cluster.set_runtime_db(**methodArgs)
         if rsp.success == True:
             _logger.info("Successfully configured HVDB")

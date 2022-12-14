@@ -82,7 +82,7 @@ class ISVA_Configurator(object):
         if config.activation is not None and config.activation.webseal is not None:
             self._apply_license("wga", config.activation.webseal)
 
-    def _activateAdvancedAccessControl(self):
+    def _activateAdvancedAccessControl(self, config):
         if config.activation is not None and config.activation.access_control is not None:
             self._apply_license("mga", config.activation.access_control)
 
