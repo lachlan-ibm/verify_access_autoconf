@@ -110,11 +110,10 @@ class Appliance_Configurator(object):
         if config.network != None:
             if config.network.routes != None:
                 for route in config.network.routes:
-                    _update_routes(route)
+                    self._update_routes(route)
             if config.network.interfaces != None:
                 for iface in config.network.interfaces:
-                    _update_interface(iface)
-        administrator_settings(config)
+                    self._update_interface(iface)
         deploy_pending_changes()
 
     def date_time(self, config):
@@ -127,22 +126,35 @@ class Appliance_Configurator(object):
                 _logger.error("Failed to update the Date/Time settings on the appliance with:\n{}\n{}".format(
                     json.dumps(config.date_time, indent=4), rsp.data))
 
-
     def cluster(self, config):
-        if config.config_db != None:
-            rsp = self.appliance.get_system_settings().cluster.set_config_db(**config.config_db)
+        if config.config_database != None:
+            confDbExtraConfig = config.config_database.copy()
+            methodArgs = {"embedded": False, "db_type": confDbExtraConfig.pop('type'), 'host': confDbExtraConfig.pop('host'), 
+                          'port': confDbExtraConfig.pop('port'), 'secure': confDbExtraConfig.pop('ssl'), 
+                          'db_key_store': confDbExtraConfig.pop('ssl_keystore'), 'user': confDbExtraConfig.pop('user'), 
+                          'passwd': confDbExtraConfig.pop('password'), 'db_name': confDbExtraConfig.pop('db_name'),
+                          'extra_config': confDbExtraConfig
+                }
+            rsp = self.appliance.get_system_settings().cluster.set_config_db(**methodArgs)
             if rsp.success == True:
                 _logger.info("Successfully set the configuration databaase")
             else:
                 _logger.error("Failed to set the configuration database with:{}\n{}".format(
-                    json.dumps(config.config_db, indent=4), rsp.content))
-        if config.runtime_db != None:
-            rsp = self.appliance.get_system_settings().cluster.set_runtime_db(**config.runtime_db)
+                    json.dumps(config.config_database, indent=4), rsp.content))
+        if config.runtime_database != None:
+            hvdbExtraConfig = config.runtime_database.copy()
+            methodArgs = {'embedded': False, 'db_type': hvdbExtraConfig.pop('type'), 'host': hvdbExtraConfig.pop('host'), 
+                          'port': hvdbExtraConfig.po('port'), 'secure': hvdbExtraConfig.pop('ssl'), 
+                          'db_keystore': hvdbExtraConfig.pop('ssl_keystore'), 'user': hvdbExtraConfig.pop('user'),
+                          'passwd': hvdbExtraConfig.pop('password'), 'db_name': hvdbExtraConfig.pop('db_name'),
+                          'extra_config': hvdbExtraConfig
+                }
+            rsp = self.appliance.get_system_settings().cluster.set_runtime_db(**methodArgs)
             if rsp.success == True:
                 _logger.info("Successfully set the runtime database")
             else:
                 _logger.error("Failed to set the runtime database with: {}\n{}".format(json.dumps(
-                    config.runtime_db, indent=4), rsp.content))
+                    config.runtime_database, indent=4), rsp.content))
         if config.cluster != None:
             rsp = self.appliance.get_system_settings().cluster.update_cluster(**config.cluster)
             if rsp.success == True:

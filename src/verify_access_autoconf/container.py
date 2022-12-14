@@ -36,15 +36,18 @@ class Docker_Configurator(object):
         if clusterConfig == None or clusterConfig.runtime_database == None:
             _logger.info("Cannot find HVDB configuration, in a docker environment this is probably bad")
             return
-        database = clusterConfig.runtime_database
-        rsp = system.cluster.set_runtime_db(db_type=database.type, host=database.host, port=database.port,
-                secure=database.ssl, user=database.user, passwd=database.password, db_name=database.db_name,
-                db_key_store=database.ssl_keystore)
+        database = clusterConfig.runtime_database.copy()
+        methodArgs = {'db_type': database.pop('type'), 'host': database.pop('host'), 'port': database.pop('port'),
+                      'secure': database.pop('ssl'), 'user': database.pop('user'), 'passwd': database.pop('password'), 
+                      'db_name': database.pop('db_name'), 'db_key_store': database.pop('ssl_keystore'),
+                      'extra_config': database
+            }
+        rsp = system.cluster.set_runtime_db(**methodArgs)
         if rsp.success == True:
             _logger.info("Successfully configured HVDB")
         else:
             _logger.error("Failed to configure HVDB with config:\n{}\n{}".format(
-                json.dumps(database, indent=4), rsp.data))
+                json.dumps(clusterConfig.runtime_database, indent=4), rsp.data))
 
 
     def configure(self):
