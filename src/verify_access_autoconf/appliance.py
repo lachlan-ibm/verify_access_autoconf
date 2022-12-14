@@ -131,9 +131,8 @@ class Appliance_Configurator(object):
             confDbExtraConfig = config.config_database.copy()
             methodArgs = {"embedded": False, "db_type": confDbExtraConfig.pop('type'), 'host': confDbExtraConfig.pop('host'), 
                           'port': confDbExtraConfig.pop('port'), 'secure': confDbExtraConfig.pop('ssl'), 
-                          'db_key_store': confDbExtraConfig.pop('ssl_keystore'), 'user': confDbExtraConfig.pop('user'), 
-                          'passwd': confDbExtraConfig.pop('password'), 'db_name': confDbExtraConfig.pop('db_name'),
-                          'extra_config': confDbExtraConfig
+                          'user': confDbExtraConfig.pop('user'), 'passwd': confDbExtraConfig.pop('password'), 
+                          'db_name': confDbExtraConfig.pop('db_name'), 'extra_config': confDbExtraConfig
                 }
             rsp = self.appliance.get_system_settings().cluster.set_config_db(**methodArgs)
             if rsp.success == True:
