@@ -344,8 +344,8 @@ class AAC_Configurator(object):
                     name=mechanism.name, uri=mechanism.uri, type_id=typeId, predefined=old_mech['predefined'], 
                     properties=props, attributes=mechanism.attributes)
         else:
-            rsp = self.aac.authentication.create_mechanism(description=mechanism.description, name=mechanism.name,  uri=mechanism.uri,
-                    type_id=typeId,  properties=props, attributes=attrs)
+            rsp = self.aac.authentication.create_mechanism(description=mechanism.description, name=mechanism.name,
+                    uri=mechanism.uri, type_id=typeId,  properties=props, attributes=mechanism.attributes)
         if rsp.success == True:
             _logger.info("Successfully set configuration for {} mechanism".format(mechanism.name))
         else:
