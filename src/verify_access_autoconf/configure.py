@@ -353,7 +353,7 @@ class ISVA_Configurator(object):
         self.advanced_tuning_parameters(base_config)
         model.configure()
 
-        activate_appliance(base_config)
+        self.activate_appliance(base_config)
 
 
     def get_modules(self):

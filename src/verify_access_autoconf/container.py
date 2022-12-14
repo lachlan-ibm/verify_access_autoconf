@@ -41,7 +41,7 @@ class Docker_Configurator(object):
             return
         database = self.config.container.cluster.runtime_database
         rsp = system.cluster.set_runtime_db(db_type=database.type, host=database.host, port=database.port,
-                secure=database.ssl, user=database.username, passwd=database.password, db_name=database.db_name,
+                secure=database.ssl, user=database.user, passwd=database.password, db_name=database.db_name,
                 db_key_store=database.ssl_keystore)
         if rsp.success == True:
             _logger.info("Successfully configured HVDB")
