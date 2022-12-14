@@ -155,9 +155,6 @@ class WEB_Configurator(object):
                         proxy.name, proxy))
                     return
         host = proxy.hostname
-        if not host:
-            if self.confing.docker and self.config.docker.containers and self.config.docker.containers.configuration:
-                host = self.config.docker.containers.configuration[0]
         methodArgs = {
                         "inst_name":proxy.name, 
                         "host": host, 

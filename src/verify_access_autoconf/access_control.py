@@ -335,18 +335,14 @@ class AAC_Configurator(object):
             props = []
             for e in mechanism.properties: 
                 props += [{"key": k, "value": v} for k, v in e.items()]
-        attrs = None
-        if mechanism.attributes != None and isinstance(mechanism.attributes, list):
-            attrs = []
-            for e in mechanism.attributes: 
-                attrs += [{"key": k, "value": v} for k, v in e.items()]
         existing_mechanisms = self.aac.authentication.list_mechanisms().json
         old_mech = list(filter( lambda m: m['uri'] == mechanism.uri, existing_mechanisms))
         rsp = None
         if old_mech:
             old_mech = old_mech[0]
-            rsp = self.aac.authentication.update_mechanism(id=old_mech['id'], description=mechanism.description, name=mechanism.name,
-                    uri=mechanism.uri, type_id=typeId, predefined=old_mech['predefined'], properties=props, attributes=attrs)
+            rsp = self.aac.authentication.update_mechanism(id=old_mech['id'], description=mechanism.description, 
+                    name=mechanism.name, uri=mechanism.uri, type_id=typeId, predefined=old_mech['predefined'], 
+                    properties=props, attributes=mechanism.attributes)
         else:
             rsp = self.aac.authentication.create_mechanism(description=mechanism.description, name=mechanism.name,  uri=mechanism.uri,
                     type_id=typeId,  properties=props, attributes=attrs)
@@ -357,7 +353,6 @@ class AAC_Configurator(object):
                 mechanism.name, json.dumps(mechanism, indent=4), rsp.data))
 
     def _confiugre_policy(self, existing_policies, policy):
-        #configure policy
         rsp = None
         old_policy = list(filter(lambda p: p['uri'] == policy.uri, existing_policies))
         if old_policy:
