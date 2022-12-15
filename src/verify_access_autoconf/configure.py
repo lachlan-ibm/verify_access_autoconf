@@ -182,7 +182,7 @@ class ISVA_Configurator(object):
             if user.operation == "add":
                 rsp = self.factory.get_system_settings().sysaccount.create_user(
                         user=user.name, password=user.password, groups=user.groups)
-            elif opration == "update":
+            elif user.operation == "update":
                 if user.password != None:
                     rsp = self.factory.get_system_settings().sysaccount.update_user(
                             user.name, password=user.password)
@@ -201,7 +201,7 @@ class ISVA_Configurator(object):
                         else:
                             _logger.error("Failed to add {} to {} group:\n{}".format(
                                 user.name, g, rsp.data))
-            elif operation == "delete":
+            elif user.operation == "delete":
                 rsp = self.factory.get_system_settings().sysaccount.delete_user(user.name)
                 if rsp.success == True:
                     _logger.info("Successfully removed user {}".format(user.name))
