@@ -160,15 +160,21 @@ class WEB_Configurator(object):
                         "host": host, 
                         "admin_id": runtime.admin_user if runtime.admin_user else "sec_master", 
                         "admin_pwd": runtime.admin_password,
-                        "http_yn": proxy.http.enabled, 
-                        "http_port": proxy.http.port, 
-                        "https_yn": proxy.https.enabled, 
-                        "https_port": proxy.https.port,
                         "nw_interface_yn":  proxy.nw_interface_yn,
                         "ip_address": proxy.ip_address, 
                         "listening_port": proxy.listening_port,
                         "domain": proxy.domain
                 }
+        if proxy.http != None:
+            methodArgs.update({
+                        "http_yn": proxy.http.enabled, 
+                        "http_port": proxy.http.port, 
+                        })
+        if proxy.https != None:
+            methodArgs.update({
+                        "https_yn": proxy.https.enabled, 
+                        "https_port": proxy.https.port,
+                        })
         if proxy.ldap != None:
             methodArgs.update({
                                 "ssl_yn": proxy.ldap.ssl, 
