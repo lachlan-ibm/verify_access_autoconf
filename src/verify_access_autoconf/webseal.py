@@ -239,7 +239,7 @@ class WEB_Configurator(object):
                   "isam_domain": runtime.domain,
                   "admin_password": runtime.admin_password,
                   "admin_cert_lifetime": runtime.admin_cert_lifetime,
-                  "ssl_compliance": runtime.ssl_compliance,
+                  "ssl_compliance": runtime.ssl_compliance
                 }
         if runtime.ldap:
             config.update({
