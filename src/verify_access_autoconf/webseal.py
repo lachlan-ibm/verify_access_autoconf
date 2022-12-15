@@ -205,7 +205,7 @@ class WEB_Configurator(object):
         if proxy.stanza_configuration != None:
             self._configure_stanza(proxy.name, proxy.stanza_configuration)
 
-        deploy_pending_changes()
+        deploy_pending_changes(self.factory, self.config)
         rsp = self.web.reverse_proxy.restart_instance(proxy.name)
         if rsp.success == True:
             _logger.info("Successfully restart {} proxy instance after applying configuration".format(
@@ -386,7 +386,7 @@ class WEB_Configurator(object):
         if config.reverse_proxies != None:
             for proxy in config.reverse_proxies:
                 _pdadmin_proxy(proxy)
-        deploy_pending_changes()
+        deploy_pending_changes(self.factory, self.config)
 
 
     def _client_cert_mapping(self, config):
