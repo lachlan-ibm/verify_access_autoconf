@@ -147,6 +147,8 @@ class WEB_Configurator(object):
 
     def _wrp(self, runtime, proxy):
         wrp_instances = self.web.reverse_proxy.list_instances().json
+        if wrp_instances == None:
+            wrp_instances = []
         for instance in wrp_instances:
             if instance['id'] == proxy.name:
                 rsp = self.web.reverse_proxy.delete_instance(proxy.name, 
@@ -220,8 +222,10 @@ class WEB_Configurator(object):
 
     def _runtime(self, runtime):
         rte_status = self.web.runtime_component.get_status()
+        _logger.debug("ENTRY Runtime status: {}".format(rte_status.json))
         if rte_status.json['status'] == "Available":
-            rsp = self.web.runtime_component.unconfigure(ldap_dn=runtime.ldap_dn, ldap_pwd=runtime.ldap_dn, clean=runtime.clean_ldap, force=True)
+            rsp = self.web.runtime_component.unconfigure(ldap_dn=runtime.ldap_dn, ldap_pwd=runtime.ldap_dn, 
+                    clean=runtime.clean_ldap, force=True)
             if rsp.success == True:
                 _logger.info("Successfully unconfigured RTE")
             else:
@@ -235,7 +239,7 @@ class WEB_Configurator(object):
                   "isam_domain": runtime.domain,
                   "admin_password": runtime.admin_password,
                   "admin_cert_lifetime": runtime.admin_cert_lifetime,
-                  "ssl_compliance": runtime.ssl_compliance
+                  "ssl_compliance": runtime.ssl_compliance,
                 }
         if runtime.ldap:
             config.update({
@@ -243,6 +247,7 @@ class WEB_Configurator(object):
                         "ldap_port": runtime.ldap.port,
                         "ldap_dn": runtime.ldap.dn,
                         "ldap_password": runtime.ldap.dn_password,
+                        "ldap_suffix": runtime.ldap.suffix
                     })
             if runtime.ldap.key_file:
                 config.update({
@@ -258,7 +263,8 @@ class WEB_Configurator(object):
         else:
             _logger.error("Failed to configure RTE with config:\n{}\n{}".format(
                 json.dumps(runtime, indent=4), rsp.data))
-        return rsp.success
+        _logger.debug("EXIT Runtime status: {}".format(self.web.runtime_component.get_status().json))
+        return
 
 
     def _pdadmin_acl(self, runtime, acl):

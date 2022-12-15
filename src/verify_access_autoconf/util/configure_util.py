@@ -103,24 +103,56 @@ def _kube_reload_container(client, namespace, container):
 
 
 def _kube_rollout_restart(client, namespace, deployment):
-    now = datetime.datetime.utcnow()
-    now = str(now.isoformat("T") + "Z")
-    body = {
-        'spec': {
-            'template':{
-                'metadata': {
-                    'annotations': {
-                        'kubectl.kubernetes.io/restartedAt': now
-                    }
-                }
-            }
-        }
-    }
+    #Get a list of the current pods
+    pods = [ pod.metadata.name for pod in 
+                client.AppsV1Api().list_namespaced_pod(namespace, label_selector="app=" + deployment) ]
+    _logger.debug("Found {} pods for deployment {}\n{}".format(len(pods), deployment, pods))
+
+    #Request a restart from the controller
+    body = {'spec': {
+                'template':{ 'metadata': { 'annotations': { 
+                        'kubectl.kubernetes.io/restartedAt': str(datetime.datetime.utcnow().isoformat("T") + "Z") 
+                } } }
+        } }
     try:
         client.AppsV1Api().patch_namespaced_deployment(deployment, namespace, body, pretty='true')
     except kubernetes.client.rest.ApiException as e:
-        _logger.error("Exception when calling AppsV1Api->patch_namespaced_deployment: %s\n" % e)
+        _logger.error("Exception when calling AppsV1Api->patch_namespaced_deployment: %s" % e)
         sys.exit(1)
+
+    #Now request for the pods to be deleted; when this thows the pods are gone
+    for pod in pods:
+        count = 1
+        while count < 10:
+            try:
+                client.AppsV1Api().delete_namespaced_deployment(name=pod, namespace=namespace)
+            except kubernetes.client.rest.ApiException:
+                if json.loads(e.body).get('code', -1) == 404:
+                    break
+            time.sleep(count * 10)
+            count += 1
+        if count == 10:
+            _logger.error("Failed to delete pod {} for deployment {}".format(pod, deployment))
+            sys.exit(1)
+
+    #Finally wait for the new pod list to be ready
+    count = 1
+    while count < 10:
+        try:
+            rsp = client.AppsV1Api().read_namespaced_deployment_status(name=deployment, namespace=namespace)
+            if rsp.spec and rsp.status and rsp.spec.replicas == rsp.status.available_replicas:
+                _logger.debug("Deployment {} is reported as available again".format(deployment))
+                break
+            else:
+                _logger.debug("Waiting for deployment {}; status {}".format(deployment, rsp.status))
+                time.sleep(count * 10)
+                count += 1
+        except kubernetes.client.rest.ApiException as e:
+            _logger.error("Exception when calling AppsV1Api -> read_namespaced_deployment_status: %s" % e)
+            sys.exit(1)
+    if count == 10:
+        _logger.error("Failed to wait for deployment to be ready.")
+        sts.exit(1)
     return
 
 def _compose_restart_container(container, config):
