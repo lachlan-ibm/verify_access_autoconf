@@ -226,7 +226,7 @@ class ISVA_Configurator(object):
                     group.operation, group.id, json.dumps(group, indent=4), rsp.data))
 
     def account_management(self, config):
-        if config.acount_management != None:
+        if config.account_management != None:
             if config.account_management.groups != None:
                 self._system_groups(config.account_management.groups)
             if config.account_management.users != None:
