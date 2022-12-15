@@ -15,7 +15,7 @@ class WEB_Configurator(object):
     config = Map()
 
     def __init__(self, config, factory):
-        self.web = factory.get_web_setting()
+        self.web = factory.get_web_settings()
         self.factory = factory
         self.config = config
 
