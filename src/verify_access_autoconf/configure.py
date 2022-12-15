@@ -343,8 +343,8 @@ class ISVA_Configurator(object):
             base_config = self.config.container
             model = container
         else:
-            _logger.error("Deployment model cannot be found in config.yaml, exiting")
-            sys.exit(1)
+            _logger.error("Deployment model cannot be found in config.yaml, skipping")
+            return
         self.apply_snapshot(base_config)
         self.admin_config(base_config)
         self.import_ssl_certificates(base_config)
