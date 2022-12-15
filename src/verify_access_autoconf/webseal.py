@@ -154,10 +154,9 @@ class WEB_Configurator(object):
                     _logger.error("WebSEAL Reverse proxy {} already exists with config: \n{}\nand cannot be removed".format(
                         proxy.name, proxy))
                     return
-        host = proxy.hostname
         methodArgs = {
                         "inst_name":proxy.name, 
-                        "host": host, 
+                        "host": proxy.host, 
                         "admin_id": runtime.admin_user if runtime.admin_user else "sec_master", 
                         "admin_pwd": runtime.admin_password,
                         "nw_interface_yn":  proxy.nw_interface_yn,
