@@ -13,9 +13,11 @@ class AAC_Configurator(object):
 
     config = Map()
     aac = None
+    factory = None
 
-    def __init__(self, config, aacFctry):
-        self.aac = aacFctry
+    def __init__(self, config, factory):
+        self.aac = factory.get_access_control()
+        self.factory = factory
         self.config = config
 
 

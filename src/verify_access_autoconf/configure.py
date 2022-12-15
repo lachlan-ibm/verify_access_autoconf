@@ -359,9 +359,9 @@ class ISVA_Configurator(object):
     def get_modules(self):
         appliance = APPLIANCE(self.config, self.factory)
         container = CONTAINER(self.config, self.factory)
-        web = WEB(self.config, self.factory.get_web_settings())
-        aac = AAC(self.config, self.factory.get_access_control())
-        fed = FED(self.config, self.factory.get_federation())
+        web = WEB(self.config, self.factory)
+        aac = AAC(self.config, self.factory)
+        fed = FED(self.config, self.factory)
         return appliance, container, web, aac, fed
 
 

@@ -11,12 +11,14 @@ _logger = logging.getLogger(__name__)
 
 class FED_Configurator(object):
 
+    factory = None
     fed = None
     config = Map()
 
 
-    def __init__(self, config, fedFactory): 
-        self.fed = fedFactory
+    def __init__(self, config, factory): 
+        self.fed = factory.get_federation()
+        self.factory = factory
         self.config = config
 
 

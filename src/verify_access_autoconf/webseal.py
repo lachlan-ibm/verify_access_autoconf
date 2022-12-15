@@ -10,11 +10,13 @@ _logger = logging.getLogger(__name__)
 
 class WEB_Configurator(object):
 
+    factory = None
     web = None
     config = Map()
 
-    def __init__(self, config, webFctry):
-        self.web = webFctry
+    def __init__(self, config, factory):
+        self.web = factory.get_web_setting()
+        self.factory = factory
         self.config = config
 
     def __update_stanza(self, proxy_id, entry):
