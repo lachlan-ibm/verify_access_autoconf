@@ -208,13 +208,14 @@ class WEB_Configurator(object):
             self._configure_stanza(proxy.name, proxy.stanza_configuration)
 
         deploy_pending_changes(self.factory, self.config)
-        rsp = self.web.reverse_proxy.restart_instance(proxy.name)
-        if rsp.success == True:
-            _logger.info("Successfully restart {} proxy instance after applying configuration".format(
-                proxy.name))
-        else:
-            _logger.error("Failed to restart {} proxy instance after applying configuration".format(
-                proxy.name))
+        if self.factory.is_docker() == False:
+            rsp = self.web.reverse_proxy.restart_instance(proxy.name)
+            if rsp.success == True:
+                _logger.info("Successfully restart {} proxy instance after applying configuration".format(
+                    proxy.name))
+            else:
+                _logger.error("Failed to restart {} proxy instance after applying configuration".format(
+                    proxy.name))
 
 
     def _runtime(self, runtime):
