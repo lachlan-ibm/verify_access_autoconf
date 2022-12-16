@@ -105,7 +105,7 @@ def _kube_reload_container(client, namespace, container):
 def _kube_rollout_restart(client, namespace, deployment):
     #Get a list of the current pods
     pods = [ pod.metadata.name for pod in 
-                client.CoreV1Api().list_namespaced_pod(namespace, label_selector="app=" + deployment) ]
+                client.CoreV1Api().list_namespaced_pod(namespace, label_selector="app=" + deployment).items ]
     _logger.debug("Found {} pods for deployment {}\n{}".format(len(pods), deployment, pods))
 
     #Request a restart from the controller
