@@ -152,7 +152,7 @@ def _kube_rollout_restart(client, namespace, deployment):
             sys.exit(1)
     if count == 10:
         _logger.error("Failed to wait for deployment to be ready.")
-        sts.exit(1)
+        sys.exit(1)
     return
 
 def _compose_restart_container(container, config):
