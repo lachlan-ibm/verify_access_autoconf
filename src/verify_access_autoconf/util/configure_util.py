@@ -105,7 +105,7 @@ def _kube_reload_container(client, namespace, container):
 def _kube_rollout_restart(client, namespace, deployment):
     #Get a list of the current pods
     pods = [ pod.metadata.name for pod in 
-                client.AppsV1Api().list_namespaced_pod(namespace, label_selector="app=" + deployment) ]
+                client.CoreV1Api().list_namespaced_pod(namespace, label_selector="app=" + deployment) ]
     _logger.debug("Found {} pods for deployment {}\n{}".format(len(pods), deployment, pods))
 
     #Request a restart from the controller
@@ -125,7 +125,7 @@ def _kube_rollout_restart(client, namespace, deployment):
         count = 1
         while count < 10:
             try:
-                client.AppsV1Api().delete_namespaced_deployment(name=pod, namespace=namespace)
+                client.CoreV1Api().delete_namespaced_pod(name=pod, namespace=namespace)
             except kubernetes.client.rest.ApiException:
                 if json.loads(e.body).get('code', -1) == 404:
                     break
