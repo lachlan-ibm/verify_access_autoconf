@@ -126,7 +126,7 @@ def _kube_rollout_restart(client, namespace, deployment):
         while count < 10:
             try:
                 client.CoreV1Api().delete_namespaced_pod(name=pod, namespace=namespace)
-            except kubernetes.client.rest.ApiException:
+            except kubernetes.client.rest.ApiException as e:
                 if json.loads(e.body).get('code', -1) == 404:
                     break
             time.sleep(count * 10)
