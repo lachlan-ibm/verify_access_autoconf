@@ -1,20 +1,23 @@
-FROM alpine
+#Container to obsfucate secrets
+FROM alpine:latest as intermediate
 
-RUN apk add --no-cache py3-pip python3-dev libffi-dev openssl-dev gcc libc-dev make curl
+ARG ART_API_USER
 
-RUN curl -L "https://github.com/docker/compose/releases/download/1.25.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose \
-    && chmod +x /usr/local/bin/docker-compose
+ARG ART_API_KEY
 
-WORKDIR /user/src/app
+WORKDIR /pip-packages/
 
-env ISVA_CONFIGURATION_AUTOMATION_BASEDIR /user/src/app
+RUN apk add --update py3-pip python3
 
-COPY . .
+RUN pip3 download --no-deps pyisva verify-access-configurator --extra-index https://$ART_API_USER:$ART_API_KEY@eu.artifactory.swg-devops.com/artifactory/api/pypi/sec-iam-isam-devops-team-pypi-local/simple
 
-RUN pip3 install --no-cache-dir -r requirements.txt
+#Actual container
+FROM alpine:latest
 
-RUN ln -s /usr/bin/python3 /usr/bin/python && ln -s /usr/bin/pip3 /usr/bin/pip
+RUN apk add --update py3-pip python3-dev python3 
 
-#ENV PYTHONPATH "/user/src/app/pyisam:/user/src/app/src"
+COPY --from=intermediate /pip-packages/ /pip-packages/
 
-CMD ["python", "./src/configure.py"]
+RUN pip3 install --find-links=/pip-packages/ /pip-packages/*
+
+CMD ["/usr/bin/python3", "-m", "verify_access_autoconf"]

@@ -29,7 +29,12 @@ IBM Security Verify Access Configuration Automation is simple to run locally.
 ```
 
 ### Docker
-IBM Security Verify Access Configuration Automation can also be run within a docker container. Use to [Dockerfile](Dockerfile) to build a local docer image or pull the latest image from [ISVA Devops Artifactory](https://na.artifactory.swg-devops.com/artifactory/sec-iam-isam-devops-team-docker-local/)\(IBM w3 login is required\).
+IBM Security Verify Access Configuration Automation can also be run within a docker container. Use to [Dockerfile](Dockerfile) to build a local docer image or pull the latest image from [ISVA Devops Artifactory](https://na.artifactory.swg-devops.com/artifactory/sec-iam-isam-devops-team-docker-local/)\(IBM w3 login is required\). This uses a multi-stage build process to ensure that the username / access token used to fetch pacakges from artifactory does not show up in any metadata in the final container.
+
+The docker container can be built with the following command executed from the top level directory of the configurator source code:
+```
+docker build --no-cache --force-rm --build-arg "ART_API_USER=user@name" --build-arg "ART_API_KEY=api_access_token" -t verify-access-configurator .
+```
 
 When starting the container the required environment variables must be set and the docker container must be able to route to the ISVA appliances/containers which are to be configured.
 

@@ -59,6 +59,7 @@ class CustomLoader(yaml.SafeLoader):
         super(CustomLoader, self).__init__(path)
         CustomLoader.add_constructor('!include', CustomLoader.include)
         CustomLoader.add_constructor('!secret', CustomLoader.k8s_secret)
+        CustomLoader.add_constructor('!environment', CustomLoader.env_secret)
 
     def include(self, node):
         filename = os.path.join(self._root, self.construct_scalar(node))
@@ -73,6 +74,12 @@ class CustomLoader(yaml.SafeLoader):
         #Use k8s API to look up secret
         k8sSecret = KUBE_CLIENT.CoreV1Api().read_namespaced_secret(name, namespace)
         return base64.b64decode(k8sSecret.data[key]).decode()
+
+    def env_secret(self, node):
+        try:
+            return os.environ.get(self.construct_scalar(node))
+        except KeyError as e:
+            raise ValueError("Environment variable {} does not exist".format(secret)) from e
 
 class FileLoader():
 
