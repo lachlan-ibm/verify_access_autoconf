@@ -93,6 +93,7 @@ class ISVA_Configurator(object):
     def activate_appliance(self, config):
         system = self.factory.get_system_settings()
         activations = system.licensing.get_activated_modules().json
+        _logger.debug("Exisitng activations: {}".format(activations))
         if not any(module.get('id', None) == 'wga' and module.get('enabled', "False") == "True" for module in activations):
             self._activateBaseAppliance(config)
         if not any(module.get('id', None) == 'mga' and module.get('enabled', "False") == "True" for module in activations):
