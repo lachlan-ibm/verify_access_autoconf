@@ -80,14 +80,17 @@ class ISVA_Configurator(object):
 
     def _activateBaseAppliance(self, config):
         if config.activation is not None and config.activation.webseal is not None:
+            _logger.debug("Activating base module")
             self._apply_license("wga", config.activation.webseal)
 
     def _activateAdvancedAccessControl(self, config):
         if config.activation is not None and config.activation.access_control is not None:
+            _logger.debug("Activating access control module")
             self._apply_license("mga", config.activation.access_control)
 
     def _activateFederation(self, config):
         if config.activation is not None and config.activation.federation is not None:
+            _logger.debug("Activating federations module")
             self._apply_license("federation", config.activation.federation)
 
     def activate_appliance(self, config):

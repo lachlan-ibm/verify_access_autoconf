@@ -136,41 +136,51 @@ def _kube_rollout_restart(client, namespace, deployment):
             sys.exit(1)
 
     #Finally wait for the new pod list to be ready
-    count = 1
-    while count < 10:
-        try:
-            rsp = client.AppsV1Api().read_namespaced_deployment_status(name=deployment, namespace=namespace)
-            if rsp.spec and rsp.status and rsp.spec.replicas == rsp.status.available_replicas:
-                _logger.debug("Deployment {} is reported as available again".format(deployment))
-                break
-            else:
-                _logger.debug("Waiting for deployment {}; status {}".format(deployment, rsp.status))
-                time.sleep(count * 10)
-                count += 1
-        except kubernetes.client.rest.ApiException as e:
-            _logger.error("Exception when calling AppsV1Api -> read_namespaced_deployment_status: %s" % e)
-            sys.exit(1)
-    if count == 10:
-        _logger.error("Failed to wait for deployment to be ready.")
-        sys.exit(1)
+    #count = 1
+    #while count < 10:
+    #    try:
+    #        rsp = client.AppsV1Api().read_namespaced_deployment_status(name=deployment, namespace=namespace)
+    #        if rsp.spec and rsp.status and rsp.spec.replicas == rsp.status.available_replicas:
+    #            _logger.debug("Deployment {} is reported as available again".format(deployment))
+    #            break
+    #        else:
+    #            _logger.debug("Waiting for deployment {}; status {}".format(deployment, rsp.status))
+    #            time.sleep(count * 10)
+    #            count += 1
+    #    except kubernetes.client.rest.ApiException as e:
+    #        _logger.error("Exception when calling AppsV1Api -> read_namespaced_deployment_status: %s" % e)
+    #        sys.exit(1)
+    #if count == 10:
+    #    _logger.error("Failed to wait for deployment to be ready.")
+    #    sys.exit(1)
     return
 
-def _compose_restart_container(container, config):
+def _compose_restart_service(service, config):
     if shutil.which("docker-compose") == None:
         _logger.error("docker-compose not found on $PATH")
         sys.exit(1)
     composeYaml = None
     if const.DOCKER_COMPOSE_CONFIG in os.environ.keys():
         composeYaml = os.environ.get(const.DOCKER_COMPOSE_CONFIG)
-    elif config.containers.docker_compose_yaml is not None:
-        composeYaml = config.containers.docker_compose_yaml
+    elif config.container.docker_compose_yaml is not None:
+        composeYaml = config.container.docker_compose_yaml
     else:
         _logger.error("Unable to find docekr-compose YAML configuration")
         sys.exit(1)
-    ps = subprocess.run(['docker-compose', '-f' , composeYaml, 'restart', container])
+    ps = subprocess.run(['docker-compose', '-f' , composeYaml, 'restart', service])
     if ps.returncode != 0:
         _logger.error("Error restarting docker-compose container:\nstdout: {}\nstderr{}".format(ps.stdout, ps.stderr))
         sys.exit(1)
+
+def _docker_restart_container(container, config):
+    if shutil.which("docker") == None:
+        _logger.error("docker  not found on $PATH")
+        sys.exit(1)
+    ps = subprocess.run(['docker', 'resart', container])
+    if ps.returncode != 0:
+        _logger.error("Error restarting docker container:\nstdout: {}\nstderr{}".format(ps.stdout, ps.stderr))
+        sys.exit(1)
+
 
 def deploy_pending_changes(factory=None, isvaConfig=None):
     if not isvaConfig:
@@ -194,13 +204,12 @@ def deploy_pending_changes(factory=None, isvaConfig=None):
                 for pod in isvaConfig.container.pods:
                     _kube_restart_container(KUBE_CLIENT, namespace, pod)
 
-        elif isvaConfig.container.compose_containers:
-            for container in isvaConfig.container.compose_containers:
-                _compose_restart_container(container, isvaConfig)
+        elif isvaConfig.container.compose_services:
+            for service in isvaConfig.container.compose_services:
+                _compose_restart_service(service, isvaConfig)
 
         elif isvaConfig.container.containers is not None:
-            #TODO
-            pass
+            _docker_restart_container(container, isvaConfig)
 
         else:
             _logger.error("Unable to perform container restart, this may lead to errors")
