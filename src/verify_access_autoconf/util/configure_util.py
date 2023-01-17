@@ -167,6 +167,8 @@ def _compose_restart_service(service, config):
     else:
         _logger.error("Unable to find docekr-compose YAML configuration")
         sys.exit(1)
+    if not composeYaml.startswith('/'):
+        composeYaml = config_base_dir() + '/' + composeYaml
     ps = subprocess.run(['docker-compose', '-f' , composeYaml, 'restart', service])
     if ps.returncode != 0:
         _logger.error("Error restarting docker-compose container:\nstdout: {}\nstderr{}".format(ps.stdout, ps.stderr))
