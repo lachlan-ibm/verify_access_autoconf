@@ -357,7 +357,7 @@ class AAC_Configurator(object):
             _logger.error("Failed to set configuration for {} mechanism with:\n{}\n{}".format(
                 mechanism.name, json.dumps(mechanism, indent=4), rsp.data))
 
-    def _confiugre_policy(self, existing_policies, policy):
+    def _configure_policy(self, existing_policies, policy):
         rsp = None
         old_policy = list(filter(lambda p: p['uri'] == policy.uri, existing_policies))
         if old_policy:
