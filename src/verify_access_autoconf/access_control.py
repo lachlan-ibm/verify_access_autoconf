@@ -14,6 +14,7 @@ class AAC_Configurator(object):
     config = Map()
     aac = None
     factory = None
+    needsRestart = True
 
     def __init__(self, config, factory):
         self.aac = factory.get_access_control()
@@ -78,16 +79,16 @@ class AAC_Configurator(object):
             ac = aac_config.access_control
             if ac.policies != None:
                 for policy in ac.policies:
-                    _cba_policy(policy)
+                    self._cba_policy(policy)
             if ac.resources != None:
                 for resource in ac.resources:
-                    _cba_resource(resource)
+                    self._cba_resource(resource)
             if ac.attributes != None:
                 for attribute in ac.attributes:
-                    _cba_attribute(attribute)
+                    self._cba_attribute(attribute)
             if ac.obligations != None:
                 for obligation in ac.obligations:
-                    _cba_obligation(obligation)
+                    self._cba_obligation(obligation)
 
 
     def advanced_config(self, aac_config):
@@ -103,7 +104,6 @@ class AAC_Configurator(object):
 
 
     def scim_configuration(self, aac_config):
-        #TODO
         if aac_config.scim != None:
             for schema in aac_config.scim:
                 rsp = self.aac.scim_config.get_schema(schema.uri)
@@ -175,14 +175,14 @@ class AAC_Configurator(object):
                 elif c.get('name') == connection.name:
                     logger.info("connection {} exists, deleting before recreating".format(connection.name))
                     rsp = {"ci": self.aac.server_connections.delete_ci,
-                      "ldap": self.aac.server_connections.delete_ldap,
-                      "isamruntime": self.aac.server_connections.delete_runtime,
-                      "oracle": self.aac.server_connections.delete_jdbc,
-                      "db2": self.aac.server_connections.delete_jdbc,
-                      "soliddb": self.aac.server_connections.delete_jdbc,
-                      "postgresql": self.aac.server_connections.delete_jdbc,
-                      "smtp": self.aac.server_connections.delete_smtp,
-                      "ws": self.aac.server_connections.delete_web_service}.get(connection.type, None)(c['uuid'])
+                          "ldap": self.aac.server_connections.delete_ldap,
+                          "isamruntime": self.aac.server_connections.delete_runtime,
+                          "oracle": self.aac.server_connections.delete_jdbc,
+                          "db2": self.aac.server_connections.delete_jdbc,
+                          "soliddb": self.aac.server_connections.delete_jdbc,
+                          "postgresql": self.aac.server_connections.delete_jdbc,
+                          "smtp": self.aac.server_connections.delete_smtp,
+                          "ws": self.aac.server_connections.delete_web_service}.get(connection.type, None)(c['uuid'])
                     return rsp.success
         return True
 
@@ -208,6 +208,7 @@ class AAC_Configurator(object):
                     rsp = method(connection)
                     if rsp.success == True:
                         _logger.info("Successfully created {} server connection".format(connection.name))
+                        self.needsRestart = True
                     else:
                         _logger.error("Failed to create server connection [{}] with config:\n{}".format(
                             connection.name, connection))
@@ -267,7 +268,8 @@ class AAC_Configurator(object):
                 authorization_code_length=definition.authorization_code_length, refresher_token_length=definition.refresh_token_length,
                 max_authorization_grant_lifetime=definition.max_authorization_grant_lifetime, pin_length=definition.pin_length,
                 enforce_single_use_authorization_grant=definition.enforce_single_use_grant, issue_refresh_token=definition.issue_refresh_token, 
-                enforce_single_access_token_per_grant=definition.single_token_per_grant, enable_multiple_refresh_tokens_for_fault_tolerance=defintion.multiple_refresh_tokens,
+                enforce_single_access_token_per_grant=definition.single_token_per_grant, 
+                enable_multiple_refresh_tokens_for_fault_tolerance=defintion.multiple_refresh_tokens,
                 pin_policy_enabled=definition.pin_policy, grant_types=definition.grant_types, oidc=definition.oidc)
         if rsp.success == True:
             _logger.info("Successfully created {} API Protection definition".format(definition.name))
@@ -350,6 +352,7 @@ class AAC_Configurator(object):
                     uri=mechanism.uri, type_id=typeId,  properties=props, attributes=mechanism.attributes)
         if rsp.success == True:
             _logger.info("Successfully set configuration for {} mechanism".format(mechanism.name))
+            self.needsRestart = True
         else:
             _logger.error("Failed to set configuration for {} mechanism with:\n{}\n{}".format(
                 mechanism.name, json.dumps(mechanism, indent=4), rsp.data))
@@ -366,6 +369,7 @@ class AAC_Configurator(object):
                     enabled=policy.enabled)
         if rsp.success == True:
             _logger.info("Successfully set configuration for {} policy".format(policy.name))
+            self.needsRestart = True
         else:
             _logger.error("Failed to set configuration for {} policy with:\n{}\n{}".format(
                 policy.name, json.dumps(policy, indent=4), rsp.data))
@@ -374,7 +378,10 @@ class AAC_Configurator(object):
         if aac_config.authentication != None:
             if aac_config.authentication.mechanisms != None:
                 for mechanism in aac_config.authentication.mechanisms:
-                    _configure_mechanism(mechanism)
+                    self._configure_mechanism(mechanism)
+            if self.needsRestart == True:
+                deploy_pending_changes()
+                self.needsRestart = False
             if aac_config.authentication.policies != None:
                 existing_policies = self.aac.authentication.list_policies()
                 for policy in aac_config.authentication.policies:
@@ -391,6 +398,7 @@ class AAC_Configurator(object):
             rsp = self.aac.mmfaconfig.update(**aac_config.mmfa)
             if rsp.success == True:
                 _logger.info("Successfully updated MMFA configuration")
+                self.needsRestart = True
             else:
                 _logger.error("Failed to update MMFA configuration with:\n{}\n{}".format(
                     json.dumps(aac_config.mmfa, indent=4), rsp.data))
@@ -465,29 +473,31 @@ class AAC_Configurator(object):
             fido2 = aac_config.fido2
             if fido2.metadata != None:
                 for metadata in fido2.metadata:
-                    _upload_metadata(metadata)
+                    self._upload_metadata(metadata)
             if fido2.mediators != None:
                 for mediator in fido2.mediators:
-                    _upload_mediator(mediator)
+                    self._upload_mediator(mediator)
             if fido2.relying_parties != None:
                 for rp in fido2.relying_parties:
-                    _create_relying_party(rp)
+                    self._create_relying_party(rp)
 
 
     def configure(self):
         if self.config.access_control == None:
             _logger.info("No Access Control configuration detected, skipping")
             return
-        upload_files(self.config.access_control)
-        push_notifications(self.config.access_control)
-        server_connections(self.config.access_control)
-        fido2_configuration(self.config.access_control)
-        api_protection_configuration(self.config.access_control)
-        deploy_pending_changes()
+        self.upload_files(self.config.access_control)
+        self.push_notifications(self.config.access_control)
+        self.server_connections(self.config.access_control)
+        self.fido2_configuration(self.config.access_control)
+        self.api_protection_configuration(self.config.access_control)
+        if self.needsRestart == True:
+            deploy_pending_changes()
 
         attributes_configuration(self.config.access_control)
         authentication_configuration(self.config.access_control)
         scim_configuration(self.config.access_control)
         mmfa_configuration(self.config.access_control)
         advanced_config(self.config.access_control)
-        deploy_pending_changes()
+        if self.needsRestart == True:
+           deploy_pending_changes()
