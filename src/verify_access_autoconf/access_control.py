@@ -383,7 +383,7 @@ class AAC_Configurator(object):
                 deploy_pending_changes()
                 self.needsRestart = False
             if aac_config.authentication.policies != None:
-                existing_policies = self.aac.authentication.list_policies()
+                existing_policies = self.aac.authentication.list_policies().json
                 for policy in aac_config.authentication.policies:
                     self._configure_policy(existing_policies, policy)
 
