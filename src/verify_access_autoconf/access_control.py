@@ -494,10 +494,10 @@ class AAC_Configurator(object):
         if self.needsRestart == True:
             deploy_pending_changes()
 
-        attributes_configuration(self.config.access_control)
-        authentication_configuration(self.config.access_control)
-        scim_configuration(self.config.access_control)
-        mmfa_configuration(self.config.access_control)
-        advanced_config(self.config.access_control)
+        self.attributes_configuration(self.config.access_control)
+        self.authentication_configuration(self.config.access_control)
+        self.scim_configuration(self.config.access_control)
+        self.mmfa_configuration(self.config.access_control)
+        self.advanced_config(self.config.access_control)
         if self.needsRestart == True:
            deploy_pending_changes()
