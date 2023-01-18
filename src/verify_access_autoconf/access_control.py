@@ -475,19 +475,19 @@ class AAC_Configurator(object):
 
 
     def configure(self):
-        if self.config.aac == None:
+        if self.config.access_control == None:
             _logger.info("No Access Control configuration detected, skipping")
             return
-        upload_files(self.config.aac)
-        push_notifications(self.config.aac)
-        server_connections(self.config.aac)
-        fido2_configuration(self.config.aac)
-        api_protection_configuration(self.config.aac)
+        upload_files(self.config.access_control)
+        push_notifications(self.config.access_control)
+        server_connections(self.config.access_control)
+        fido2_configuration(self.config.access_control)
+        api_protection_configuration(self.config.access_control)
         deploy_pending_changes()
 
-        attributes_configuration(self.config.aac)
-        authentication_configuration(self.config.aac)
-        scim_configuration(self.config.aac)
-        mmfa_configuration(self.config.aac)
-        advanced_config(self.config.aac)
+        attributes_configuration(self.config.access_control)
+        authentication_configuration(self.config.access_control)
+        scim_configuration(self.config.access_control)
+        mmfa_configuration(self.config.access_control)
+        advanced_config(self.config.access_control)
         deploy_pending_changes()
