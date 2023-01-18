@@ -21,6 +21,8 @@ logging.basicConfig(stream=sys.stdout, level=os.environ.get(LOG_LEVEL, logging.D
 _logger = logging.getLogger(__name__)
 
 class ISVA_Configurator(object):
+    #Only restart containers if we import PKI or apply a license
+    needsRestart = False
 
     def old_password(self, config_file):
         rsp = requests.get(mgmt_base_url(config_file), auth=old_creds(config_file), headers=HEADERS, verify=False)
@@ -64,10 +66,11 @@ class ISVA_Configurator(object):
 
 
     def complete_setup(self):
-        rsp = self.factory.get_system_settings().first_steps.set_setup_complete()
-        assert rsp.status_code == 200, "Did not complete setup"
-        deploy_pending_changes(self.factory, self.config)
-        _logger.info("Completed setup")
+        if self.factory.get_system_settings().first_steps.get_setup_status().json.get("configured", True) == False:
+            rsp = self.factory.get_system_settings().first_steps.set_setup_complete()
+            assert rsp.status_code == 200, "Did not complete setup"
+            deploy_pending_changes(self.factory, self.config, restartContainers=False)
+            _logger.info("Completed setup")
 
 
     def _apply_license(self, module, code):
@@ -75,6 +78,7 @@ class ISVA_Configurator(object):
         rsp = self.factory.get_system_settings().licensing.activate_module(code)
         if rsp.success == True:
             _logger.info("Successfully applied {} licence".format(module))
+            self.needsRestart = True
         else:
             _logger.error("Failed to apply {} license:\n{}".format(module, rsp.data))
 
@@ -103,7 +107,9 @@ class ISVA_Configurator(object):
             self._activateAdvancedAccessControl(config)
         if not any(module.get('id', None) == 'federation' and module.get('enabled', "False") == "True" for module in activations):
             self._activateFederation(config)
-        deploy_pending_changes(self.factory, self.config)
+        if self.needsRestart == True:
+            deploy_pending_changes(self.factory, self.config)
+            self.needsRestart = False
         _logger.info("appliance activated")
 
 
@@ -113,6 +119,7 @@ class ISVA_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully uploaded {} signer certificate to {}".format(
                 parsed_file['name'], database))
+            self.needsRestart = True
         else:
             _logger.error("Failed to upload {} signer certificate to {} database\n{}".format(
                 parsed_file['name'], database, rsp.data))
@@ -124,6 +131,7 @@ class ISVA_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully loaded {} signer certificate to {}".format(
                 str(server) + ":" + str(port), database))
+            self.needsRestart = True
         else:
             _logger.error("Failed to load {} signer certificate to {}/n{}".format(
                 str(server) + ":" + str(port), database, rsp.data))
@@ -135,6 +143,7 @@ class ISVA_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully uploaded {} personal certificate to {}".format(
                 parsed_file['name'], database))
+            self.needsRestart = True
         else:
             _logger.error("Failed to upload {} personal certificate to {}/n{}".format(
                 parsed_file['name'], database, rsp.data))
@@ -167,7 +176,9 @@ class ISVA_Configurator(object):
                 if database.load_certificates:
                     for item in database.load_certificates:
                         self._load_signer_cert(database.name, item.server, item.port, item.label)
-        deploy_pending_changes(self.factory, self.config)
+        if self.needsRestart == True:
+            deploy_pending_changes(self.factory, self.config)
+            self.needsRestart == False
 
 
     def admin_config(self, config):
@@ -332,6 +343,7 @@ class ISVA_Configurator(object):
             rsp = self.factory.get_system_settings().snapshot.upload(snapshotConfig.snapshot)
             if rsp.success == True:
                 _logger.info("Successfully applied snapsnot [{}]".format(snapshotConfig.snapshot))
+                deploy_pending_changes(self.factory, self.config)
             else:
                 _logger.error("Failed to apply snapshot [{}]\n{}".foramt(snapshotConfig.snapshot),
                         rsp.content)
