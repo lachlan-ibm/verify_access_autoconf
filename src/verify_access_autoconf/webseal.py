@@ -378,23 +378,23 @@ class WEB_Configurator(object):
     def _pdadmin(self, runtime, config):
         if config.acls != None:
             for acl in config.acls:
-                _pdadmin_acl(runtime, acl)
+                self._pdadmin_acl(runtime, acl)
 
         if config.pops != None:
             for pop in config.pops:
-                _pdadmin_pop(runtime, pop)
+                self._pdadmin_pop(runtime, pop)
 
         if config.groups != None:
             for group in config.groups:
-                _pdadmin_group(runtime, group)
+                self._pdadmin_group(runtime, group)
 
         if config.users != None:
             for user in config.users:
-                _pdadmin_user(runtime, user)
+                self._pdadmin_user(runtime, user)
 
         if config.reverse_proxies != None:
             for proxy in config.reverse_proxies:
-                _pdadmin_proxy(proxy)
+                self._pdadmin_proxy(proxy)
         deploy_pending_changes(self.factory, self.config)
 
 
