@@ -24,10 +24,10 @@ class WEB_Configurator(object):
                 proxy_id, entry.stanza, entry.entry_id, entry.value)
         if rsp.success == True:
             _logger.info("Successfully updated stanza [{}] with [{}:{}]".format(
-                    entry.stanza, entry.key, entry.value))
+                    entry.stanza, entry.entry_id, entry.value))
         else:
             _logger.error("Failed to update stanza [{}] with [{}:{}]".format(
-                    entry.stanza, entry.key, entry.value))
+                    entry.stanza, entry.entry_id, entry.value))
 
     def __add_stanza(self, proxy_id, entry):
         rsp = None
