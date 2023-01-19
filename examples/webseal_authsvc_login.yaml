@@ -1,0 +1,90 @@
+container:
+  docker_compose_yaml: "iamlab/docker-compose.yaml"
+  compose_services:
+  - "isvaruntime"
+  - "isvawrprp1"
+webseal:
+  runtime:
+    policy_server: "ldap"
+    user_registry: "ldap"
+    ldap:
+      host: "openldap"
+      port: 636
+      dn: "cn=root,secAuthority=Default"
+      dn_password: "Passw0rd"
+      key_file: "lmi_trust_store"
+    clean_ldap: True
+    domain: "Default"
+    admin_user: "sec_master"
+    admin_password: "Passw0rd"
+    admin_cert_lifetime: 1460
+    ssl_compliance: "fips"
+  reverse_proxy:
+  - name: "default"
+    host: "isvaruntime"
+    http:
+      enabled: "no"
+    https:
+      enabled: "yes"
+    domain: "Default"
+    ldap:
+      ssl_yn: "yes"
+      port: 636
+      key_file: "lmi_trust_store"
+    aac_configuration:
+      hostname: "isvaruntime"
+      port: 9443
+      junction: "/mga"
+      user: "easuser"
+      password: "passw0rd"
+      reuse_certs: True
+      reuse_acls: True
+    stanza_configuration:
+    - stanza: "acnt-mgt"
+      entry_id: "enable-local-response-redirect"
+      value: "yes"
+      operation: "update"
+    - stanza: "local-response-redirect"
+      entry_id: "local-response-redirect-uri"
+      value: "/mga/sps/authsvc?PolicyId=urn:ibm:security:authentication:asf:password"
+      operation: "update"
+  pdadmin:
+    users:
+    - name: "testuser"
+      dn: "cn=testuser,dc=ibm,dc=com"
+      password: "passw0rd"
+access_control:
+  authentication:
+    policies:
+    - name: "Username Passwword"
+      description: "Username and password authentication policy."
+      enabled: true
+      uri: "urn:ibm:security:authentication:asf:password"
+      policy: "<Policy xmlns=\"urn:ibm:security:authentication:policy:1.0:schema\" PolicyId=\"urn:ibm:security:authentication:asf:password\"><Description>Username and password authentication policy.</Description><Step type=\"Authenticator\"><Authenticator AuthenticatorId=\"urn:ibm:security:authentication:asf:mechanism:password\"/></Step><Actions><Action On=\"null\" type=\"null\"><AttributeAssignments/></Action></Actions></Policy>"
+    mechanisms:
+    - id: "7"
+      name: "Username Passowrd"
+      type: "Username Password"
+      description: "Username password authentication"
+      uri: "urn:ibm:security:authentication:asf:mechanism:password"
+      properties:
+      - usernamePasswordAuthentication.enableLastLogin: "false"
+      - usernamePasswordAuthentication.loginFailuresPersistent: "false"
+      - usernamePasswordAuthentication.maxServerConnections: "16"
+      - usernamePasswordAuthentication.mgmtDomain: "Default"
+      - usernamePasswordAuthentication.sslServerStartTLS: "false"
+      - usernamePasswordAuthentication.useFederatedDirectoriesConfig: "false"
+      - usernamePasswordAuthentication.userSearchFilter: "(|(objectclass=ePerson)(objectclass=Person))"
+      - usernamePasswordAuthentication.ldapBindDN: "cn=root,secAuthority=Default"
+      - usernamePasswordAuthentication.ldapHostName: "openldap"
+      - usernamePasswordAuthentication.ldapBindPwd: "Passw0rd"
+      - usernamePasswordAuthentication.ldapPort: "636"
+      - usernamePasswordAuthentication.sslEnabled: "true"
+      - usernamePasswordAuthentication.sslTrustStore: "lmi_trust_store"
+      attributes:
+      - selector: "mobile"
+        name: "mobileNumber"
+        namespace: "urn:ibm:security:authentication:asf:mechanism:password"
+      - selector: "mail"
+        name: "emailAddress"
+        namespace: "urn:ibm:security:authentication:asf:mechanism:password"
