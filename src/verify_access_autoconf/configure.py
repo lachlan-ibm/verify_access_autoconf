@@ -47,15 +47,29 @@ class ISVA_Configurator(object):
         return False
 
 
+    '''
+    If the ``mgmt_old_pwd`` key is included then the configurator will attempt to update the administrator user's
+    password before proceeding configuration. If the password update fails but the administrator is able to successfully
+    authenticate (ie. password has already been updated) then configuration will still proceed.
 
+    *note:* These properties are overridded by ``ISVA_MGMT_*`` environment variables
+
+    Example::
+              mgmt_user: 'administrator'
+              mgmt_pwd: 'S3cr37Pa55w0rd!'
+              mgmt_old_pwd: 'administrator'
+    '''
     def set_admin_password(self, old, new):
-        response = self.factory.get_system_settings().sysaccount.update_admin_password(old_password=old[1], password=new[1]) 
+        response = self.factory.get_system_settings().sysaccount.update_admin_password(old_password=old[1], password=new[1])
         if response.success == True:
             _logger.info("Successfullt updated admin password")
         else:
             _logger.error("Failed to update admin password:/n{}".format(response.data))
 
 
+    '''
+    The configurator will always try to accept the Software License Agreement. This does not require any confiuration.
+    '''
     def accept_eula(self):
         payload = {"accepted": True}
         rsp = self.factory.get_system_settings().first_steps.set_sla_status()
@@ -65,6 +79,10 @@ class ISVA_Configurator(object):
             _logger.error("Failed to accept SLA:\n{}".format(rsp.data))
 
 
+    '''
+    The configurator will alway try to complete the Local Management Interface initalization. This does not require
+    any configuration.
+    '''
     def complete_setup(self):
         if self.factory.get_system_settings().first_steps.get_setup_status().json.get("configured", True) == False:
             rsp = self.factory.get_system_settings().first_steps.set_setup_complete()
@@ -97,6 +115,23 @@ class ISVA_Configurator(object):
             _logger.debug("Activating federations module")
             self._apply_license("federation", config.activation.federation)
 
+
+    '''
+    :var: activation:: Dictionary with three keys; one for each optional Verify Access license module which can
+                       be activated in a deployment.
+
+                    :var: webseal:: License code for the WebSEAL Reverse Proxy module
+                    :var: access_control:: License code for the Advanced Access Control module.
+                    :var: federation:: License for the Federations module.
+
+    Example::
+
+              activation:
+                base: "example"
+                aac: !secret verify-access/isva-secrets:access_control_code
+                fed: !environment ISVA_ACCESS_CONTROL_CODE
+
+    '''
     def activate_appliance(self, config):
         system = self.factory.get_system_settings()
         activations = system.licensing.get_activated_modules().json
@@ -148,6 +183,29 @@ class ISVA_Configurator(object):
             _logger.error("Failed to upload {} personal certificate to {}/n{}".format(
                 parsed_file['name'], database, rsp.data))
 
+    '''
+    :var: ssl_certificates:: List of dictionaries which describe the SSL database and the PKI files which should be
+                            imported into a particular database.
+
+                            :var: database:: Name of SSL database to configure. If database does not exist it will be
+                                             created.
+                            :var: personal_certificates:: List of file paths for personal certificates (PKCS#12) to import.
+                            :var: signer_certificates:: List of file paths for signer certificates (PEM or DER) to import.
+
+    Example::
+
+              ssl_certificates:
+                - database: "lmi_trust_store"
+                  personal_certificates:
+                    - "ssl/lmi_trust_store/personal"
+                  signer_certificates:
+                    - "ssl/lmi_trust_store/signer"
+                - database: "rt_profile_keys"
+                  signer_certificates:
+                    - "ssl/rt_profile_keys/signer"
+
+
+    '''
     def import_ssl_certificates(self, config):
         ssl_config = config.ssl_certificates
         ssl = self.factory.get_system_settings().ssl_certificates
@@ -181,6 +239,19 @@ class ISVA_Configurator(object):
             self.needsRestart == False
 
 
+    '''
+    :var: admin_cfg:: The complete list of properties that can be set by this key can be found at
+                      :ref:`pyisva:systemsettings#administrator-settings`
+
+    Examples::
+
+               admin_cfg:
+                 session_timeout: 7200
+                 sshd_client_alive: 300
+                 console_log_level: "AUDIT"
+                 accept_client_certs: true
+
+    '''
     def admin_config(self, config):
         if config.admin_config != None:
             rsp = self.factory.get_system_settings().admin_settings.update(**config.admin_config)
@@ -227,7 +298,7 @@ class ISVA_Configurator(object):
     def _system_groups(self, groups):
         for group in config.account_management.groups:
             rsp = None
-            if group.operation == "add":
+            if group.operation == "add" or group.operation == "update":
                 rsp = self.factory.get_system_settings().sysaccount.create_group(group.id)
             elif group.operation == "delete":
                 rsp = self.factory.get_system_settings().sysaccount.delete_group(group.id)
@@ -240,6 +311,53 @@ class ISVA_Configurator(object):
                 _logger.error("Faield to {} group {}:\n{}\n{}".format(
                     group.operation, group.id, json.dumps(group, indent=4), rsp.data))
 
+            if group.operation == "update":
+                for user in group.users:
+                    rsp = self.factory.get_system_settings().sysaccount.add_user(user=user, group=group.id)
+                    if rsp.success == True:
+                        _logger.info("Successfully added {} to group {}".format(user, group.id))
+                    else:
+                        _logger.error("Faield to add user {} to group {}:\n{}\n{}".format(
+                            user, group.id, json.dumps(group, indent=4), rsp.data))
+
+
+    '''
+    :var: account_management:: Dictionary with two keys: one for users to be configured and one for groups to be
+                               configured
+
+                            :var: groups:: List of dictionaries. Each dictionary contains a group to be created or updated.
+                                          *note*: Groups are created before users; therefore if a user is being created
+                                                  and added to a group then
+
+                                        :var: id:: Name of group to create.
+                                        :var: users:: List of users to add to group. Users must already exist.
+
+                            :var: users:: List of dictionaries. Each dictionary contains a user to be added, updated or
+                                          deleted from the list of Administrator users. Each user must define a name
+                                          and operation
+
+                                        :var: name:: Name of the user to create or update.
+                                        :var: operation:: "create" || "update" || "delete".
+                                        :var: password:: Password to authenticate as user. Required if creating user.
+                                        :var: groups:: List of groups to add user to.
+
+    Examples::
+            account_management:
+              users:
+              - name: "cfgsvc"
+                operation: "update"
+                password: "Passw0rd"
+                groups:
+                - "aGroup"
+                - "anotherGroup"
+             groups:
+             - name: "adminGroup"
+               operation: "update"
+               users:
+               - "admin"
+               - "anotherUser"
+
+    '''
     def account_management(self, config):
         if config.account_management != None:
             if config.account_management.groups != None:
@@ -278,6 +396,43 @@ class ISVA_Configurator(object):
             _logger.error("Unknown operation {} for role configuration:\n{}".format(
                 role.operation, json.dumps(role, indent=4)))
 
+    '''
+    :var: management_authorization:: Dictionary to enable management authorization as well as define role based access
+                                     for users and groups via a list of features.
+
+                                :var: roles:: List of dictionaries. Each dictionary defines a set of features to permit
+                                              access (read only / read write ) to as well as a list of users and/or 
+                                              groups to add to the role.
+
+                                              :var: operation:: operation to perform on role. "add" || "update" || "delete"
+                                              :var: name:: Name of role to modify.
+                                              :var: users:: List of users to add to role.
+
+                                                            :var: name:: Name of user
+                                                            :var: type:: Type of user. "local" || "remote"
+
+                                              :var: groups:: List of groups
+
+                                                            :var: name::
+                                                            :var: type::
+
+                                              :var: features::
+                                                            :var: name::
+                                                            :var: access::
+
+    Example::
+               management_authorization:
+                 authorization_enforcement: True
+                 roles:
+                 - operation: update
+                   name: "Configuration Service"
+                   users:
+                   - name: "cfgsvc"
+                     type: "local"
+                   features:
+                   - name: "shared_volume"
+                     access: "w"
+    '''
     def management_authorization(self, config):
         if config.management_authorization != None and config.management_authorization.roles != None:
             for role in config.management_authorization.roles:

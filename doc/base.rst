@@ -19,6 +19,12 @@ enabling FIPS compliance. This is always done with the admin account using the d
 Failing this step does not result in the autoconfig aborting.
 
 
+.. autofunction:: verify-access-autoconf.configure.ISVA_Configurator.accept_eula
+
+
+.. autofunction:: verify-access-autoconf.configure.ISVA_Configurator.complete_setup
+
+
 .. _lmi-password-update::
 
 Password update
@@ -27,9 +33,7 @@ The password of the management account may be updated once. This account must al
 have sufficient permission to complete all of the configuration required.
 
 
-.. code-block:: yaml
-  mgmt_pwd: 'Passw0rd'
-  mgmt_old_pwd: 'admin'
+.. autofunction:: verify-access-autoconf.configure.ISVA_Configurator.set_admin_password
 
 
 .. _system-settings::
@@ -65,16 +69,7 @@ environment variable. A complete list of the available configuration properties 
 `here <https://ibm-security.github.io/pyisva>`_. An example configuration is:
 
 
-.. code-block:: yaml
-  ssl_certificates:
-    - database: "lmi_trust_store"
-      personal_certificates:
-        - "ssl/lmi_trust_store/personal"
-      signer_certificates:
-        - "ssl/lmi_trust_store/signer"
-    - database: "rt_profile_keys"
-      signer_certificates:
-        - "ssl/rt_profile_keys/signer"
+.. autofunction:: verify-access-autoconf.configure.ISVA_Configurator.import_ssl_certificates
 
 
 Administrator Account Management
@@ -85,12 +80,7 @@ management interface. A complete list of the available configuration properties 
 `here <https://ibm-security.github.io/pyisva>`_. An example configuration is:
 
 
-.. code-block:: yaml
-   account_management:
-    users:
-    - name: "cfgsvc"
-      operation: "update"
-      password: "Passw0rd"
+.. autofunction:: verify-access-autoconf.configure.ISVA_Configurator.account_management
 
 
 Administrators are also able to manage access to Verify Access features. This allows for more fine grained control 
@@ -101,18 +91,7 @@ available configuration properties can be found `here <https://ibm-security.gith
 configuration is:
 
 
-.. code-block:: yaml
-   management_authorization:
-    authorization_enforcement: True
-    roles:
-    - operation: update
-      name: "Configuration Service"
-      users:
-      - name: "cfgsvc"
-        type: "local"
-      features:
-      - name: "shared_volume"
-        access: "w"
+.. autofunction:: verify-access-autoconf.configure.ISVA_Configurator.account_management
 
 
 .. _cluster-configuration::
@@ -141,7 +120,7 @@ configuration properties can be found `here <https://ibm-security.github.io/pyis
      port: 5432
      type: "Postgresql"
      user: "postgres"
-     password: @secrets/isva-secrets:postgres-passwd
+     password: !secret verify-access/isva-secrets:postgres-passwd
      ssl: True
      db_name: "isva"
   cluster:
@@ -164,11 +143,7 @@ this step. Subsequent module configuration is dependant on one or more of these 
 or container. An example configuration is:
 
 
-.. code-block:: yaml
-  activation: #Activation codes
-    base: "example"
-    aac: "example"
-    fed: "example"
+.. autofunction:: verify-access-autoconf.configure.ISVA_Configurator.activate_appliance
 
 
 .. _advanced-tuning-parameters::

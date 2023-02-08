@@ -1,3 +1,10 @@
+Container Configuration
+########################
+
+This module contains documentaiton for system level configuration applicable for Container based Verify Access 
+deployments. Container configuration is defined under the ``container`` top level key. At a minimum an administrator 
+should define the ``isva_base_url``, ``isva_admin_user`` and ``isva_admin_password`` keys (or define the applicable 
+environment variables).
 
 
 Example
@@ -12,7 +19,7 @@ Example
        users:
        - name: "cfgsvc"
          operation: "update"
-         password: @secrets/isva-secrets:cfgsvc-passwd
+         password: !secrets/isva-secrets:cfgsvc-passwd
      management_authorization:
        authorization_enforcement: True
        roles:
@@ -37,7 +44,7 @@ Example
        port: 5432
        type: "Postgresql"
        user: "postgres"
-       password: @secrets/isva-secrets:postgres-passwd
+       password: !secrets/isva-secrets:postgres-passwd
        ssl: True
        db_name: "isva"
 
