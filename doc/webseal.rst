@@ -1,18 +1,69 @@
+.. _webseal::
+
+WebSEAL Reverse Proxy Configuration
+###################################
+This section covers the WebSEAL configuration of a Verify Access deployment. This includes configuring the reverse proxy
+policy server and user registry.
+
+Administrators can also use this section to cover WebSEAL specific functionality such as HTTP transformation rules, 
+client certificate mapping, federated user registries.
+
 
 Example
 =======
 
+.. code_block::
 
-.. _webseal::
-
-WebSEAL module configuration
-============================
-This section covers the WebSEAL configuration of a Verify Access deployment. This includes configuring the reverse proxy
-policy server and user registry.
-
-
-Administrators can also use this section to cover WebSEAL specific functionality such as HTTP transformation rules, 
-client certificate mapping, federated user registries.
+                webseal:
+                  runtime:
+                    policy_server: "ldap"
+                    user_registry: "ldap"
+                    ldap:
+                      host: "openldap"
+                      port: 636
+                      dn: "cn=root,secAuthority=Default"
+                      dn_password: "Passw0rd"
+                      key_file: "lmi_trust_store"
+                    clean_ldap: True
+                    domain: "Default"
+                    admin_user: "sec_master"
+                    admin_password: "Passw0rd"
+                    admin_cert_lifetime: 1460
+                    ssl_compliance: "fips"
+                  reverse_proxy:
+                  - name: "default"
+                    host: "isvaruntime"
+                    http:
+                      enabled: "no"
+                    https:
+                      enabled: "yes"
+                    domain: "Default"
+                    ldap:
+                      ssl_yn: "yes"
+                      port: 636
+                      key_file: "lmi_trust_store"
+                    aac_configuration:
+                      hostname: "isvaruntime"
+                      port: 9443
+                      junction: "/mga"
+                      user: "easuser"
+                      password: "passw0rd"
+                      reuse_certs: True
+                      reuse_acls: True
+                    stanza_configuration:
+                    - stanza: "acnt-mgt"
+                      entry_id: "enable-local-response-redirect"
+                      value: "yes"
+                      operation: "update"
+                    - stanza: "local-response-redirect"
+                      entry_id: "local-response-redirect-uri"
+                      value: "/mga/sps/authsvc?PolicyId=urn:ibm:security:authentication:asf:password"
+                      operation: "update"
+                  pdadmin:
+                    users:
+                    - name: "testuser"
+                      dn: "cn=testuser,dc=ibm,dc=com"
+                      password: "passw0rd"
 
 
 .. _webseal_runtime_component::
@@ -29,24 +80,8 @@ container in the ``isva`` directory.
 Any PKI required to verify this connection should be imported into a SSL database before the runtime component is 
 configured.
 
-An example runtime configuration is:
 
-.. code-block:: yaml
-   runtime:
-     policy_server: "remote"
-     user_registry: "remote"
-     ldap:
-       host: "openldap"
-       port: 636
-       dn: "cn=root,secAuthority=Default"
-       dn_password: @secrets/isva-secrets:ldap-passwd
-       key_file: "lmi_trust_store"
-     clean_ldap: True
-     domain: "Default"
-     admin_user: "sec_master"
-     admin_password: @secrets/isva-secrets:secmaster-passwd
-     admin_cert_lifetime: 1460
-     ssl_compliance: "FIPS 140-2"
+.. autofunction:: verify-access-autoconf.webseal.WEB_Configurator.runtime
 
 
 .. _webseal_reverse_proxy::
@@ -58,36 +93,8 @@ be used to create one or more reverse proxy instances along with associated back
 configuration. A complete list of the available configuration properties can be found 
 `here <https://ibm-security.github.io/pyisva>`_. An example configuration is:
 
-.. code-block:: yaml
-  reverse_proxy:
-  - name: "default"
-    hostname: "hostname"
-    address: "0.0.0.0"
-    listening_port: 7234
-    domain: "Default"
-    http: 
-    - enabled: "no"
-    https:
-    - enabled: "yes"
-      port: 443
-    junctions:
-    - name: "/app"
-      transparent_path: True
-      server:
-        host: "1.2.3.4"
-        port: 443
-      ssl:
-      - enabled: "yes"
-        key_file: "example.kdb",
-        cert_file: "server"
-    aac_configuration_wizard:
-      hostname: "localhost"
-      port: 443
-      user: "easuser"
-      password: "password"
-      junction: "/mga"
-      reuse_acls: True
-      reuse_certs: True
+
+.. autofunction:: verify-access-autoconf.webseal.WEB_Configurator.wrp
 
 
 .. _webseal_client_cert_map::
@@ -101,10 +108,7 @@ XSLT extension. A complete list of the available configuration properties can be
 An example configuration is:
 
 
-.. code-block:: yaml
-   client_cert_mapping:
-   - demo.mapping.xslt
-   - cert_to_uid.xlst
+.. autofunction:: verify-access-autoconf.webseal.WEB_Configurator.client_cert_mapping
 
 
 .. _webseal_jct_mapping::
@@ -116,10 +120,8 @@ cookie-based solutions for filtering dynamically generated server-relative URLs.
 to a Verify Access deployment. The name of the file which contains the junction mapping config is the resulting rule name
 in Verify Access. An example configuration is:
 
-.. code-block:: yaml
-   junction_mapping:
-   - demo.jct.map
-   - another.jct.map
+
+.. autofunction:: verify-access-autoconf.webseal.WEB_Configurator.junction_mapping
 
 
 .. _webseal_url_mapping::
@@ -131,10 +133,8 @@ generated URLs, such as URLs with query string parameters. URLs can be matched u
 matching (including wildcards). A complete list of supported regex can be found `here <https://www.ibm.com/docs/en/sva/latest?topic=configuration-supported-wildcard-pattern-matching-characters#ref_wildcard_sup>`_
 An example URL mapping configuration is:
 
-.. code-block:: yaml
-   url_mapping:
-   - dyn.url.conf
-   - url.map.conf
+
+.. autofunction:: verify-access-autoconf.webseal.WEB_Configurator.url_mapping
 
 
 .. _webseal_user_mapping::
@@ -145,10 +145,8 @@ User mapping can be used to modify or enrich an authenticated user's credential 
 identity of a user or add attributes to a user's existing credential. User mapping rules are added to a Verify Access 
 deployment using XLST rules. Detailed information about user mapping XSLT configuration can be found `here <https://www.ibm.com/docs/en/sva/latest?topic=methods-authenticated-user-mapping>`_. The name of the XSLT file will be used as the name of the user mapping rule
 
-.. code-block:: yaml
-   user_mapping:
-   - add_email.xslt
-   - federated_identity_to_basic_user.xslt
+
+.. autofunction:: verify-access-autoconf.webseal.WEB_Configurator.user_mapping
 
 
 .. _webseal_fsso::
@@ -162,13 +160,10 @@ the authentication challenge. More detailed information about FSSO concepts can 
 Verify Access. An example FSSO configuration is:
 
 
-.. code-block:: yaml
-   fsso:
-   - liberty_jsp_fsso.conf
-   - fsso.conf
+.. autofunction:: verify-access-autoconf.webseal.WEB_Configurator.form_single_sign_on
 
 
-.. _webseeal_http_transformations::
+.. _webseal_http_transformations::
 
 HTTP Transformation Rules
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -180,10 +175,8 @@ transformation concepts can be found `here <https://www.ibm.com/docs/en/sva/late
 The name of the HTTP transform file will be used as the name of the resulting HTTP transformation rule in Verify Access. 
 An example HTTP transformation configuration is:
 
-.. code-block:: yaml
-   http_transforms:
-   - inject_header.xslt
-   - eai.lua
+
+.. autofunction:: verify-access-autoconf.webseal.WEB_Configurator.http_transforms
 
 
 .. _webseal_kerberos::

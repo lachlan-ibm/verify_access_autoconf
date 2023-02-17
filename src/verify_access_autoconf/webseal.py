@@ -73,14 +73,17 @@ class WEB_Configurator(object):
 
     def _configure_aac(self, proxy_id, aac_config):
         methodArgs = {
-                "runtime_hostname": aac_config.hostname,
-                "runtime_port": aac_config.port,
                 "junction": aac_config.junction,
-                "runtime_username": aac_config.user,
-                "runtime_password": aac_config.password,
                 "reuse_certs": aac_config.reuse_certs,
                 "reuse_acls": aac_config.reuse_acls
             }
+        if aac_config.runtime:
+            methodArgs.update({
+                                "runtime_hostname": aac_config.runtime.hostname,
+                                "runtime_port": aac_config.runtime.port,
+                                "runtime_username": aac_config.runtime.user,
+                                "runtime_password": aac_config.runtime.password
+                            })
         rsp = self.web.reverse_proxy.configure_aac(proxy_id, **methodArgs)
         if rsp.success == True:
             _logger.info("Successfully ran Advanced Access Control configuration wizard on {} proxy instance".format(proxy_id))
@@ -137,7 +140,7 @@ class WEB_Configurator(object):
                 junction['force'] = "yes"
 
         rsp = self.web.reverse_proxy.create_junction(proxy_id, **junction)
-        
+
         if rsp.success == True:
             _logger.info("Successfully added junction to {} proxy".format(proxy_id))
         else:
@@ -145,13 +148,122 @@ class WEB_Configurator(object):
                 proxy_id, json.dumps(junction, indnet=4)))
 
 
-    def _wrp(self, runtime, proxy):
+    '''
+    .. note:: Configuration to connect to the user registry is read from the ``webseal.runtime`` entry.
+
+    .. note:: Federations configured in ths step must already exist. If federations are beign created and configured
+              for WebSEAL at the same time then the reverse proxy configuration should be added to the federation
+              configuration dictionary.
+
+
+    :var: reverse_proxy::
+
+                        :var: name::
+                        :var: host::
+                        :var: nw_interface_yn::
+                        :var: ip_address::
+                        :var: listening_port::
+                        :var: domain::
+                        :var: ldap::
+                                    :var: ssl::
+                                    :var: key_file::
+                                    :var: cert_file::
+                                    :var: port::
+
+                        :var: http::
+                                    :var: enabled::
+                                    :var: port::
+
+                        :var: https::
+                                    :var: enabled::
+                                    :var port::
+
+                        :var: junctions:: List of junctions to create. Each entry in the list should be a dictonary of
+                                          properties to create a junction to a resource server. The complete list of 
+                                          properties that can be used to craete junctions can be found 
+                                          :ref:`here <pyisva:websettings#pyisva.core.web.reverseproxy.ReverseProxy.create_junction>`.
+
+                        :var: aac_config::
+                                                :var: junction::
+                                                :var: reuse_certs::
+                                                :var: reuse_acls::
+                                                :var: runtime::
+                                                                :var: hostname::
+                                                                :var: port::
+                                                                :var: username::
+                                                                :var: password::
+
+                        :var: mmfa_config::
+                                            :var: channel::
+                                            :var: reuse_acls::
+                                            :var: reuse_pops::
+                                            :var: reuse_certs::
+                                            :var: lmi::
+                                                        :var: hostname::
+                                                        :var: port::
+                                                        :var: username::
+                                                        :var: password::
+
+                                            :var: runtime::
+                                                            :var: hostname::
+                                                            :var: port::
+                                                            :var: username::
+                                                            :var: password::
+
+                        :var: federation_configuration::
+                                                        :var: name::
+                                                        :var: reuse_certs::
+                                                        :var: reuse_acls::
+                                                        :var: runtime::
+                                                                        :var: host::
+                                                                        :var: port::
+                                                                        :var: username::
+                                                                        :var: password::
+
+                        :var: stanza_configuration::
+                                                    :var: operation::
+                                                    :var: stanza::
+                                                    :var: entry_id::
+                                                    :var: value::
+
+    Example::
+              reverse_proxy:
+              - name: "default"
+                host: "hostname"
+                listening_port: 7234
+                domain: "Default"
+                http:
+                - enabled: "no"
+                https:
+                - enabled: "yes"
+                  port: 443
+                junctions:
+                - name: "/app"
+                  transparent_path: True
+                  server:
+                    host: "1.2.3.4"
+                    port: 443
+                  ssl:
+                  - enabled: "yes"
+                    key_file: "example.kdb",
+                    cert_file: "server"
+                aac_configuration_wizard:
+                  hostname: "localhost"
+                  port: 443
+                  runtime:
+                    user: "easuser"
+                    password: "password"
+                  junction: "/mga"
+                  reuse_acls: True
+                  reuse_certs: True
+    '''
+    def wrp(self, runtime, proxy):
         wrp_instances = self.web.reverse_proxy.list_instances().json
         if wrp_instances == None:
             wrp_instances = []
         for instance in wrp_instances:
             if instance['id'] == proxy.name:
-                rsp = self.web.reverse_proxy.delete_instance(proxy.name, 
+                rsp = self.web.reverse_proxy.delete_instance(proxy.name,
                         runtime.admin_user if runtime.admin_user else "sec_master",
                         runtime.admin_password)
                 if rsp.success != True:
@@ -159,30 +271,30 @@ class WEB_Configurator(object):
                         proxy.name, proxy))
                     return
         methodArgs = {
-                        "inst_name":proxy.name, 
-                        "host": proxy.host, 
-                        "admin_id": runtime.admin_user if runtime.admin_user else "sec_master", 
+                        "inst_name":proxy.name,
+                        "host": proxy.host,
+                        "admin_id": runtime.admin_user if runtime.admin_user else "sec_master",
                         "admin_pwd": runtime.admin_password,
                         "nw_interface_yn":  proxy.nw_interface_yn,
-                        "ip_address": proxy.ip_address, 
+                        "ip_address": proxy.ip_address,
                         "listening_port": proxy.listening_port,
                         "domain": proxy.domain
                 }
         if proxy.http != None:
             methodArgs.update({
-                        "http_yn": proxy.http.enabled, 
-                        "http_port": proxy.http.port, 
+                        "http_yn": proxy.http.enabled,
+                        "http_port": proxy.http.port,
                         })
         if proxy.https != None:
             methodArgs.update({
-                        "https_yn": proxy.https.enabled, 
+                        "https_yn": proxy.https.enabled,
                         "https_port": proxy.https.port,
                         })
         if proxy.ldap != None:
             methodArgs.update({
-                                "ssl_yn": proxy.ldap.ssl, 
-                                "key_file": proxy.ldap.key_file, 
-                                "cert_label": proxy.ldap.cert_file, 
+                                "ssl_yn": proxy.ldap.ssl,
+                                "key_file": proxy.ldap.key_file,
+                                "cert_label": proxy.ldap.cert_file,
                                 "ssl_port": proxy.ldap.port,
                         })
         rsp = self.web.reverse_proxy.create_instance(**methodArgs)
@@ -220,11 +332,110 @@ class WEB_Configurator(object):
                     proxy.name))
 
 
-    def _runtime(self, runtime):
+    def _runtime_stanza(self, stanza_config):
+        for entry in stanza_config:
+            rsp = None
+            if entry.operation == "add":
+                entries = [ [entry.entry, entry.value] ] if entry.entry else None
+                rsp = self.web.runtime_component.create_configuration_file_entry(resource=entry.resource,
+                                                                                 stanza=entry.stanza, entries=entries)
+
+            elif entry.operation == "update":
+                if entry.entry == None or entry.value == None:
+                    _logger.error("Update operation for {} is missing entry or value property, skipping".format(entry))
+                    continue
+                entries = [ [entry.entry, entry.value] ]
+                rsp = self.web.runtime_component.update_configuration_file_entry(resource=entry.resource, 
+                                                                                stanza=entry.stanza, entries=entries)
+
+            elif entry.operation == "delete":
+                rsp = self.web.runtime_component.delete_configuration_file_entry(respource=entry.resource,
+                                                                                 stanza=entry.stanza, entry=entry.entry,
+                                                                                 value=entry.value)
+            else:
+                _logger.error("Unable to determine opreation for stanza file modification:\n{}\n. . . skipping".format(
+                                                                                                                entry))
+                continue
+            if rsp.success == True:
+                _logger.info("Successfully modified the {} stanza file".format(entry.stanza))
+            else:
+                _logger.error("Failed to modify stanza properties file with config:\n{}\n{}".format(
+                                                                                json.dumps(entry, indent=4), rsp.data))
+
+
+    '''
+    :var: runtime:: Dictionary of properties to configure the Runtime Server and User Registry.
+
+                :var: policy_server:: Mode of the Policy Server. "local" || "remote".
+                :var: user_registry:: Mode of the User Registry. "local" || "remote".
+                :var: clean_ldap:: Remove data from internal LDAP server. Only valid if ``policy_server`` or
+                                   ``user_registry`` is "local".
+                :var: isam_domain:: LDAP name to use for ``secAuthority`` attributes.
+                :var: admin_password:: Secret to authenticate to LDAP server as the ``sec_master`` user.
+                :var: admin_cert_lifetime::
+                :var: ssl_complaince:: NIST Standard that SSL conforms to. eg "FIPS 140-2".
+                :var: ldap:: Dictionary of connection properties for remote LDAP server. only valid if ``policy_server``
+                            or ``user_registry`` is "remote".
+
+                            :var: host:: Hostname or IP address of LDAP server.
+                            :var: port:: Network prot that server is listening on.
+                            :var: dn:: Distingueshed name to bind to server with. This name should have permission to
+                                       create and modify schema in the Verify Access namespaces.
+                            :var: dn_password:: Secret to authenticate as ``dn``.
+                            :var: suffix (Optional):: Optional suffix to use.
+                            :var: key_file::
+                            :var: cert_file::
+
+                :var: isam:: Properties use to connect to Verify Access policy server.
+
+                            :var: host:: The name of the host that hosts the Security Verify Access policy server.
+                            :var: port:: The port over which communication with the Security Verify Access policy server
+                                         takes place.
+
+                :var: stanza_configuration:: List of operations to perform on Stanza property files. Properties can 
+                                             be added, removed or modified.
+
+                                            :var: operation:: "add", "remove", "update"
+                                            :var: resource:: Name of configuration file to modify, eg ldap.conf, pd.conf, instance.conf
+                                            :var: stanza:: Name of stanza to modify
+                                            :var: entry:: Optional name of entry to modify
+                                            :var: value:: Optional value to add, remove or update in a stanza file
+
+
+    Example::
+               runtime:
+                 policy_server: "remote"
+                 user_registry: "remote"
+                 ldap:
+                   host: "openldap"
+                   port: 636
+                   dn: "cn=root,secAuthority=Default"
+                   dn_password: @secrets/isva-secrets:ldap-passwd
+                   key_file: "lmi_trust_store"
+                 clean_ldap: True
+                 domain: "Default"
+                 admin_password: @secrets/isva-secrets:secmaster-passwd
+                 admin_cert_lifetime: 1460
+                 ssl_compliance: "FIPS 140-2"
+                 isam:
+                   host: "isvaconfig"
+                   port: 443
+                 stanza_configuration:
+                 - operation: "update"
+                   resource: "ldap.conf"
+                   stanza: "bind-credentials"
+                   entry: "bind-dn"
+                   value: "cn=root,secAuthority=Default"
+                 - operation: "delete"
+                   resource: "ldap.conf"
+                   stanza: "server:MyFederatedDirectory"
+
+    '''
+    def runtime(self, runtime):
         rte_status = self.web.runtime_component.get_status()
         _logger.debug("ENTRY Runtime status: {}".format(rte_status.json))
         if rte_status.json['status'] == "Available":
-            rsp = self.web.runtime_component.unconfigure(ldap_dn=runtime.ldap_dn, ldap_pwd=runtime.ldap_dn, 
+            rsp = self.web.runtime_component.unconfigure(ldap_dn=runtime.ldap_dn, ldap_pwd=runtime.ldap_dn,
                     clean=runtime.clean_ldap, force=True)
             if rsp.success == True:
                 _logger.info("Successfully unconfigured RTE")
@@ -247,15 +458,14 @@ class WEB_Configurator(object):
                         "ldap_port": runtime.ldap.port,
                         "ldap_dn": runtime.ldap.dn,
                         "ldap_password": runtime.ldap.dn_password,
-                        "ldap_suffix": runtime.ldap.suffix
-                    })
-            if runtime.ldap.key_file:
-                config.update({
-                        "ldap_ssl_db": runtime.ldap.key_file
-                    })
-            if runtime.ldap.cert_file:
-                config.update({
+                        "ldap_suffix": runtime.ldap.suffix,
+                        "ldap_ssl_db": runtime.ldap.key_file,
                         "ldap_ssl_label": runtime.ldap.cert_file
+                    })
+        if runtime.isam:
+            config.update({
+                        "isam_host": runtime.isam.host,
+                        "isam_port": runtime.isam.prt
                     })
         rsp = self.web.runtime_component.configure(**config)
         if rsp.success == True:
@@ -263,6 +473,10 @@ class WEB_Configurator(object):
         else:
             _logger.error("Failed to configure RTE with config:\n{}\n{}".format(
                 json.dumps(runtime, indent=4), rsp.data))
+
+        if runtime.stanza_configuration != None:
+            self._runtime_stanza(runtime.stanza_configuration)
+
         _logger.debug("EXIT Runtime status: {}".format(self.web.runtime_component.get_status().json))
         return
 
@@ -273,7 +487,7 @@ class WEB_Configurator(object):
             pdadminCommands += ["acl modify {} set desription {}".format(acl.name, acl.description)]
         if acl.attributes:
             for attribute in acl.attributes:
-                pdadminCommands += ["acl modify {} set attribute {} {}".format(acl.name, attribute.name, 
+                pdadminCommands += ["acl modify {} set attribute {} {}".format(acl.name, attribute.name,
                     attribute.value)]
         if acl.users:
             for user in acl.users:
@@ -303,7 +517,7 @@ class WEB_Configurator(object):
 
         if pop.attributes:
             for attribute in pop.attributes:
-                pdadminCommands += ["pop modify {} set attribute {} {}".format(pop.name, attrbute.name, 
+                pdadminCommands += ["pop modify {} set attribute {} {}".format(pop.name, attrbute.name,
                     attribute.value)]
 
         if pop.tod_access:
@@ -314,11 +528,11 @@ class WEB_Configurator(object):
 
         if pop.ip_auth:
             if pop.ip_auth.any_other_network:
-                pdadminCommands += ["pop modify {} set ipauth anyothernw {}".format(pop.name, 
+                pdadminCommands += ["pop modify {} set ipauth anyothernw {}".format(pop.name,
                     pop.ip_auth.any_other_network)]
             if pop.ip_auth.networks:
                 for network in pop.ip_auth.networks:
-                    pdadminCommands += ["pop modify {} set ipauth {} {}".format(pop.name, network.network, 
+                    pdadminCommands += ["pop modify {} set ipauth {} {}".format(pop.name, network.network,
                         network.netmask, network.auth_level)]
 
         rsp = self.web.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
@@ -372,7 +586,7 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfullt created group {}".format(group.name))
         else:
-            _logger.error("Failed to create group {} with config:\n{}\n{}".format(group.name, 
+            _logger.error("Failed to create group {} with config:\n{}\n{}".format(group.name,
                 json.dumps(group, indent=4), rsp.content))
 
     def _pdadmin(self, runtime, config):
@@ -398,7 +612,16 @@ class WEB_Configurator(object):
         deploy_pending_changes(self.factory, self.config)
 
 
-    def _client_cert_mapping(self, config):
+    '''
+    :var: client_cert_mapping:: List of files to be uploaded as XLST rules for matching X509 certificates from an
+                                incomming connection to the reverse proxy to an entity in the User Registry.
+
+    Example::
+               client_cert_mapping:
+               - demo.mapping.xslt
+               - cert_to_uid.xlst
+    '''
+    def client_cert_mapping(self, config):
         for cert_mapping in config:
             cert_mapping_file = FILE_LOADER.read_file(cert_mapping)
             if len(cert_mapping_file) != 1:
@@ -410,7 +633,17 @@ class WEB_Configurator(object):
             else:
                 _logger.error("Failed to configure certificate mapping using {} config file".format(cert_mapping_file['name']))
 
-    def _junction_mapping(self, config):
+
+    '''
+    :var: junction_mapping:: List of files to be uploaded as junction mapping fules.
+
+    Example::
+            junction_mapping:
+            - demo.jct.map
+            - another.jct.map
+
+    '''
+    def junction_mapping(self, config):
         for junction_mapping in config:
             jct_mapping_file = FILE_LOADER.read_file(junction_mapping)
             if len(jct_mapping_file) != 1:
@@ -422,7 +655,16 @@ class WEB_Configurator(object):
             else:
                 _logger.error("Failed to configure junction mapping using {} config file".format(jct_mapping_file['name']))
 
-    def _url_mapping(self, config):
+
+    '''
+    :var: url_mapping:: List of files to be uploaded as URL mapping rules.
+
+    Examples::
+              url-mapping:
+              - dyn.url.conf
+              - url.map.conf
+    '''
+    def url_mapping(self, config):
         for url_mapping in config:
             url_mapping_file = FILE_LOADER.read_file(url_mapping)
             if len(url_mapping_file) != 1:
@@ -434,7 +676,17 @@ class WEB_Configurator(object):
             else:
                 _logger.error("Failed to configure URL mapping using {} config file".format(url_mapping_file['name']))
 
-    def _user_mapping(self, config):
+
+    '''
+    :var: user_mapping:: List of XSLT files to be uploaded as user mapping rules.
+
+    Example::
+              user_mapping:
+              - add_email.xslt
+              - federated_identity_to_basic_user.xslt
+
+    '''
+    def user_mapping(self, config):
         for user_mapping in config:
             user_mapping_file = FILE_LOADER.read_file(user_mapping)
             if len(user_mapping_file) != 1:
@@ -446,7 +698,17 @@ class WEB_Configurator(object):
             else:
                 _logger.error("Failed to configure user mapping using {} config file".format(user_mapping_file['name']))
 
-    def _federated_sso(self, config):
+
+    '''
+    :var: fsso:: List of configuration files to be uloaded as Form Single Sign-On rules.
+
+    Example::
+            fsso:
+            - liberty_jsp_fsso.conf
+            - fsso.conf
+
+    '''
+    def form_single_sign_on(self, config):
         for fsso_config in config:
             fsso_config_file = FILE_LOADER.read_file(fsso_config)
             if len(user_mapping_file) != 1:
@@ -458,11 +720,21 @@ class WEB_Configurator(object):
             else:
                 _logger.error("Failed to configure FSSO using {} config file".format(user_mapping_file['name']))
 
-    def _http_transform(self, http_transform_rules):
+
+    '''
+    :var: http_transforms:: List of files to be uploaded as HTTP Transformation Rules. These can be either LUA rules 
+                            using the ``.lua`` file extension or XSLT rules using the ``.xslt`` file extension.
+
+    Example::
+               http_transforms:
+               - inject_header.xslt
+               - eai.lua
+    '''
+    def http_transform(self, http_transform_rules):
         for http_transform_file_pointer in http_transform_rules:
             http_transform_files = FILE_LOADER.read_files(http_transform_file_pointer)
             for http_transform_file in http_transform_files:
-                rsp = self.web.http_transform.create(name=http_transform_file['name'], 
+                rsp = self.web.http_transform.create(name=http_transform_file['name'],
                         contents=http_transform_file['content'])
                 if rsp.success == True:
                     _logger.info("Successfully created {} HTTP transform rule".format(http_transform_file['name']))
@@ -475,7 +747,7 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully configured Kerberos property")
         else:
-            _logger.error("Failed to configure Kerberos property:\nsubsection: {} name: {} value:{}\n{}".format(subsection, 
+            _logger.error("Failed to configure Kerberos property:\nsubsection: {} name: {} value:{}\n{}".format(subsection,
                 name, value, rsp.content))
 
     def _kerberos(self, config):
@@ -487,13 +759,13 @@ class WEB_Configurator(object):
                 if realm.properties != None:
                     for k, v in realm.properties: self.__create_property("realms/" + realm.name, None, k, v)
         if config.domain_realms != None:
-            for domain_realm in config.domain_realms: self.__create_kerberos_property("domain_realm", None, 
+            for domain_realm in config.domain_realms: self.__create_kerberos_property("domain_realm", None,
                     domain_ream.name, domain_realm.dns)
         if config.capaths != None:
             for capath in config.capaths:
                 self.__create_kerberos_property("capaths", capath.name, None, None)
                 if capath.properties != None:
-                    for prop, value  in capath.properties: elf.__create_kerberos_property("capaths/" + capath.name, 
+                    for prop, value  in capath.properties: elf.__create_kerberos_property("capaths/" + capath.name,
                             None, prop, value)
         if config.keytabs != None:
             for kf in config.keytabs:
@@ -653,21 +925,21 @@ class WEB_Configurator(object):
 
     def __apiac_cors(self, cors_policies):
         for cors in cors_policies:
-            rsp = self.web.api_access_control.cors.create(name=cors.name, allowed_origins=cors.allowed_origins, 
-                    allow_credentials=cors.allow_credentials, exposed_headers=cors.exposed_headers, 
+            rsp = self.web.api_access_control.cors.create(name=cors.name, allowed_origins=cors.allowed_origins,
+                    allow_credentials=cors.allow_credentials, exposed_headers=cors.exposed_headers,
                     handle_preflight=cors.handle_preflight, allowed_methods=cors.allowed_methods,
                     allowed_headers=cors.allowed_headers, max_age=cors.max_age)
             if rsp.success == True:
                 _logger.info("Successfully created {} CORS policy".format(cors.name))
             else:
-                _logger.error("Failed to create {} CORS policy using config:\n{}\n{}".format(cors.name, 
+                _logger.error("Failed to create {} CORS policy using config:\n{}\n{}".format(cors.name,
                     json.dumps(cors, indent=4), rsp.content))
 
     def __apiac_document_root(self, proxy_id, doc_roots):
         for doc_root in doc_roots:
             files = FILE_LOADER.read_files(doc_root, include_directories=True)
             for _file in files:
-                rsp = self.web.api_access_control.document_root.create(proxy_id, filename=_file['name'], 
+                rsp = self.web.api_access_control.document_root.create(proxy_id, filename=_file['name'],
                         file_type=_file['type'], contents=_file.get('contents'))
                 if rsp.success == True:
                     _logger.info("Successfully uploaded {} {}".format(_file['name'], _file['type']))
@@ -675,7 +947,7 @@ class WEB_Configurator(object):
                     _logger.error("Failed to upload {} {}\n{}".format(_file["name"], _file["type"], rsp.content))
 
     def _api_access_control(self, runtime, apiac):
-        rsp = self.web.api_access.control.utilities.store_credential(admin_id=runtime.admin_user, 
+        rsp = self.web.api_access.control.utilities.store_credential(admin_id=runtime.admin_user,
                 admin_pwd=runtime.admin_password, admin_doman=runtime.domain)
         if rsp.success == True:
             _logger.info("API Access Control successfully stored admin credential")
@@ -693,28 +965,28 @@ class WEB_Configurator(object):
 
 
     def configure(self):
- 
+
         if self.config.webseal == None:
             _logger.info("No WebSEAL configuration detected, skipping")
             return
         websealConfig = self.config.webseal
         if websealConfig.client_cert_mapping != None:
-            self._client_cert_mapping(websealConfig.client_cert_mapping)
+            self.client_cert_mapping(websealConfig.client_cert_mapping)
 
         if websealConfig.junction_mapping != None:
-            self._junction_mapping(websealConfig.junction_mapping)
+            self.junction_mapping(websealConfig.junction_mapping)
 
         if websealConfig.url_mapping != None:
-            self._url_mapping(websealConfig.url_mapping)
+            self.url_mapping(websealConfig.url_mapping)
 
         if websealConfig.user_mapping != None:
-            self._user_mapping(websealConfig.user_mapping)
+            self.user_mapping(websealConfig.user_mapping)
 
         if websealConfig.fsso != None:
-            self._federated_sso(websealConfig.fsso)
+            self.form_single_sign_on(websealConfig.fsso)
 
         if websealConfig.http_transform != None:
-            self._http_transform(websealConfig.http_transform)
+            self.http_transform(websealConfig.http_transform)
 
         if websealConfig.kerberos != None:
             self._kerberos(websealConfig.kerberos)
@@ -726,10 +998,10 @@ class WEB_Configurator(object):
             self._rsa(websealConfig.rsa_config)
 
         if websealConfig.runtime != None:
-            self._runtime(websealConfig.runtime)
+            self.runtime(websealConfig.runtime)
             if websealConfig.reverse_proxy != None:
                 for proxy in websealConfig.reverse_proxy:
-                    self._wrp(websealConfig.runtime, proxy)
+                    self.wrp(websealConfig.runtime, proxy)
 
             if websealConfig.api_access_control != None:
                 self._api_access_control(websealConfig.api_access_control)

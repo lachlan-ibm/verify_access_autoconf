@@ -32,11 +32,12 @@ webseal:
       port: 636
       key_file: "lmi_trust_store"
     aac_configuration:
-      hostname: "isvaruntime"
-      port: 9443
       junction: "/mga"
-      user: "easuser"
-      password: "passw0rd"
+      runtime:
+        hostname: "isvaruntime"
+        port: 9443
+        user: "easuser"
+        password: "passw0rd"
       reuse_certs: True
       reuse_acls: True
     stanza_configuration:

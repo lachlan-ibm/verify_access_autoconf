@@ -236,6 +236,30 @@ class FED_Configurator(object):
                     continue
                 else:
                     method(federation)
+                if federation.webseal:
+                    #Run the WebSEAL config wizard
+                    methodArgs = {
+                            "federation_id": fed_uuid,
+                            "reuse_acls": federation.webseal.reuse_acls,
+                            "reuse_certs": federation.webseal.reuse_certs
+                        }
+                    if federation.webseal.runtime:
+                        methodArgs.update({
+                                            "runtime_hostname": federation.webseal.runtime.hostname,
+                                            "runtime_port": federation.webseal.runtime.port,
+                                            "runtime_username": federation.webseal.runtime.username,
+                                            "reuntime_password": federation.webseal.runtime.password
+                                        })
+                    rsp = self.factory.get_web_settings().reverse_proxy.configure_fed(
+                                                                                federation.webseal.name, **methodArgs);
+                    if rsp.success == True:
+                        _logger.info("Successfully ran WebSEAL configuration for {} Federation on the {} reverse"
+                                     "proxy instance".format(federation.name, federation.webseal.name))
+                    else:
+                        _logger.error("Failed to run WebSEAL fed config  wizard for {} on reverse proxy instance {}"
+                                    "with config:\n{}\n{}".format(federation.name, federation.webseal.name, 
+                                                                  json.dumps(federation, indent=4), rsp.data))
+
 
 
     def configure(self):

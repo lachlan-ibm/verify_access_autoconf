@@ -1,9 +1,9 @@
 Container Configuration
 ########################
 
-This module contains documentaiton for system level configuration applicable for Container based Verify Access 
-deployments. Container configuration is defined under the ``container`` top level key. At a minimum an administrator 
-should define the ``isva_base_url``, ``isva_admin_user`` and ``isva_admin_password`` keys (or define the applicable 
+This module contains documentaiton for system level configuration applicable for Container based Verify Access
+deployments. Container configuration is defined under the ``container`` top level key. At a minimum an administrator
+should define the ``isva_base_url``, ``isva_admin_user`` and ``isva_admin_password`` keys (or define the applicable
 environment variables).
 
 
@@ -53,59 +53,58 @@ Example
 
 Container specific configuration
 ================================
-This section covers the Container specific configuration of Verify Access deployments. Typically this involves setting 
-an external HVDB connection; and enabling the management authorization feature to permit a service account to publish 
+This section covers the Container specific configuration of Verify Access deployments. Typically this involves setting
+an external HVDB connection; and enabling the management authorization feature to permit a service account to publish
 configuration snapshots which can be subsequently fetched by other containers in` the deployment.
 
 
 .. include:: base.rst
 
 
-.. _update-container-names
+.. _managing-container-deployments::
 
-Update container names
-^^^^^^^^^^^^^^^^^^^^^^
-In kubernetes deployments admins have the option of rolling out changes to runtime/webeal/dsc pods using the pod restart
-command. However this poses a problem for version controlled configuration files, as the name of a pod is randomly set 
-by Kubernetes, which uses the deployment/image name as a prefix then appends random characters.
-
-To allow admins to accommodate for this, the automation tool has the capability to "learn" what the container names are 
-by looking for pods attached to the deployment object. Any pods which are found are added to the configuration YAML, 
-where they can be used in subsequent steps to promote a new configuration snapshot using the ``isva_cli`` tool.
-
-.. note:: The promotion of configuration snapshots using the ``isva_cli`` tool is depreciated in the lightweight Verify 
-   Access containers. Administrators should migrate to a strategy of using kubernetes to rollout restarts to deployments,
-   eg. ``kubectl rollout restart deployment/verify-access-wrp``.
-
-.. code-block:: yaml
-  containers:
-    namespace: "default"
-    configuration: "isamconfig"
-    webseal: "isamwebseal"
-    runtime: "isamruntime"
-    dsc: "isamdsc"
-
-
-.. _managing-kubernetes-deployments::
-
-Managing Kubernetes Deployments
+Managing Container Deployments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If Verify Access is deployed to Kubernetes, then ``kube`` api can be used to promote a configuration snapshot. There are 
-two waysa to do this: One, use Kubernetes to restart the deployments; Two, use the autmoated service from the legacy 
+
+Kubernetes / OpenShift
+______________________
+If Verify Access is deployed with Kubernetes, then ``kubectl`` cli tool can be used to promote a configuration snapshot. There are
+two waysa to do this: One, use Kubernetes to restart the deployments; Two, use the autmoated service from the legacy
 "all-in-one" container. It is recommended to use Kubernetes to rollot restarts to deployments where possible.
 
-The ``kubectl rollout restart`` command can be used to restart rever proxy, runtime and DSC deployments. The configurator 
-can use deployment names to request a restgart of all of the pods associated with a deployment. If this functionality is 
-used then the user running the Kubernetes commands must have sufficient priveledge to restart the containers. An example 
-of a deployment configuration is:
+The ``kubectl rollout restart`` command can be used to restart rever proxy, runtime and DSC deployments. The configurator
+can use deployment names to request a restgart of all of the pods associated with a deployment. If this functionality is
+used then the user running the Kubernetes commands must have sufficient priveledge to restart the containers. An example
+of a deployment configuration is::
 
-.. code-block:: yaml
-   deployments:
-    namespace: "default"
-    configuration: "isamconfig"
-    webseal: "isamwebseal"
-    runtime: "isamruntime"
-    dsc: "isamdsc"
+                                 container:
+                                   k8s_deployments:
+                                     namespace: "default"
+                                     configuration:
+                                     - "isamconfig"
+                                     webseal:
+                                     - "isamwrp_1"
+                                     - "isamwrp_2"
+                                     runtime:
+                                     - "isamruntime"
+                                     dsc:
+                                     - "isamdsc_1"
+                                     - "isamdsc_2"
+
+
+Docker-Compose
+______________
+If Verify Access is deployted with Docker-Compose, then ``docker-compose`` clit tool can be used to manage runtime
+containers when a snapshot needs to be promoted. The configurator can use the compsoe service names to request a restart 
+of runtime containers. If this functionality is used then the user running the configurator should have sufficient 
+priviledge to restart docker contaienrs. An example of a compose deployment configuration is::
+
+                                                                                             container:
+                                                                                               compose_services:
+                                                                                                 - "isvawrprp1"
+                                                                                                 - "isvaruntime"
+                                                                                               docker_compose_yaml: "iamlab/docker-compose.yaml"
+
 
 
 .. _runtime-database-configuration
@@ -114,12 +113,4 @@ Database Configuration
 ^^^^^^^^^^^^^^^^^^^^^^
 The database configuration for container deployments can be done using the :ref:`cluster-configuration` entry.
 
-.. code-block:: yaml
-  cluster:
-    runtime_database:
-      type: "postgresql"
-      host: "postgresql"
-      port: 5432
-      ssl: True
-      username: "postgres"
-      password: "Passw0rd"
+.. autofunction:: verify-access-autoconf.container.Container.configure_database

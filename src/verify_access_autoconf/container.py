@@ -21,19 +21,19 @@ class Docker_Configurator(object):
         self.factory = factory
 
 
-    def configure_snapshot_publishing(self, snapshotConfig):
-        system = self.factory.get_system_settings()
-        if snapshotConfig == None:
-            _logger.info("Cannot find configuration publishing user, will use admin user to publish configurations")
-            return
-        self.needsRestart = True
-        rsp = system.sysaccount.update_user(snapshotConfig.user, password=snapshotConfig.password)
-        if rsp.success == True:
-            _logger.info("Successfully updated {} password".format(snapshotConfig.user))
-        else:
-            _logger.error("Failed to update password for {}\n{}".format(snapshotConfig.user, rsp.data))
+    '''
 
+    Example::
 
+          cluster:
+            runtime_database:
+              type: "postgresql"
+              host: "postgresql"
+              port: 5432
+              ssl: True
+              username: "postgres"
+              password: "Passw0rd"
+    '''
     def configure_database(self, clusterConfig):
         system = self.factory.get_system_settings()
         if clusterConfig == None or clusterConfig.runtime_database == None:
@@ -42,7 +42,7 @@ class Docker_Configurator(object):
         self.needsRestart = True
         database = clusterConfig.runtime_database.copy()
         methodArgs = {'db_type': database.pop('type'), 'host': database.pop('host'), 'port': database.pop('port'),
-                      'secure': database.pop('ssl'), 'user': database.pop('user'), 'passwd': database.pop('password'), 
+                      'secure': database.pop('ssl'), 'user': database.pop('user'), 'passwd': database.pop('password'),
                       'db_name': database.pop('db_name'), 'extra_config': database
             }
         rsp = system.cluster.set_runtime_db(**methodArgs)
@@ -58,7 +58,6 @@ class Docker_Configurator(object):
         if containerConfig == None:
             _logger.info("Unable to find container specific configuration")
             return
-        self.configure_snapshot_publishing(containerConfig.configuration_publishing)
         self.configure_database(containerConfig.cluster)
         if self.needsRestart == True:
             deploy_pending_changes(self.factory, self.config)

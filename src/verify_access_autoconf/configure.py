@@ -143,7 +143,7 @@ class ISVA_Configurator(object):
         if not any(module.get('id', None) == 'federation' and module.get('enabled', "False") == "True" for module in activations):
             self._activateFederation(config)
         if self.needsRestart == True:
-            deploy_pending_changes(self.factory, self.config)
+            deploy_pending_changes(self.factory, self.config, restartContainers=False)
             self.needsRestart = False
         _logger.info("appliance activated")
 
@@ -401,7 +401,7 @@ class ISVA_Configurator(object):
                                      for users and groups via a list of features.
 
                                 :var: roles:: List of dictionaries. Each dictionary defines a set of features to permit
-                                              access (read only / read write ) to as well as a list of users and/or 
+                                              access (read only / read write ) to as well as a list of users and/or
                                               groups to add to the role.
 
                                               :var: operation:: operation to perform on role. "add" || "update" || "delete"
@@ -445,6 +445,19 @@ class ISVA_Configurator(object):
                 else:
                     _logger.error("Failed to enable role based authorization:\n{}".format(rsp.data))
 
+
+    '''
+    :var: advanced_tuning_parameters:: List of dictionaries of
+                                    :ref:`Advanced Tuning Parameters <pyisva:systemsettings#advanced_tuning_parameters>`
+
+                                    :var: name:: Name of the Advanced Tuning parameter.
+                                    :var: value:: Value to set the Advanced Tuning Parameter to.
+                                    :var: description:: Description of the Advanced Tuning Parameter.
+
+    Example::
+              advanced_tuning_parameters:
+                - wga.rte.embedded.ldap.ssl.port: 636
+    '''
     def advanced_tuning_parameters(self, config):
         if config.advanced_tuning_parameters != None:
             params = self.factory.get_system-settings().advance_tining.list_params().json
@@ -492,6 +505,12 @@ class ISVA_Configurator(object):
                         atp.operation, json.dumps(atp, indent=4)))
 
 
+    '''
+    :var snapshot:: Path to signed snaphsot archive file.
+
+    Example::
+            snaphost: "snapshot/isva-2023-02-08.snapshot"
+    '''
     def apply_snapshot(self, config):
         if config != None and config.snapshot != None:
             snapshotConfig = config.snapshot
@@ -514,7 +533,7 @@ class ISVA_Configurator(object):
             base_config = self.config.container
             model = container
         else:
-            _logger.error("Deployment model cannot be found in config.yaml, skipping")
+            _logger.error("Deployment model cannot be found in config.yaml, skipping container/appliance configuration.")
             return
         self.apply_snapshot(base_config)
         self.admin_config(base_config)

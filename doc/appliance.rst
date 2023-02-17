@@ -58,23 +58,10 @@ The networking settings can be used to define networking routes, as well as inte
 setting on a Verify Access appliance. Care must be taken when configuring network interfaces to ensure that the 
 interface used to configure the appliance is not changed (as this will result in the automation tool failing).
 
-.. note:: Interfaces can only be updated using the LMI, they cannot be created.
+    .. note:: Interfaces can only be updated using the LMI, they cannot be created.
 
-.. code-block:: yaml
-   networking:
-     routes:
-     interfaces:
-       label:
-       name:
-       comment:
-       ipv4:
-         dhcp:
-           enabled: false
-         addresses:
-         - enabled: true
-           allow_management: True
-           address: 192.168.0.1
-           mask_or_prefix: 24
+
+.. autofunction::  verify-access-autoconf.appliance.Applaince.network
 
 
 .. _appliance-date-time
@@ -89,13 +76,20 @@ complete list of the avaliable configuration properties can be found `here <http
 An example configuration is:
 
 
-.. code-block:: yaml
-   date_time:
-     enable_ntp: true
-     ntp_servers:
-     - "1.2.3.4"
-     - "4.3.2.1"
-     time_zone: "Australia/Brisbane"
+.. autofunction::  verify-access-autoconf.appliance.Applaince.date_time
 
-.. autoclass:: verify-access-configurator.appliance
-   :members:
+
+.. _cluster-configuration::
+
+Cluster Configuration
+^^^^^^^^^^^^^^^^^^^^^
+The cluster configuration options can be used to add additional servers to the Verify Access deployment. Currently only
+ external databases (HVDB and config) as well as Verify Access HA servers are supported.
+
+This option is typically used in a container deployment to configure the HVDB container. A complete list of the available 
+configuration properties can be found :ref:`here <pyisva:systemsettings#cluster>`. 
+
+    .. note:: PKI required to connect to any servers should be imported in the previous step.
+
+
+.. autofunction::  verify-access-autoconf.appliance.Applaince.cluster

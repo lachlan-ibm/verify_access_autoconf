@@ -192,12 +192,11 @@ def deploy_pending_changes(factory=None, isvaConfig=None, restartContainers=True
 
     factory.get_system_settings().configuration.deploy_pending_changes()
     if factory.is_docker() == True and isvaConfig.container is not None:
-        #We know about containers and have a k8s client that can control them
         factory.get_system_settings().docker.publish()
         if restartContainers == True:
-            #Are we restarting the containers or rolling out a restard to the deployment descriptor
             if isvaConfig.container.k8s_deployments is not None:
                 namespace = isvaConfig.container.k8s_deployments.namespace
+                #Are we restarting the containers or rolling out a restard to the deployment descriptor
                 if isvaConfig.container.k8s_deployments.deployments is not None:
                     for deployment in isvaConfig.container.k8s_deployments.deployments:
                         _kube_rollout_restart(KUBE_CLIENT, namespace, deployment)
