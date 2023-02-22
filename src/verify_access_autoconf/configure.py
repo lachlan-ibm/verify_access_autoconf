@@ -7,6 +7,7 @@ import requests
 import yaml
 import pyisva
 import time
+import typing
 
 from .appliance import Appliance_Configurator as APPLIANCE
 from .container import Docker_Configurator as CONTAINER
@@ -47,19 +48,29 @@ class ISVA_Configurator(object):
         return False
 
 
-    '''
-    If the ``mgmt_old_pwd`` key is included then the configurator will attempt to update the administrator user's
-    password before proceeding configuration. If the password update fails but the administrator is able to successfully
-    authenticate (ie. password has already been updated) then configuration will still proceed.
+    class AdminPassword(typing.TypedDict):
+        '''
+        Example:: 
 
-    *note:* These properties are overridded by ``ISVA_MGMT_*`` environment variables
+            mgmt_user: 'administrator'
+            mgmt_pwd: 'S3cr37Pa55w0rd!'
+            mgmt_old_pwd: 'administrator'
 
-    Example::
-              mgmt_user: 'administrator'
-              mgmt_pwd: 'S3cr37Pa55w0rd!'
-              mgmt_old_pwd: 'administrator'
-    '''
+        *note:* These properties are overridded by ``ISVA_MGMT_*`` environment variables
+
+        '''
+
+        mgmt_user: str
+        'Administrator user to run configuration as.'
+
+        mgmt_pwd: str
+        'Secret to authenticate as the Administrator user.'
+
+        mgmt_old_pwd: str
+        'Password to update for the Administrator user.'
+
     def set_admin_password(self, old, new):
+
         response = self.factory.get_system_settings().sysaccount.update_admin_password(old_password=old[1], password=new[1])
         if response.success == True:
             _logger.info("Successfullt updated admin password")
@@ -67,9 +78,6 @@ class ISVA_Configurator(object):
             _logger.error("Failed to update admin password:/n{}".format(response.data))
 
 
-    '''
-    The configurator will always try to accept the Software License Agreement. This does not require any confiuration.
-    '''
     def accept_eula(self):
         payload = {"accepted": True}
         rsp = self.factory.get_system_settings().first_steps.set_sla_status()
@@ -79,10 +87,6 @@ class ISVA_Configurator(object):
             _logger.error("Failed to accept SLA:\n{}".format(rsp.data))
 
 
-    '''
-    The configurator will alway try to complete the Local Management Interface initalization. This does not require
-    any configuration.
-    '''
     def complete_setup(self):
         if self.factory.get_system_settings().first_steps.get_setup_status().json.get("configured", True) == False:
             rsp = self.factory.get_system_settings().first_steps.set_setup_complete()
@@ -116,22 +120,27 @@ class ISVA_Configurator(object):
             self._apply_license("federation", config.activation.federation)
 
 
-    '''
-    :var: activation:: Dictionary with three keys; one for each optional Verify Access license module which can
-                       be activated in a deployment.
 
-                    :var: webseal:: License code for the WebSEAL Reverse Proxy module
-                    :var: access_control:: License code for the Advanced Access Control module.
-                    :var: federation:: License for the Federations module.
+    class Module_Activations(typing.TypedDict):
+        '''
+        Example::
 
-    Example::
+                  activation:
+                    webseal: "example"
+                    access_control: !secret verify-access/isva-secrets:access_control_code
+                    federation: !environment ISVA_ACCESS_CONTROL_CODE
 
-              activation:
-                base: "example"
-                aac: !secret verify-access/isva-secrets:access_control_code
-                fed: !environment ISVA_ACCESS_CONTROL_CODE
+        '''
 
-    '''
+        webseal: typing.Optional[str]
+        'License code for the WebSEAL Reverse Proxy module.'
+
+        access_control: typing.Optional[str]
+        'License code for the Advanced Access Control module.'
+
+        federation: typing.Optional[str]
+        'License for the Federations module.'
+
     def activate_appliance(self, config):
         system = self.factory.get_system_settings()
         activations = system.licensing.get_activated_modules().json
@@ -183,29 +192,40 @@ class ISVA_Configurator(object):
             _logger.error("Failed to upload {} personal certificate to {}/n{}".format(
                 parsed_file['name'], database, rsp.data))
 
-    '''
-    :var: ssl_certificates:: List of dictionaries which describe the SSL database and the PKI files which should be
-                            imported into a particular database.
+    class SSL_Certificates(typing.TypedDict):
+        '''
+        Example::
 
-                            :var: database:: Name of SSL database to configure. If database does not exist it will be
-                                             created.
-                            :var: personal_certificates:: List of file paths for personal certificates (PKCS#12) to import.
-                            :var: signer_certificates:: List of file paths for signer certificates (PEM or DER) to import.
-
-    Example::
-
-              ssl_certificates:
-                - database: "lmi_trust_store"
-                  personal_certificates:
-                    - "ssl/lmi_trust_store/personal"
-                  signer_certificates:
+                  ssl_certificates:
+                  - database: "lmi_trust_store"
+                    personal_certificates:
+                    - path: "ssl/lmi_trust_store/personal"
+                      secret: "S3cr37"
+                    signer_certificates:
                     - "ssl/lmi_trust_store/signer"
-                - database: "rt_profile_keys"
-                  signer_certificates:
+                  - database: "rt_profile_keys"
+                    signer_certificates:
                     - "ssl/rt_profile_keys/signer"
 
+        '''
 
-    '''
+        database: str
+        'Name of SSL database to configure. If database does not exist it will be created.'
+
+        signer_certificates: typing.Optional[typing.List[str]]
+        'List of file paths for signer certificates (PEM or DER) to import.'
+
+
+        class Personal_Certificate(typing.TypedDict):
+            path: str
+            'Path to file to import as a personal certificate'
+
+            secret: typing.Optional[str]
+            'Optional secret to decrypt personal certificate'
+
+        personal_certificates: typing.Optional[typing.List[Personal_Certificate]]
+        'List of file paths for personal certificates (PKCS#12) to import.'
+
     def import_ssl_certificates(self, config):
         ssl_config = config.ssl_certificates
         ssl = self.factory.get_system_settings().ssl_certificates
@@ -239,19 +259,29 @@ class ISVA_Configurator(object):
             self.needsRestart == False
 
 
-    '''
-    :var: admin_cfg:: The complete list of properties that can be set by this key can be found at
-                      :ref:`pyisva:systemsettings#administrator-settings`
+    class Admin_Config(typing.TypedDict):
+        '''
+        Examples::
 
-    Examples::
+                   admin_cfg:
+                     session_timeout: 7200
+                     sshd_client_alive: 300
+                     console_log_level: "AUDIT"
+                     accept_client_certs: true
 
-               admin_cfg:
-                 session_timeout: 7200
-                 sshd_client_alive: 300
-                 console_log_level: "AUDIT"
-                 accept_client_certs: true
+        The complete list of properties that can be set by this key can be found at :ref:`pyisva:systemsettings#administrator-settings`
+        '''
 
-    '''
+        session_timeout: typing.Optional[int]
+        sshd_client_alive: typing.Optional[int]
+        enabled_tls: typing.Optional[typing.List[str]]
+        console_log_level: typing.Optional[str]
+        accept_client_certs: typing.Optional[bool]
+        log_max_files: typing.Optional[int]
+        log_max_size: typing.Optional[int]
+        http_proxy: typing.Optional[str]
+        https_proxy: typing.Optional[str]
+
     def admin_config(self, config):
         if config.admin_config != None:
             rsp = self.factory.get_system_settings().admin_settings.update(**config.admin_config)
@@ -321,43 +351,60 @@ class ISVA_Configurator(object):
                             user, group.id, json.dumps(group, indent=4), rsp.data))
 
 
-    '''
-    :var: account_management:: Dictionary with two keys: one for users to be configured and one for groups to be
-                               configured
+    class Account_Management(typing.TypedDict):
+        '''
+        Example::
 
-                            :var: groups:: List of dictionaries. Each dictionary contains a group to be created or updated.
-                                          *note*: Groups are created before users; therefore if a user is being created
-                                                  and added to a group then
+                account_management:
+                  users:
+                  - name: "cfgsvc"
+                    operation: "update"
+                    password: "Passw0rd"
+                    groups:
+                    - "aGroup"
+                    - "anotherGroup"
+                 groups:
+                 - name: "adminGroup"
+                   operation: "update"
+                   users:
+                   - "admin"
+                   - "anotherUser"
 
-                                        :var: id:: Name of group to create.
-                                        :var: users:: List of users to add to group. Users must already exist.
+        '''
+        class Management_User(typing.TypedDict):
+            operation: str
+            'Operation to perform with user. "add" | "update" | delete".'
 
-                            :var: users:: List of dictionaries. Each dictionary contains a user to be added, updated or
-                                          deleted from the list of Administrator users. Each user must define a name
-                                          and operation
+            name: str
+            'Name of the user to create, remove or update.'
 
-                                        :var: name:: Name of the user to create or update.
-                                        :var: operation:: "create" || "update" || "delete".
-                                        :var: password:: Password to authenticate as user. Required if creating user.
-                                        :var: groups:: List of groups to add user to.
+            password: typing.Optional[str]
+            'Password to authenticate as user. Required if creating user.'
 
-    Examples::
-            account_management:
-              users:
-              - name: "cfgsvc"
-                operation: "update"
-                password: "Passw0rd"
-                groups:
-                - "aGroup"
-                - "anotherGroup"
-             groups:
-             - name: "adminGroup"
-               operation: "update"
-               users:
-               - "admin"
-               - "anotherUser"
+            groups: typing.Optional[typing.List[str]]
+            'Optional list of groups to add user to.'
 
-    '''
+
+        class Managemnet_Group(typing.TypedDict):
+            '''
+            *note*: Groups are created before users; therefore if a user is being created and added to a group then
+                    this should be done in the user configuration entry.
+            '''
+            operation: str
+            'Operation to perform with group. "add" | "update" | delete".'
+
+            id: str
+            'Name of group to create.'
+
+            users: typing.Optional[typing.List[str]]
+            'Optional list of users to add to group.'
+
+        users: typing.Optional[typing.List[Management_User]]
+        'Optional list of management users to configure'
+
+        groups: typing.Optional[typing.List[Managemnet_Group]]
+        'Optional list of management groups to configure.'
+
     def account_management(self, config):
         if config.account_management != None:
             if config.account_management.groups != None:
@@ -396,31 +443,11 @@ class ISVA_Configurator(object):
             _logger.error("Unknown operation {} for role configuration:\n{}".format(
                 role.operation, json.dumps(role, indent=4)))
 
-    '''
-    :var: management_authorization:: Dictionary to enable management authorization as well as define role based access
-                                     for users and groups via a list of features.
 
-                                :var: roles:: List of dictionaries. Each dictionary defines a set of features to permit
-                                              access (read only / read write ) to as well as a list of users and/or
-                                              groups to add to the role.
+    class Management_Authorization(typing.TypedDict):
+        '''
+        Example::
 
-                                              :var: operation:: operation to perform on role. "add" || "update" || "delete"
-                                              :var: name:: Name of role to modify.
-                                              :var: users:: List of users to add to role.
-
-                                                            :var: name:: Name of user
-                                                            :var: type:: Type of user. "local" || "remote"
-
-                                              :var: groups:: List of groups
-
-                                                            :var: name::
-                                                            :var: type::
-
-                                              :var: features::
-                                                            :var: name::
-                                                            :var: access::
-
-    Example::
                management_authorization:
                  authorization_enforcement: True
                  roles:
@@ -432,7 +459,45 @@ class ISVA_Configurator(object):
                    features:
                    - name: "shared_volume"
                      access: "w"
-    '''
+
+        '''
+
+        class Role(typing.TypedDict):
+            class User(typing.TypedDict):
+                name: str
+                'Name of user'
+                type: str
+                'Type of user. "local" | "remote".'
+
+            class Group(typing.TypedDict):
+                name: str
+                'name of group.'
+                type: str
+                'Type of group. "local" | "remote".'
+
+            class Feature(typing.TypedDict):
+                name: str
+                'Name of feature.'
+                access: str
+                'Access to grant to feature. "r" | "w".'
+
+            operation: str
+            'Operation to perform on authorization role. "add" | "remove" | "update".'
+            name: str
+            'Name of role.'
+            users: typing.Optional[typing.List[User]]
+            'Optional list of users to add to role.'
+            groups: typing.Optional[typing.List[Group]]
+            'Optional list of groups to add to role.'
+            features: typing.List[Feature]
+            'List of features to authorize users / groups for.'
+
+        authorization_enforcement: bool
+        'Enable role based authoriztaion for this deployment.'
+
+        roles: typing.Optional[typing.List[Role]]
+        'Optional list of roles to modify for role based authorization.'
+
     def management_authorization(self, config):
         if config.management_authorization != None and config.management_authorization.roles != None:
             for role in config.management_authorization.roles:
@@ -446,18 +511,25 @@ class ISVA_Configurator(object):
                     _logger.error("Failed to enable role based authorization:\n{}".format(rsp.data))
 
 
-    '''
-    :var: advanced_tuning_parameters:: List of dictionaries of
-                                    :ref:`Advanced Tuning Parameters <pyisva:systemsettings#advanced_tuning_parameters>`
+    class Advanced_Tuning_Parameter:
+        '''
+        Example::
 
-                                    :var: name:: Name of the Advanced Tuning parameter.
-                                    :var: value:: Value to set the Advanced Tuning Parameter to.
-                                    :var: description:: Description of the Advanced Tuning Parameter.
+                  advanced_tuning_parameters:
+                  - name: "wga.rte.embedded.ldap.ssl.port"
+                    value: 636
+                  - name: "password.policy"
+                    value: "minlen=8 dcredit=1 ucredit=1 lcredit=1"
+                    description: "Enforced PAM password quality for management accounts."
 
-    Example::
-              advanced_tuning_parameters:
-                - wga.rte.embedded.ldap.ssl.port: 636
-    '''
+        '''
+        name: str
+        'Name of the Advanced Tunint Parameter.'
+        value: str
+        'Value of the Advanced Tuning Parameter.'
+        description: typing.Optional[str]
+        'optional description of the Advanced Tuning Parameter.'
+
     def advanced_tuning_parameters(self, config):
         if config.advanced_tuning_parameters != None:
             params = self.factory.get_system-settings().advance_tining.list_params().json
@@ -505,12 +577,16 @@ class ISVA_Configurator(object):
                         atp.operation, json.dumps(atp, indent=4)))
 
 
-    '''
-    :var snapshot:: Path to signed snaphsot archive file.
+    class Snapshot(typing.TypedDict):
+        '''
+        Example::
 
-    Example::
-            snaphost: "snapshot/isva-2023-02-08.snapshot"
-    '''
+                snaphost: "snapshot/isva-2023-02-08.snapshot"
+
+        '''
+        snapshot: str
+        'Path to signed snapshot archive file.'
+
     def apply_snapshot(self, config):
         if config != None and config.snapshot != None:
             snapshotConfig = config.snapshot

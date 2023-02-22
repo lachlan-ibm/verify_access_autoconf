@@ -2,6 +2,7 @@
 import logging
 import requests
 import json
+import typing
 
 from .util.constants import HEADERS
 from .util.configure_util import creds, config_base_dir, deploy_pending_changes
@@ -106,40 +107,8 @@ class Appliance_Configurator(object):
                 iface.label, json.dumps(iface, indent=4), rsp.data))
 
 
-    '''
-    :var: network:: Network configuration for attached interfaces.
-
-                :var: routes:: List of network route settings.
-                            :var: enabled:: Enable this interface
-                            :var: interface::
-                            :var: comment::
-                            :var: address::
-                            :var: gateway::
-                            :var: mask_or_prefix::
-                            :var: metric::
-                            :var: table::
-
-                :var: interfaces::
-                                :var: name::
-                                :var: comment::
-                                :var: enabled::
-                                :var: vlan_id::
-                                :var: bonding_mode::
-                                :var: bonded_to::
-                                :var: ipv4::
-                                            :var: dhcp:: Properties to enable DHCP on this interface.
-                                                :var: enabled::
-                                                :var: allow_mgmt::
-                                                :var: default_route::
-                                                :var: route_metric::
-                                            :var: addresses:: List of 0 or more static addresses to assign to interface.
-                                                            :var: address::
-                                                            :var: mask_or_prefix::
-                                                            :var: broadcast_address::
-                                                            :var: allow_mgmt::
-                                                            :var: enabled::
-
-
+    class Networking(typing.TypedDict):
+        '''
     Example::
 
             networking:
@@ -167,7 +136,71 @@ class Appliance_Configurator(object):
                   allow_mgmt: false
                   enabled: true
 
-    '''
+        '''
+        class Route(typing.TypedDict):
+            enabled: bool
+            'Enable this route.'
+            interface: str
+            'Interface this route is attaced to.'
+            comment: typing.Optional[str]
+            'Optional comment to add to route.'
+            address: str
+            'Network address to use for route.'
+            gateway: str
+            'Network gateway to use for route.'
+            maks_or_prefix: str
+            'Network bitmask or prefix to use for route.'
+            metric: int
+            'Route metric.'
+            table: int
+            'Route table.'
+
+        class IPv4Address(typing.TypedDict):
+            address: str
+            'IPv4 address to assign to interface.'
+            mask_or_prefix: str
+            'IPv4 netmask or prefix to assign to address.'
+            broadcast_address: str
+            'IPv4 address to use for broadcasting.'
+            allow_mgmt: bool
+            'Use this address for the Local Management Interface.'
+            enabled: bool
+            'Enable this address.'
+
+        class IPv4DHCP(typing.TypedDict):
+            enabled: bool
+            'Enable DHCP on this interface.'
+            allow_mgmt: bool
+            'Use a DHCP address for the Local Management Interface.'
+            default_route: bool
+            'Use DHCP to determine the default network route.'
+            route_metric: int
+            'Route metric.'
+
+        class IPv4(typeing.TypedDict):
+            dhcp: typing.Optional[IPv4DHCP]
+            'DHCP configuration for an interface.'
+            addresses: typing.Optional[typing.List[IPv4Address]]
+            'Static IPv4 addresses assigned to an interface.'
+
+        class Interfaces(typing.TypedDict):
+            name: str
+            'Name of interface.'
+            comment: str
+            'Comment to add to interface.'
+            enabled: str
+            'Enable this interface.'
+            vlan_id: typing.Optional[str]
+            'System assigned vlan ID.'
+            ipv4: IPv4
+            'IPv4 settings.'
+
+        routes: typing.Optional[typing.List[Rote]]
+        'Optional list of routes to add to an interface.'
+
+        interfaces: typing.List[Interface]
+        'List of properties for attached interfaces.'
+
     def update_network(self, config):
         if config.network != None:
             if config.network.routes != None:
@@ -179,18 +212,25 @@ class Appliance_Configurator(object):
         deploy_pending_changes(self.factory, self.config)
 
 
-    '''
-    :var: enable_ntp:: Enable Network Time Protocol syncronization.
-    :var: ntp_servers:: List of hostnames or IP addresses of NTP servers.
-    :var: time_zone:: Timezone that appliance is operating in.
-    :var: date_time:: The current date and time, in the format "YYYY-MM-DD HH:mm:ss".
+    class Date_Time(typing.TypedDict):
+        '''
+        Example::
 
-    Examples::
-            date_time:
-              enable_ntp: true
-              ntp_server: "time.ibm.com,192.168.0.1"
-              time_zone: "Australia/Brisbane"
-    '''
+                    date_time:
+                      enable_ntp: true
+                      ntp_servers: "time.ibm.com,192.168.0.1"
+                      time_zone: "Australia/Brisbane"
+
+        '''
+        enable_ntp: bool
+        'Enable Network Time Protocol synchronization.'
+        ntp_servers: typing.Optional[typing.List[str]]
+        'List of hostnames or addresses to use as NTP servers.'
+        time_zone: str
+        'The id of the timezone the appliance is operating in.'
+        date_time: typing.Optional[str]
+        'The current date and time, in the format "YYYY-MM-DD HH:mm:ss"'
+
     def date_time(self, config):
         if config.date_time != None:
             rsp = self.appliance.get_system_settings().date_time.update(enable_ntp=config.date_time.enable_ntp,
@@ -202,46 +242,85 @@ class Appliance_Configurator(object):
                 _logger.error("Failed to update the Date/Time settings on the appliance with:\n{}\n{}".format(
                     json.dumps(config.date_time, indent=4), rsp.data))
 
-    '''
-    :var: config_db::
 
-    :var: runtime_db::
+    class Cluster_Configuration(typing.TypedDict):
+        '''
+        Example::
 
-    :var: cluster::
+                 cluster:
+                   config_db:
+                     address: "127.0.10.1"
+                     port: 1234
+                     username: "database_user"
+                     password: "database_password"
+                     ssl: True
+                     ssl_keystore: "lmi_trust_store.kdb"
+                     db_name: "isva_config"
+                   runtime_db:
+                     address: "postgresql"
+                     port: 5432
+                     type: "Postgresql"
+                     user: "postgres"
+                     password: !secret verify-access/isva-secrets:postgres-passwd
+                     ssl: False
+                     db_name: "isva_hvdb"
+                   cluster:
+                     sig_file: "cluster/signature_file"
+                     primary_master: "isva.primary.master"
+                     secondary_master: "isva.secondary.master"
+                     nodes:
+                     - "isva.node"
+                     resitrcted_nodes:
+                     - "isva.restricted.node"
 
-    Example::
-               config_db:
-                 address: "127.0.10.1"
-                 port: 1234
-                 username: "database_user"
-                 password: "database_password"
-                 ssl: True
-                 ssl_keystore: "lmi_trust_store.kdb"
-                 ssl_keyfile: "server.cer"
-               runtime_db:
-                 address: "postgresql"
-                 port: 5432
-                 type: "Postgresql"
-                 user: "postgres"
-                 password: !secret verify-access/isva-secrets:postgres-passwd
-                 ssl: True
-                 db_name: "isva"
-               cluster:
-                 sig_file: "cluster/signature_file"
-                 primary_master: "isva.primary.master"
-                 secondary_master: "isva.secondary.master"
-                 nodes:
-                 - "isva.node"
-                 resitrcted_nodes:
-                 - "isva.restricted.node"
-    '''
+        '''
+        class Database(typing.TypedDict):
+            type: str
+            'Database type. "postgresql" | "db2" | "oracle".'
+            host: str
+            'Hostname or address of database.'
+            port: str
+            'Port database is listening on.'
+            ssl: bool
+            'Enable SSL entryption of connections.'
+            ssl_keystore: typing.Optional[str]
+            'SSL database to use to verify connections. Only valid if ``ssl == true``.'
+            user: str
+            'Username to authenticate to database as.'
+            password: str
+            'Password to authenticate as ``username``.'
+            db_name: str
+            'Name of the database instance to use.'
+            extra_config: typing.Optional(dict)
+            'Database type specific configuration.'
+
+        class Cluster(typing.TypedDict):
+            sig_file: str
+            'Signature file generated by the primary master; used to add nodes to the cluster.'
+            primary_master: str
+            'Verify Access appliance designated as the primary master node.'
+            secondary_master: typing.Optional[str]
+            'Verify Access appliance designated as the secondary master node.'
+            nodes: typing.Optional[typing.List[str]]
+            'Verify Access appliance designated as nodes.'
+            restricted_nodes: typing.Optional[typing.List[str]]
+            'Verify Access appliance designated as the restricted nodes.'
+
+        config_database: typing.Optional[Database]
+        'Configuration for the config database.'
+        runtime_database: typing.Optional[Database]
+        'Configuration for the runtime (HVDB) database.'
+        cluster: typing.Optional[Cluster]
+        'Configuration for Verify Access High Availability cluster nodes.'
+
     def cluster(self, config):
         if config.config_database != None:
             confDbExtraConfig = config.config_database.copy()
             methodArgs = {"embedded": False, "db_type": confDbExtraConfig.pop('type'), 'host': confDbExtraConfig.pop('host'),
-                          'port': confDbExtraConfig.pop('port'), 'secure': confDbExtraConfig.pop('ssl'),
-                          'user': confDbExtraConfig.pop('user'), 'passwd': confDbExtraConfig.pop('password'),
-                          'db_name': confDbExtraConfig.pop('db_name'), 'extra_config': confDbExtraConfig
+                          'port': confDbExtraConfig.pop('port'), 'secure': confDbExtraConfig.pop('ssl'), 
+                          'db_keystore': confDbExtraConfig.pop('ssl_keystore'), 'user': confDbExtraConfig.pop('user'), 
+                          'passwd': confDbExtraConfig.pop('password'), 'db_name': confDbExtraConfig.pop('db_name'), 
+                          'extra_config': confDbExtraConfig
                 }
             rsp = self.appliance.get_system_settings().cluster.set_config_db(**methodArgs)
             if rsp.success == True:

@@ -20,20 +20,46 @@ class Docker_Configurator(object):
         self.config = config
         self.factory = factory
 
+    class Cluster_Configuration(typing.TypedDict):
+        '''
+        Example::
 
-    '''
 
-    Example::
+                  cluster:
+                    runtime_database:
+                      type: "postgresql"
+                      host: "postgresql"
+                      port: 5432
+                      ssl: True
+                      ssl_keystore: "rt_profile_keys"
+                      username: "postgres"
+                      password: "Passw0rd"
+                      db_name: "isva"
 
-          cluster:
-            runtime_database:
-              type: "postgresql"
-              host: "postgresql"
-              port: 5432
-              ssl: True
-              username: "postgres"
-              password: "Passw0rd"
-    '''
+        '''
+        class Database(typing.TypedDict):
+            type: str
+            'Database type. "postgresql" | "db2" | "oracle".'
+            host: str
+            'Hostname or address of database.'
+            port: str
+            'Port database is listening on.'
+            ssl: bool
+            'Enable SSL entryption of connections.'
+            ssl_keystore: typing.Optional[str]
+            'SSL database to use to verify connections. Only valid if ``ssl == true``.'
+            user: str
+            'Username to authenticate to database as.'
+            password: str
+            'Password to authenticate as ``username``.'
+            db_name: str
+            'Name of the database instance to use.'
+            extra_config: typing.Optional(dict)
+            'Database type specific configuration.'
+
+        runtime_database: typing.Optional[Database]
+        'Configuration for the runtime (HVDB) database.'
+
     def configure_database(self, clusterConfig):
         system = self.factory.get_system_settings()
         if clusterConfig == None or clusterConfig.runtime_database == None:
@@ -42,8 +68,9 @@ class Docker_Configurator(object):
         self.needsRestart = True
         database = clusterConfig.runtime_database.copy()
         methodArgs = {'db_type': database.pop('type'), 'host': database.pop('host'), 'port': database.pop('port'),
-                      'secure': database.pop('ssl'), 'user': database.pop('user'), 'passwd': database.pop('password'),
-                      'db_name': database.pop('db_name'), 'extra_config': database
+                      'secure': database.pop('ssl'), 'db_keystore': database.pop('ssl_keystore'), 
+                      'user': database.pop('user'), 'passwd': database.pop('password'), 'db_name': database.pop('db_name'), 
+                      'extra_config': database
             }
         rsp = system.cluster.set_runtime_db(**methodArgs)
         if rsp.success == True:

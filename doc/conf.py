@@ -12,7 +12,8 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('/home/lowkey/git.workspace/pyisam')) #TEMPORARY
 
 
 # -- Project information -----------------------------------------------------
@@ -43,8 +44,8 @@ templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 
-intersphinx_timeout = 3  # 3 seconds timeout
-intersphinx_mapping = {'pyisva', ("https://pyisva.readthedocs.io/en/latest/", None)}
+#intersphinx_timeout = 3  # 3 seconds timeout
+#intersphinx_mapping = {'pyisva', ("https://pyisva.readthedocs.io/en/latest/", None)}
 
 # -- Options for HTML output -------------------------------------------------
 

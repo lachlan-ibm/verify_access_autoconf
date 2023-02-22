@@ -8,10 +8,11 @@ environment variables).
 
 
 Example
-=======
+_______
 
 
 .. code-block:: yaml
+
    container:
      admin_cfg:
        session_timeout: 720
@@ -64,7 +65,7 @@ configuration snapshots which can be subsequently fetched by other containers in
 .. _managing-container-deployments::
 
 Managing Container Deployments
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==============================
 
 Kubernetes / OpenShift
 ______________________
@@ -97,20 +98,20 @@ ______________
 If Verify Access is deployted with Docker-Compose, then ``docker-compose`` clit tool can be used to manage runtime
 containers when a snapshot needs to be promoted. The configurator can use the compsoe service names to request a restart 
 of runtime containers. If this functionality is used then the user running the configurator should have sufficient 
-priviledge to restart docker contaienrs. An example of a compose deployment configuration is::
+priviledge to restart docker contaienrs. 
+An example of a compose deployment configuration is::
 
-                                                                                             container:
-                                                                                               compose_services:
-                                                                                                 - "isvawrprp1"
-                                                                                                 - "isvaruntime"
-                                                                                               docker_compose_yaml: "iamlab/docker-compose.yaml"
-
+                                                     container:
+                                                       compose_services:
+                                                         - "isvawrprp1"
+                                                         - "isvaruntime"
+                                                       docker_compose_yaml: "iamlab/docker-compose.yaml"
 
 
 .. _runtime-database-configuration
 
 Database Configuration
-^^^^^^^^^^^^^^^^^^^^^^
+======================
 The database configuration for container deployments can be done using the :ref:`cluster-configuration` entry.
 
-.. autofunction:: verify-access-autoconf.container.Container.configure_database
+.. autofunction:: src.verify_access_autoconf.container.Container.configure_database

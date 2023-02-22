@@ -1,9 +1,11 @@
-
+Appliance Configuration
+#######################
 
 Example
 =======
 
 .. code-block:: yaml
+
    appliance:
      admin_cfg:
        session_timeout: 720
@@ -38,7 +40,11 @@ Example
              mask_or_prefix: 24
 
 
-.. _appliance::
+.. _appliance:
+
+
+.. automodule:: src.verify_access_autoconf
+   :members:
 
 
 Appliane specific configuration
@@ -50,10 +56,10 @@ Verify Access.
 .. include:: base.rst
 
 
-.. _appliance-networking::
+.. _appliance-networking:
 
 Networking
-^^^^^^^^^^
+==========
 The networking settings can be used to define networking routes, as well as interface address, netmask and gateway 
 setting on a Verify Access appliance. Care must be taken when configuring network interfaces to ensure that the 
 interface used to configure the appliance is not changed (as this will result in the automation tool failing).
@@ -61,13 +67,14 @@ interface used to configure the appliance is not changed (as this will result in
     .. note:: Interfaces can only be updated using the LMI, they cannot be created.
 
 
-.. autofunction::  verify-access-autoconf.appliance.Applaince.network
+.. autoclas::  src.verify_access_autoconf.appliance.Applaince.Networking
+   :members:
 
 
-.. _appliance-date-time
+.. _appliance-date-time:
 
 Date / Time settings
-^^^^^^^^^^^^^^^^^^^^
+====================
 The date and time settings can be adjusted on a Verify Access appliance or synchronized to a external NTP server. Admins 
 are also able to set the time zone of the appliance using canonical name.
 
@@ -76,13 +83,13 @@ complete list of the avaliable configuration properties can be found `here <http
 An example configuration is:
 
 
-.. autofunction::  verify-access-autoconf.appliance.Applaince.date_time
+.. autofunction::  src.verify_access_autoconf.appliance.Applaince.date_time
 
 
-.. _cluster-configuration::
+.. _cluster-configuration:
 
 Cluster Configuration
-^^^^^^^^^^^^^^^^^^^^^
+=====================
 The cluster configuration options can be used to add additional servers to the Verify Access deployment. Currently only
  external databases (HVDB and config) as well as Verify Access HA servers are supported.
 
@@ -92,4 +99,4 @@ configuration properties can be found :ref:`here <pyisva:systemsettings#cluster>
     .. note:: PKI required to connect to any servers should be imported in the previous step.
 
 
-.. autofunction::  verify-access-autoconf.appliance.Applaince.cluster
+.. autofunction::  src.verify_access_autoconf.appliance.Applaince.cluster

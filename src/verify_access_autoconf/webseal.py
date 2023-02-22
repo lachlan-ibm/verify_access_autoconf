@@ -179,8 +179,8 @@ class WEB_Configurator(object):
                                     :var port::
 
                         :var: junctions:: List of junctions to create. Each entry in the list should be a dictonary of
-                                          properties to create a junction to a resource server. The complete list of 
-                                          properties that can be used to craete junctions can be found 
+                                          properties to create a junction to a resource server. The complete list of
+                                          properties that can be used to craete junctions can be found
                                           :ref:`here <pyisva:websettings#pyisva.core.web.reverseproxy.ReverseProxy.create_junction>`.
 
                         :var: aac_config::
@@ -345,7 +345,7 @@ class WEB_Configurator(object):
                     _logger.error("Update operation for {} is missing entry or value property, skipping".format(entry))
                     continue
                 entries = [ [entry.entry, entry.value] ]
-                rsp = self.web.runtime_component.update_configuration_file_entry(resource=entry.resource, 
+                rsp = self.web.runtime_component.update_configuration_file_entry(resource=entry.resource,
                                                                                 stanza=entry.stanza, entries=entries)
 
             elif entry.operation == "delete":
@@ -392,7 +392,7 @@ class WEB_Configurator(object):
                             :var: port:: The port over which communication with the Security Verify Access policy server
                                          takes place.
 
-                :var: stanza_configuration:: List of operations to perform on Stanza property files. Properties can 
+                :var: stanza_configuration:: List of operations to perform on Stanza property files. Properties can
                                              be added, removed or modified.
 
                                             :var: operation:: "add", "remove", "update"
@@ -722,7 +722,7 @@ class WEB_Configurator(object):
 
 
     '''
-    :var: http_transforms:: List of files to be uploaded as HTTP Transformation Rules. These can be either LUA rules 
+    :var: http_transforms:: List of files to be uploaded as HTTP Transformation Rules. These can be either LUA rules
                             using the ``.lua`` file extension or XSLT rules using the ``.xslt`` file extension.
 
     Example::
@@ -750,7 +750,43 @@ class WEB_Configurator(object):
             _logger.error("Failed to configure Kerberos property:\nsubsection: {} name: {} value:{}\n{}".format(subsection,
                 name, value, rsp.content))
 
-    def _kerberos(self, config):
+
+    '''
+    :var: kerberos:: Dictionary of Kerberos Domain and Realm configuration.
+
+                    :var: libdefaults:: Dictionary of Kerberos properties to use as default properties.
+
+                    :var: realms::
+
+                                :var: name::
+                                :var: properties::
+
+                    :var: domain_realms::
+
+                                :var: name::
+                                :var: dns::
+
+                    :var: keytabs:: List of files to import to Verify Access as Kerberos Keytab files.
+
+                    :var: capaths::
+
+    Example::
+
+               kerberos:
+                 libdefault:
+                   default_realm: "test.com"
+                 realms:
+                 - name: "test.com"
+                   properties:
+                   - kdc: "test.com"
+                 domain_realms:
+                 - name: "demo.com"
+                   dns: "test.com"
+                 keytabs:
+                 - admin.keytab
+                 - user.keytab
+    '''
+    def kerberos(self, config):
         if config.libdefault != None:
             for kerbdef, value in config.libdefault: self.__create_kerberos_property('libdefault', kerbdef, kerbdef, value)
         if config.realms != None:
@@ -779,7 +815,16 @@ class WEB_Configurator(object):
                         rsp.content))
 
 
-    def _password_strength(self, password_strength_rules):
+    '''
+    :var: password_strength:: List of XSLT file to be uploaded as password strength checks.
+
+    Example::
+
+               password_strength:
+               - demo_rule.xlst
+
+    '''
+    def password_strength(self, password_strength_rules):
         pwd_config_file = FILE_LOADER.read_file(password_strength_rules)
         if len(pwd_mapping_file) != 1:
             _logger.error("Can only specify one password strength rule file")
@@ -791,7 +836,20 @@ class WEB_Configurator(object):
             _logger.error("Failed to configure password strength rules using {}".format(pwd_mapping_file['name']))
 
 
-    def _rsa(self, rsa_config):
+    '''
+    :var: rsa_config:: Dictionary with two properties, each property is a configuration file to upload to Verify Access.
+
+                    :var: server_config:: The server configuration file to upload.
+                    :var: optional_server_config:: The server configuration options file to upload.
+
+    Example::
+
+               rsa_config:
+                 server_config: server.conf
+                 optional_server_config: optional_server.conf
+
+    '''
+    def rsa(self, rsa_config):
         rsp = self.web.rsa.create(name=rsa_config.server_config if rsa_config.server_config.startswith("/") else
               config_base_dir() + rsa_config.server_config)
         if rsp.success == True:
@@ -989,13 +1047,13 @@ class WEB_Configurator(object):
             self.http_transform(websealConfig.http_transform)
 
         if websealConfig.kerberos != None:
-            self._kerberos(websealConfig.kerberos)
+            self.kerberos(websealConfig.kerberos)
 
         if websealConfig.password_strength != None:
-            self._password_strength(websealConfig.password_strength)
+            self.password_strength(websealConfig.password_strength)
 
         if websealConfig.rsa_config != None:
-            self._rsa(websealConfig.rsa_config)
+            self.rsa(websealConfig.rsa_config)
 
         if websealConfig.runtime != None:
             self.runtime(websealConfig.runtime)

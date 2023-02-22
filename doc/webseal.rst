@@ -12,7 +12,7 @@ client certificate mapping, federated user registries.
 Example
 =======
 
-.. code_block::
+.. code-block:: yaml
 
                 webseal:
                   runtime:
@@ -81,7 +81,7 @@ Any PKI required to verify this connection should be imported into a SSL databas
 configured.
 
 
-.. autofunction:: verify-access-autoconf.webseal.WEB_Configurator.runtime
+.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.runtime
 
 
 .. _webseal_reverse_proxy::
@@ -94,7 +94,7 @@ configuration. A complete list of the available configuration properties can be 
 `here <https://ibm-security.github.io/pyisva>`_. An example configuration is:
 
 
-.. autofunction:: verify-access-autoconf.webseal.WEB_Configurator.wrp
+.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.wrp
 
 
 .. _webseal_client_cert_map::
@@ -108,7 +108,7 @@ XSLT extension. A complete list of the available configuration properties can be
 An example configuration is:
 
 
-.. autofunction:: verify-access-autoconf.webseal.WEB_Configurator.client_cert_mapping
+.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.client_cert_mapping
 
 
 .. _webseal_jct_mapping::
@@ -121,7 +121,7 @@ to a Verify Access deployment. The name of the file which contains the junction 
 in Verify Access. An example configuration is:
 
 
-.. autofunction:: verify-access-autoconf.webseal.WEB_Configurator.junction_mapping
+.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.junction_mapping
 
 
 .. _webseal_url_mapping::
@@ -134,7 +134,7 @@ matching (including wildcards). A complete list of supported regex can be found 
 An example URL mapping configuration is:
 
 
-.. autofunction:: verify-access-autoconf.webseal.WEB_Configurator.url_mapping
+.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.url_mapping
 
 
 .. _webseal_user_mapping::
@@ -146,7 +146,7 @@ identity of a user or add attributes to a user's existing credential. User mappi
 deployment using XLST rules. Detailed information about user mapping XSLT configuration can be found `here <https://www.ibm.com/docs/en/sva/latest?topic=methods-authenticated-user-mapping>`_. The name of the XSLT file will be used as the name of the user mapping rule
 
 
-.. autofunction:: verify-access-autoconf.webseal.WEB_Configurator.user_mapping
+.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.user_mapping
 
 
 .. _webseal_fsso::
@@ -160,7 +160,7 @@ the authentication challenge. More detailed information about FSSO concepts can 
 Verify Access. An example FSSO configuration is:
 
 
-.. autofunction:: verify-access-autoconf.webseal.WEB_Configurator.form_single_sign_on
+.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.form_single_sign_on
 
 
 .. _webseal_http_transformations::
@@ -176,7 +176,7 @@ The name of the HTTP transform file will be used as the name of the resulting HT
 An example HTTP transformation configuration is:
 
 
-.. autofunction:: verify-access-autoconf.webseal.WEB_Configurator.http_transforms
+.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.http_transforms
 
 
 .. _webseal_kerberos::
@@ -188,20 +188,8 @@ delegation. Kerberos is configured by setting properties by id and subsections. 
 can be used to configure Kerberos Realms, Local Domain Realms, Certificate Authority paths and Keyfiles. An example 
 configuration is:
 
-.. code-block:: yaml
-   kerberos:
-     libdefault:
-       default_realm: "test.com"
-     realms:
-     - name: "test.com"
-       properties:
-       - kdc: "test.com"
-     domain_realms:
-     - name: "demo.com"
-       dns: "test.com"
-     keytabs:
-     - admin.keytab
-     - user.keytab
+
+.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.kerberos
 
 
 .. _webseal_pwd_strength::
@@ -213,10 +201,8 @@ users. More detailed information about rule syntax can be found `here <https://w
 Rules are uploaded to a deployment from files, the name of the file is used as the resulting password strength rule in 
 Verify Access. An example configuration is:
 
-.. code-blaock:: yaml
-   password_strength:
-   - demo_rule.xlst
 
+.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.password_strength
 
 .. _webseal_rsa_config::
 
@@ -227,11 +213,8 @@ as a second factor. More information about configuring this mechanism and the co
 with WebSEAL login can be found `here <https://www.ibm.com/docs/en/sva/latest?topic=methods-token-authentication>`_. An 
 example configuration is:
 
-.. code-block:: yaml
-   rsa_config:
-     server_config: server.conf
-     optional_server_config: optional_server.conf
 
+.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.rsa
 
 .. _webseal_runtime_server
 
@@ -241,20 +224,8 @@ The runtime configuration defines the runtime policy server and user registry us
 server and one is providede by Verify Access for testing and demonstration purposes. A detailed list of all of the avaliable 
 configuration properties can be found `here <https://ibm-security.github.io/pyisva>`_. An example configuration is:
 
-.. code-block:: yaml
-   runtime:
-     policy_server: "remote"
-     user_registry: "remote"
-     domain: "Default"
-     admin_password:
-     ldap:
-       host: "openldap"
-       port: 636
-       dn: "cn=root,secAuthority=Default"
-       dn_password: @secrets/isva-secrets:ldap-pwd
-       key_file: lmi_trust_store.p12
-     admin_cert_lifetime: 1460
-     ssl_complaince: FIPS 140-2
+
+.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.runtime
 
 
 .. _webseal_reverse_proxy
@@ -269,7 +240,7 @@ list of all of the avaliable configuration properties can be found `here <https:
 
 
 Stanza configuration
-""""""""""""""""""""
+____________________
 For each WebSEAL reverse proxy instance, administrators are able to define section/key/value entries to modify the 
 ``webseal.conf`` file for that instance. Each stanza modification must also include an operation to either: add an 
 entry, creating duplicate entries if the particular section/key combination already exists; update an entry if it already 
@@ -277,7 +248,7 @@ exists, or add it if it does not; and remove an entry if it exists.
 
 
 Junction configuration
-""""""""""""""""""""""
+______________________
 For each WebSEAL instance, administrators will typically define one or more standard or virtual junctions. Junctions are 
 how an administrator defines the relationship and behavior between a WebSEAL server and an application server (for whom 
 TCP traffic is being proxied by WebSEAL). Some advanced configuratioin options cannot be set in this entry and the Stanza 
@@ -287,213 +258,214 @@ configuration must be used to set key/value entries in the reverse proxy config 
 An example configuration is:
 
 .. code-block:: yaml
-   reverse_proxy:
-     - name: "default-proxy"
-       listening_port: 7234
-       domain: "Default"
-       ldap:
-         ssl_yn: "no"
-       http:
-         enable: "no"
-       https:
-         enable: "yes"
-         port: 9443
-       nw_interface_yn: "yes"
-       stanza_configuration:
-         - stanza: "junction"
-           entry_name: "macro"
-           value: "*JSESS*, *VCAP*, *WAS*, PD_STATEFUL*"
-           operation: "add"
-         - stanza: "session"
-           entry_name: "timeout"
-           value: "28800"
-           operation: "update"
-         - stanza: "session"
-           entry_name: "inactive-timeout"
-           value: "28800"
-           operation: "update"
-         - stanza: "local-response-macros"
-           entry_name: "macro"
-           value: "URL:requestURL"
-           operation: "add"
-         - stanza: "local-response-macros"
-           entry_name: "macro"
-           value: "URL:requestURL"
-           operation: "add"
-         - stanza: "local-response-macros"
-           entry_name: "macro"
-           value: "REFERER:referer"
-           operation: "add"
-         - stanza: "eai"
-           entry_name: "eai-auth"
-           value: "https"
-           operation: "update"
-         - stanza: "oauth"
-           entry_name: "oauth-auth"
-           value: "https"
-           operation: "update"
-         - stanza: "ba"
-           entry_name: "ba-auth"
-           value: "https"
-           operation: "update"
-         - stanza: "acnt-mgt"
-           entry_name: "single-signoff-uri"
-           operation: "delete"
-         - stanza: "acnt-mgt"
-           entry_name: "enable-local-response-redirect"
-           value: "yes"
-           operation: "update"
-         - stanza: "local-response-redirect"
-           entry_name: "local-response-redirect-uri"
-           value: "[login] /home"
-           operation: "add"
-       junctions:
-         - junction_point: "/home"
-           server_hostname: demo.application
-           server_port: 9080
-           remote_http_header:
-             - "iv-user"
-             - "iv-creds"
-           request_encoding: "utf8_uri"
-           junction_type: "tcp"
-           transparent_path_junction: "yes"
-           scripting_support: "no"
-         - junction_point: "/static"
-           server_hostname: resource.server
-           server_port: 9080
-           remote_http_header:
-             - "iv-user"
-             - "iv-creds"
-           request_encoding: "utf8_uri"
-           junction_type: "tcp"
-           transparent_path_junction: "yes"
-           scripting_support: "no"
-         - junction_point: "/protected"
-           server_hostname: protected.application
-           server_port: 9443
-           remote_http_header:
-             - "iv-user"
-             - "iv-creds"
-           request_encoding: "utf8_uri"
-           junction_type: "ssl"
-           transparent_path_junction: "yes"
-           scripting_support: "no"
-         - junction_point: "/accounts"
-           server_hostname: protected.application
-           server_port: 9443
-           remote_http_header:
-             - "iv-user"
-             - "iv-creds"
-           request_encoding: "utf8_uri"
-           junction_type: "ssl"
-           transparent_path_junction: "yes"
-           scripting_support: "no"
-         - junction_point: "/scim"
-           server_hostname: isvaruntime
-           server_port: 9443
-           remote_http_header:
-             - "iv-user"
-             - "iv-groups"
-             - "iv-creds"
-           request_encoding: "utf8_uri"
-           junction_cookie_javascript_block: "inhead"
-           junction_type: "ssl"
-           transparent_path_junction: "yes"
-           scripting_support: "yes"
-           client_ip_http: "yes"
-           username: "easuser"
-           password: @secrets/isva-secrets/runtime_password
-           enable_basic_auth: true
-         - junction_point: "/intent"
-           server_hostname: protected.application.server
-           server_port: 9443
-           remote_http_header:
-             - "iv-user"
-             - "iv-creds"
-           request_encoding: "utf8_uri"
-           junction_type: "ssl"
-           transparent_path_junction: "no"
-           scription_support: "no"
-         - junction_point: "/ob"
-           server_hostname: application.server
-           server_port: 9080
-           remote_http_header:
-             - "iv-user"
-             - "iv-groups"
-             - "iv-creds"
-           request_encoding: "utf8_uri"
-           junction_cookie_javascript_block: "inhead"
-           junction_type: "ssl"
-           transparent_path_junction: "no"
-           scripting_support: "yes"
-           client_ip_http: "yes"
-           username: "application_user"
-           password: @secrets/isva-secrets/app_pwd
-           enable_basic_auth: true
-       mmfa_configuration:
-         lmi:
-           hostname: isvaconfig
-           port: 443
-           user: admin
-           password: @secrets/isva-secrets:admin_pwd
-         runtime:
-           hostname: isvaruntime
-           port: #TODO
-           user: #TODO
-           password: #TODO
-         channel: "browser"
-         reuse_acls: true
-         reuse_pops: true
-         reuse_certs: true
-       aac_configuration:
-         hostname: #TODO
-         port: 443
-         junction: "/mga"
-         user: "easuser"
-         password: @secrets/isva-secrets:runtime_pwd
-         reuse_acls: true
-         reuse_certs: true
-     - name: "verify_mobile"
-       listening_port: 7235
-       domain: "Default"
-       ldap:
-         ssl_yn: "yes"
-         port: 636
-       http:
-         enabled: "no"
-       https:
-         enabled: "yes"
-         port: 9443
-       junctions:
-         - junction_point: "/scim"
-           server_hostname: isvaruntime
-           server_port: 443
-           remote_http_header:
-             - "iv-user"
-             - "iv-groups"
-             - "iv-creds"
-           request_encoding: "utf8_uri"
-           junction_cookie_javascript_block: "inhead"
-           junction_type: "ssl"
-           transarent_path_junction: "yes"
-           scripting_support: "yes"
-           scient_ip_http: "yes"
-           username: "easuser"
-           password: @secrets/isva-secrets:runtime_pwd
-           enable_basic_auth: true
-       mmfa_cofiguration:
-         lmi:
-           hostname: isvaconfig
-           port: 443
-           user: admin
-           password: @secrts/isva-secrets:admin_pwd
-         runtime:
-           hostname: "isvaruntime"
-           port: 443
-           user: "easuser"
-           password: @secrts/isva-secrets:runtime_pwd
-         channel: "mobile"
-         reuse_acls: true
-         reuse_pops: true
-         reuse_certs: true
+
+       reverse_proxy:
+         - name: "default-proxy"
+           listening_port: 7234
+           domain: "Default"
+           ldap:
+             ssl_yn: "no"
+           http:
+             enable: "no"
+           https:
+             enable: "yes"
+             port: 9443
+           nw_interface_yn: "yes"
+           stanza_configuration:
+             - stanza: "junction"
+               entry_name: "macro"
+               value: "*JSESS*, *VCAP*, *WAS*, PD_STATEFUL*"
+               operation: "add"
+             - stanza: "session"
+               entry_name: "timeout"
+               value: "28800"
+               operation: "update"
+             - stanza: "session"
+               entry_name: "inactive-timeout"
+               value: "28800"
+               operation: "update"
+             - stanza: "local-response-macros"
+               entry_name: "macro"
+               value: "URL:requestURL"
+               operation: "add"
+             - stanza: "local-response-macros"
+               entry_name: "macro"
+               value: "URL:requestURL"
+               operation: "add"
+             - stanza: "local-response-macros"
+               entry_name: "macro"
+               value: "REFERER:referer"
+               operation: "add"
+             - stanza: "eai"
+               entry_name: "eai-auth"
+               value: "https"
+               operation: "update"
+             - stanza: "oauth"
+               entry_name: "oauth-auth"
+               value: "https"
+               operation: "update"
+             - stanza: "ba"
+               entry_name: "ba-auth"
+               value: "https"
+               operation: "update"
+             - stanza: "acnt-mgt"
+               entry_name: "single-signoff-uri"
+               operation: "delete"
+             - stanza: "acnt-mgt"
+               entry_name: "enable-local-response-redirect"
+               value: "yes"
+               operation: "update"
+             - stanza: "local-response-redirect"
+               entry_name: "local-response-redirect-uri"
+               value: "[login] /home"
+               operation: "add"
+           junctions:
+             - junction_point: "/home"
+               server_hostname: demo.application
+               server_port: 9080
+               remote_http_header:
+                 - "iv-user"
+                 - "iv-creds"
+               request_encoding: "utf8_uri"
+               junction_type: "tcp"
+               transparent_path_junction: "yes"
+               scripting_support: "no"
+             - junction_point: "/static"
+               server_hostname: resource.server
+               server_port: 9080
+               remote_http_header:
+                 - "iv-user"
+                 - "iv-creds"
+               request_encoding: "utf8_uri"
+               junction_type: "tcp"
+               transparent_path_junction: "yes"
+               scripting_support: "no"
+             - junction_point: "/protected"
+               server_hostname: protected.application
+               server_port: 9443
+               remote_http_header:
+                 - "iv-user"
+                 - "iv-creds"
+               request_encoding: "utf8_uri"
+               junction_type: "ssl"
+               transparent_path_junction: "yes"
+               scripting_support: "no"
+             - junction_point: "/accounts"
+               server_hostname: protected.application
+               server_port: 9443
+               remote_http_header:
+                 - "iv-user"
+                 - "iv-creds"
+               request_encoding: "utf8_uri"
+               junction_type: "ssl"
+               transparent_path_junction: "yes"
+               scripting_support: "no"
+             - junction_point: "/scim"
+               server_hostname: isvaruntime
+               server_port: 9443
+               remote_http_header:
+                 - "iv-user"
+                 - "iv-groups"
+                 - "iv-creds"
+               request_encoding: "utf8_uri"
+               junction_cookie_javascript_block: "inhead"
+               junction_type: "ssl"
+               transparent_path_junction: "yes"
+               scripting_support: "yes"
+               client_ip_http: "yes"
+               username: "easuser"
+               password: @secrets/isva-secrets/runtime_password
+               enable_basic_auth: true
+             - junction_point: "/intent"
+               server_hostname: protected.application.server
+               server_port: 9443
+               remote_http_header:
+                 - "iv-user"
+                 - "iv-creds"
+               request_encoding: "utf8_uri"
+               junction_type: "ssl"
+               transparent_path_junction: "no"
+               scription_support: "no"
+             - junction_point: "/ob"
+               server_hostname: application.server
+               server_port: 9080
+               remote_http_header:
+                 - "iv-user"
+                 - "iv-groups"
+                 - "iv-creds"
+               request_encoding: "utf8_uri"
+               junction_cookie_javascript_block: "inhead"
+               junction_type: "ssl"
+               transparent_path_junction: "no"
+               scripting_support: "yes"
+               client_ip_http: "yes"
+               username: "application_user"
+               password: @secrets/isva-secrets/app_pwd
+               enable_basic_auth: true
+           mmfa_configuration:
+             lmi:
+               hostname: isvaconfig
+               port: 443
+               user: admin
+               password: @secrets/isva-secrets:admin_pwd
+             runtime:
+               hostname: isvaruntime
+               port: #TODO
+               user: #TODO
+               password: #TODO
+             channel: "browser"
+             reuse_acls: true
+             reuse_pops: true
+             reuse_certs: true
+           aac_configuration:
+             hostname: #TODO
+             port: 443
+             junction: "/mga"
+             user: "easuser"
+             password: @secrets/isva-secrets:runtime_pwd
+             reuse_acls: true
+             reuse_certs: true
+         - name: "verify_mobile"
+           listening_port: 7235
+           domain: "Default"
+           ldap:
+             ssl_yn: "yes"
+             port: 636
+           http:
+             enabled: "no"
+           https:
+             enabled: "yes"
+             port: 9443
+           junctions:
+             - junction_point: "/scim"
+               server_hostname: isvaruntime
+               server_port: 443
+               remote_http_header:
+                 - "iv-user"
+                 - "iv-groups"
+                 - "iv-creds"
+               request_encoding: "utf8_uri"
+               junction_cookie_javascript_block: "inhead"
+               junction_type: "ssl"
+               transarent_path_junction: "yes"
+               scripting_support: "yes"
+               scient_ip_http: "yes"
+               username: "easuser"
+               password: @secrets/isva-secrets:runtime_pwd
+               enable_basic_auth: true
+           mmfa_cofiguration:
+             lmi:
+               hostname: isvaconfig
+               port: 443
+               user: admin
+               password: @secrts/isva-secrets:admin_pwd
+             runtime:
+               hostname: "isvaruntime"
+               port: 443
+               user: "easuser"
+               password: @secrts/isva-secrets:runtime_pwd
+             channel: "mobile"
+             reuse_acls: true
+             reuse_pops: true
+             reuse_certs: true
 

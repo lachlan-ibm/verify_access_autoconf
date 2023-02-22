@@ -1,8 +1,8 @@
-Example Verify Access Deployments
-#################################
+Example Verify Access Configurations (Getting Started)
+######################################################
 
 First Steps
------------
+===========
 
 The first steps configuration file defines some initial configuration that is required for all Verify Access deployments.
 These steps include:
@@ -14,11 +14,12 @@ These steps include:
 - Configuring the WebSEAL Runtime Policy Server / User Registry.
 
 
-.. include:: examples/first_steps.yaml
+.. include:: ../examples/first_steps.yaml
+   :literal:
 
 
 WebSEAL Reverse Proxy using Advanced Access Control authentication
-------------------------------------------------------------------
+==================================================================
 
 The WebSEAL / AAC deployment defines a Verify Access deployment with a single WebSEAL reverse proxy. This proxy is
 configured to perform authentication using the AAC authetnication capabilities.
@@ -26,7 +27,7 @@ configured to perform authentication using the AAC authetnication capabilities.
 
 
 Mobile Multi-Factor Authentication
-----------------------------------
+==================================
 
 The MMFA example follows the legacy cookbook deployment guide.
 
