@@ -6,3 +6,4 @@ wheel
 setuptools
 twine
 sphinx-rtd-theme
+typing

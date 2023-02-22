@@ -148,115 +148,109 @@ class WEB_Configurator(object):
                 proxy_id, json.dumps(junction, indnet=4)))
 
 
-    '''
-    .. note:: Configuration to connect to the user registry is read from the ``webseal.runtime`` entry.
+    class Reverse_Proxy(typing.TypedDict):
+        '''
+        .. note:: Configuration to connect to the user registry is read from the ``webseal.runtime`` entry.
 
-    .. note:: Federations configured in ths step must already exist. If federations are beign created and configured
-              for WebSEAL at the same time then the reverse proxy configuration should be added to the federation
-              configuration dictionary.
+        .. note:: Federations configured in ths step must already exist. If federations are beign created and configured
+                  for WebSEAL at the same time then the reverse proxy configuration should be added to the federation
+                  configuration dictionary.
 
+        Example::
 
-    :var: reverse_proxy::
+                  reverse_proxy:
+                  - name: "default"
+                    host: "hostname"
+                    listening_port: 7234
+                    domain: "Default"
+                    http:
+                    - enabled: "no"
+                    https:
+                    - enabled: "yes"
+                      port: 443
+                    junctions:
+                    - name: "/app"
+                      transparent_path: True
+                      server:
+                        host: "1.2.3.4"
+                        port: 443
+                      ssl:
+                      - enabled: "yes"
+                        key_file: "example.kdb",
+                        cert_file: "server"
+                    aac_configuration_wizard:
+                      hostname: "localhost"
+                      port: 443
+                      runtime:
+                        user: "easuser"
+                        password: "password"
+                      junction: "/mga"
+                      reuse_acls: True
+                      reuse_certs: True
 
-                        :var: name::
-                        :var: host::
-                        :var: nw_interface_yn::
-                        :var: ip_address::
-                        :var: listening_port::
-                        :var: domain::
-                        :var: ldap::
-                                    :var: ssl::
-                                    :var: key_file::
-                                    :var: cert_file::
-                                    :var: port::
+        '''
+        class Liberty_Server(typing.TypedDict):
+            hostname: str
+            port: int
+            username: str
+            password: str
 
-                        :var: http::
-                                    :var: enabled::
-                                    :var: port::
+        class AAC_Configuration(typing.TypedDict):
+            junction: str
+            runtime: Liberty_Server
+            reuse_acls: bool
+            reuse_certs: bool
 
-                        :var: https::
-                                    :var: enabled::
-                                    :var port::
+        class MMFA_Configuration(typing.TypedDict):
+            channel: str
+            runtime: Liberty_Server
+            lmi: Liberty_Server
+            reuse_acls: bool
+            reuse_certs: bool
+            reuse_pops: bool
 
-                        :var: junctions:: List of junctions to create. Each entry in the list should be a dictonary of
-                                          properties to create a junction to a resource server. The complete list of
-                                          properties that can be used to craete junctions can be found
-                                          :ref:`here <pyisva:websettings#pyisva.core.web.reverseproxy.ReverseProxy.create_junction>`.
+        class Federation_Configuration(typing.TypedDict):
+            name: str
+            runtime: Liberty_Server
+            reuse_acls: bool
+            reuse_certs: bool
 
-                        :var: aac_config::
-                                                :var: junction::
-                                                :var: reuse_certs::
-                                                :var: reuse_acls::
-                                                :var: runtime::
-                                                                :var: hostname::
-                                                                :var: port::
-                                                                :var: username::
-                                                                :var: password::
+        class Stanza_Configuration(typing.TypedDict):
+            operation:str
+            stanza: str
+            entry_id: typing.Optional[str]
+            value: typing.Optional[str]
 
-                        :var: mmfa_config::
-                                            :var: channel::
-                                            :var: reuse_acls::
-                                            :var: reuse_pops::
-                                            :var: reuse_certs::
-                                            :var: lmi::
-                                                        :var: hostname::
-                                                        :var: port::
-                                                        :var: username::
-                                                        :var: password::
+        class Junction(typing.TypedDict):
+            junction: str
+            hostname: str
+            port: str
 
-                                            :var: runtime::
-                                                            :var: hostname::
-                                                            :var: port::
-                                                            :var: username::
-                                                            :var: password::
+        class Endpoint(typing.TypedDict):
+            enabled: bool
+            port: typing.Optional[int]
 
-                        :var: federation_configuration::
-                                                        :var: name::
-                                                        :var: reuse_certs::
-                                                        :var: reuse_acls::
-                                                        :var: runtime::
-                                                                        :var: host::
-                                                                        :var: port::
-                                                                        :var: username::
-                                                                        :var: password::
+        class LDAP(typing.TypedDict):
+            ssl: bool
+            key_file: typing.Optional[str]
+            cert_file: typing.Optional[str]
+            port: int
 
-                        :var: stanza_configuration::
-                                                    :var: operation::
-                                                    :var: stanza::
-                                                    :var: entry_id::
-                                                    :var: value::
+        name: str
+        host: str
+        nw_interface_yn: typing.Optional[str]
+        ip_address: typing.Optional[str]
+        listening_port: int
+        domain: str
+        ldap: LDAP
+        http: Endpoint
+        https: Endpoint
+        junctions: typing.Optional[typing.List[Junction]]
+        aac_config: typing.Optional[AAC_Configuration]
+        mmfa_config: typing.Optional[MMFA_Configuration]
+        federation: typing.Optional[Federation_Configuration]
+        stanza_configuration: typing.Optional[Stanza_Configuration]
 
-    Example::
-              reverse_proxy:
-              - name: "default"
-                host: "hostname"
-                listening_port: 7234
-                domain: "Default"
-                http:
-                - enabled: "no"
-                https:
-                - enabled: "yes"
-                  port: 443
-                junctions:
-                - name: "/app"
-                  transparent_path: True
-                  server:
-                    host: "1.2.3.4"
-                    port: 443
-                  ssl:
-                  - enabled: "yes"
-                    key_file: "example.kdb",
-                    cert_file: "server"
-                aac_configuration_wizard:
-                  hostname: "localhost"
-                  port: 443
-                  runtime:
-                    user: "easuser"
-                    password: "password"
-                  junction: "/mga"
-                  reuse_acls: True
-                  reuse_certs: True
-    '''
     def wrp(self, runtime, proxy):
         wrp_instances = self.web.reverse_proxy.list_instances().json
         if wrp_instances == None:

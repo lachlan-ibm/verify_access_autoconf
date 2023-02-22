@@ -83,7 +83,8 @@ complete list of the avaliable configuration properties can be found `here <http
 An example configuration is:
 
 
-.. autofunction::  src.verify_access_autoconf.appliance.Applaince.date_time
+.. autoclass::  src.verify_access_autoconf.appliance.Applaince.Date_Time
+   :members:
 
 
 .. _cluster-configuration:
@@ -99,4 +100,5 @@ configuration properties can be found :ref:`here <pyisva:systemsettings#cluster>
     .. note:: PKI required to connect to any servers should be imported in the previous step.
 
 
-.. autofunction::  src.verify_access_autoconf.appliance.Applaince.cluster
+.. autoclass::  src.verify_access_autoconf.appliance.Applaince.Cluster_Configuration
+   :members:

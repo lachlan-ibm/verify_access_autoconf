@@ -114,4 +114,4 @@ Database Configuration
 ======================
 The database configuration for container deployments can be done using the :ref:`cluster-configuration` entry.
 
-.. autofunction:: src.verify_access_autoconf.container.Container.configure_database
+.. autoclass:: src.verify_access_autoconf.container.Container.Cluster_Configuration
