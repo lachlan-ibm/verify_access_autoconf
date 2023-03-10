@@ -838,7 +838,7 @@ class WEB_Configurator(object):
             'The CN LDAP attribute for this group.'
             dn: str
             'The DN LDAP attribute for this group.'
-            description: typing.Optinal[str]
+            description: typing.Optional[str]
             'Optional description of group.'
             users: typing.Optional[typing.List[str]]
             'Optional list of users to add to group. These users must already exist in the user registry.'
