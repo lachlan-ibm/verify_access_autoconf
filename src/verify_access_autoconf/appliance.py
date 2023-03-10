@@ -109,32 +109,32 @@ class Appliance_Configurator(object):
 
     class Networking(typing.TypedDict):
         '''
-    Example::
+        Example::
 
-            networking:
-              routes:
-              - enabled: true
-                address: "default"
-                gateway: "192.168.42.1"
-                interface: "1.1"
-                metric: 0
-                table: "main"
-                comment: "Example route"
-              interfaces:
-                ipv4:
-                  dhcp:
-                    enabled: false
-                addresses:
-                - address": "192.168.42.101"
-                  mask_or_prefix: "255.255.255.0"
-                  broadcast_address: "192.168.42.10"
-                  allow_mgmt: true
-                  enabled: true
-                - address: "192.168.42.102"
-                  mask_or_prefix: "/24"
-                  broadcast_address: "192.168.42.10"
-                  allow_mgmt: false
-                  enabled: true
+                networking:
+                  routes:
+                  - enabled: true
+                    address: "default"
+                    gateway: "192.168.42.1"
+                    interface: "1.1"
+                    metric: 0
+                    table: "main"
+                    comment: "Example route"
+                  interfaces:
+                    ipv4:
+                      dhcp:
+                        enabled: false
+                    addresses:
+                    - address": "192.168.42.101"
+                      mask_or_prefix: "255.255.255.0"
+                      broadcast_address: "192.168.42.10"
+                      allow_mgmt: true
+                      enabled: true
+                    - address: "192.168.42.102"
+                      mask_or_prefix: "/24"
+                      broadcast_address: "192.168.42.10"
+                      allow_mgmt: false
+                      enabled: true
 
         '''
         class Route(typing.TypedDict):
@@ -155,35 +155,35 @@ class Appliance_Configurator(object):
             table: int
             'Route table.'
 
-        class IPv4Address(typing.TypedDict):
-            address: str
-            'IPv4 address to assign to interface.'
-            mask_or_prefix: str
-            'IPv4 netmask or prefix to assign to address.'
-            broadcast_address: str
-            'IPv4 address to use for broadcasting.'
-            allow_mgmt: bool
-            'Use this address for the Local Management Interface.'
-            enabled: bool
-            'Enable this address.'
+        class Interface(typing.TypedDict):
+            class IPv4(typing.TypedDict):
+                class IPv4Address(typing.TypedDict):
+                    address: str
+                    'IPv4 address to assign to interface.'
+                    mask_or_prefix: str
+                    'IPv4 netmask or prefix to assign to address.'
+                    broadcast_address: str
+                    'IPv4 address to use for broadcasting.'
+                    allow_mgmt: bool
+                    'Use this address for the Local Management Interface.'
+                    enabled: bool
+                    'Enable this address.'
 
-        class IPv4DHCP(typing.TypedDict):
-            enabled: bool
-            'Enable DHCP on this interface.'
-            allow_mgmt: bool
-            'Use a DHCP address for the Local Management Interface.'
-            default_route: bool
-            'Use DHCP to determine the default network route.'
-            route_metric: int
-            'Route metric.'
+                class IPv4DHCP(typing.TypedDict):
+                    enabled: bool
+                    'Enable DHCP on this interface.'
+                    allow_mgmt: bool
+                    'Use a DHCP address for the Local Management Interface.'
+                    default_route: bool
+                    'Use DHCP to determine the default network route.'
+                    route_metric: int
+                    'Route metric.'
 
-        class IPv4(typeing.TypedDict):
-            dhcp: typing.Optional[IPv4DHCP]
-            'DHCP configuration for an interface.'
-            addresses: typing.Optional[typing.List[IPv4Address]]
-            'Static IPv4 addresses assigned to an interface.'
+                dhcp: typing.Optional[IPv4DHCP]
+                'DHCP configuration for an interface.'
+                addresses: typing.Optional[typing.List[IPv4Address]]
+                'Static IPv4 addresses assigned to an interface.'
 
-        class Interfaces(typing.TypedDict):
             name: str
             'Name of interface.'
             comment: str
@@ -195,7 +195,7 @@ class Appliance_Configurator(object):
             ipv4: IPv4
             'IPv4 settings.'
 
-        routes: typing.Optional[typing.List[Rote]]
+        routes: typing.Optional[typing.List[Route]]
         'Optional list of routes to add to an interface.'
 
         interfaces: typing.List[Interface]
@@ -291,7 +291,7 @@ class Appliance_Configurator(object):
             'Password to authenticate as ``username``.'
             db_name: str
             'Name of the database instance to use.'
-            extra_config: typing.Optional(dict)
+            extra_config: typing.Optional[dict]
             'Database type specific configuration.'
 
         class Cluster(typing.TypedDict):

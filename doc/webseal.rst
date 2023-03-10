@@ -1,5 +1,3 @@
-.. _webseal::
-
 WebSEAL Reverse Proxy Configuration
 ###################################
 This section covers the WebSEAL configuration of a Verify Access deployment. This includes configuring the reverse proxy
@@ -66,10 +64,10 @@ Example
                       password: "passw0rd"
 
 
-.. _webseal_runtime_component::
+.. _webseal_runtime_component:
 
 Runtime component
-^^^^^^^^^^^^^^^^^
+=================
 The WebSEAL runtime server is the Directory Server which contains the reverse proxy's user registry and policy server. 
 This is typically a LDAP server external to the deployment, however an example LDAP server is made available to 
 deployments for testing.
@@ -81,26 +79,28 @@ Any PKI required to verify this connection should be imported into a SSL databas
 configured.
 
 
-.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.runtime
+.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Runtime
+   :members:
 
 
-.. _webseal_reverse_proxy::
+.. _webseal_reverse_proxy:
 
 Reverse Proxy
-^^^^^^^^^^^^^
+=============
 The WebSEAL reverse proxy configuration creates reverse proxy instances and associated configurations. This option can 
 be used to create one or more reverse proxy instances along with associated backend server and authentication 
 configuration. A complete list of the available configuration properties can be found 
 `here <https://ibm-security.github.io/pyisva>`_. An example configuration is:
 
 
-.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.wrp
+.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Reverse_Proxy
+   :members:
 
 
-.. _webseal_client_cert_map::
+.. _webseal_client_cert_map:
 
 Client certificate mapping
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+==========================
 Client certificate mapping can be used by a reverse proxy to map X500 Name attribute from a client certificate (part of 
 a mutual TLS connection) to authenticate a user as an identity from the User Registry. These mapping rules are written 
 in XSLT. A rule is read from a file and uploaded to an appliance, where the resulting rule name is the filename minus the 
@@ -108,51 +108,55 @@ XSLT extension. A complete list of the available configuration properties can be
 An example configuration is:
 
 
-.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.client_cert_mapping
+.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Client_Certificate_Mapping
+   :members:
 
 
-.. _webseal_jct_mapping::
+.. _webseal_jct_mapping:
 
 Junction Mapping
-^^^^^^^^^^^^^^^^
+================
 A Junction mapping table maps specific target resources to junction names. Junction mapping is an alternative to 
 cookie-based solutions for filtering dynamically generated server-relative URLs. A rule is read from a file and uploaded 
 to a Verify Access deployment. The name of the file which contains the junction mapping config is the resulting rule name
 in Verify Access. An example configuration is:
 
 
-.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.junction_mapping
+.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Junction_Mapping
+   :members:
 
 
-.. _webseal_url_mapping::
+.. _webseal_url_mapping:
 
 URL Mapping
-^^^^^^^^^^^
+===========
 A URL mapping table is used to map WebSEAL access control lists (ACLs) and protected object policies (POPs) to dynamically
 generated URLs, such as URLs with query string parameters. URLs can be matched using a subset of UNIX shell pattern 
 matching (including wildcards). A complete list of supported regex can be found `here <https://www.ibm.com/docs/en/sva/latest?topic=configuration-supported-wildcard-pattern-matching-characters#ref_wildcard_sup>`_
 An example URL mapping configuration is:
 
 
-.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.url_mapping
+.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Url_Mapping
+   :members:
 
 
-.. _webseal_user_mapping::
+.. _webseal_user_mapping:
 
 User Mapping
-^^^^^^^^^^^^
+============
 User mapping can be used to modify or enrich an authenticated user's credential data. This can be used to both switch the 
 identity of a user or add attributes to a user's existing credential. User mapping rules are added to a Verify Access 
 deployment using XLST rules. Detailed information about user mapping XSLT configuration can be found `here <https://www.ibm.com/docs/en/sva/latest?topic=methods-authenticated-user-mapping>`_. The name of the XSLT file will be used as the name of the user mapping rule
 
 
-.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.user_mapping
+.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.User_Mapping
+   :members:
 
 
-.. _webseal_fsso::
+.. _webseal_fsso:
 
 Forms Based Single Sign-On
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+==========================
 The FSSO (forms single sing-on) module can be used by WebSEAL to authenticate a user to a junctioned application server. 
 The module is capable of intercepting authentication requests from an application server, and then supplying the required 
 identity information (retrieved from either the WebSEAl user regitry or a HTTP service) to the application server to complete 
@@ -160,13 +164,14 @@ the authentication challenge. More detailed information about FSSO concepts can 
 Verify Access. An example FSSO configuration is:
 
 
-.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.form_single_sign_on
+.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Form_Signle_Sign_On
+   :members:
 
 
-.. _webseal_http_transformations::
+.. _webseal_http_transformations:
 
 HTTP Transformation Rules
-^^^^^^^^^^^^^^^^^^^^^^^^^
+=========================
 HTTP transformation rules allow WebSEAL to inspect and rewrite request and response objects as they pass through the 
 reverse proxy. HTTP transforms can be applied: when the request is recieved (by WebSEAL); after an authorization decision has been 
 made; and when the response is recieved (by WebSEAL). Prior to Verify Access 10.0.4.0 only XSLT rules were supported, 
@@ -176,64 +181,68 @@ The name of the HTTP transform file will be used as the name of the resulting HT
 An example HTTP transformation configuration is:
 
 
-.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.http_transforms
+.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Http_Transformations
+   :members:
 
 
-.. _webseal_kerberos::
+.. _webseal_kerberos:
 
 Kerberos
-^^^^^^^^
+========
 The SPNEGO/Kerberos module can be used to enable SSO solutuions to Microsoft (Active Directory) systems via Kerberos 
 delegation. Kerberos is configured by setting properties by id and subsections. There are several top level id's which 
 can be used to configure Kerberos Realms, Local Domain Realms, Certificate Authority paths and Keyfiles. An example 
 configuration is:
 
 
-.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.kerberos
+.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Kerberos
+   :members:
 
 
-.. _webseal_pwd_strength::
+.. _webseal_pwd_strength:
 
 Password Strength Rules
-^^^^^^^^^^^^^^^^^^^^^^^
+=======================
 The password strength  module can be used to enforce XLST defined password requirements for basic and full Verify Access 
 users. More detailed information about rule syntax can be found `here <https://www.ibm.com/docs/en/sva/latest?topic=methods-password-strength>`_. 
 Rules are uploaded to a deployment from files, the name of the file is used as the resulting password strength rule in 
 Verify Access. An example configuration is:
 
 
-.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.password_strength
+.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Password_Strength
 
-.. _webseal_rsa_config::
+
+.. _webseal_rsa_config:
 
 RSA SecurID Authenticaton
-^^^^^^^^^^^^^^^^^^^^^^^^^
+=========================
 The RSA integration module can be used to allow users who are authenticating to WebSEAL's user registry to use a RSA OTP 
 as a second factor. More information about configuring this mechanism and the correcsponding configuration to integrate 
 with WebSEAL login can be found `here <https://www.ibm.com/docs/en/sva/latest?topic=methods-token-authentication>`_. An 
 example configuration is:
 
 
-.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.rsa
+.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.RSA
+   :members:
 
-.. _webseal_runtime_server
+.. _webseal_runtime_server:
 
 Runtime Component
-^^^^^^^^^^^^^^^^^
+=================
 The runtime configuration defines the runtime policy server and user registry used by WebSEAL. This is typically a Directory 
 server and one is providede by Verify Access for testing and demonstration purposes. A detailed list of all of the avaliable 
 configuration properties can be found `here <https://ibm-security.github.io/pyisva>`_. An example configuration is:
 
 
-.. autofunction:: verify_access_autoconf.webseal.WEB_Configurator.runtime
+.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Runtime
+   :members:
 
 
-.. _webseal_reverse_proxy
+.. _webseal_reverse_proxy:
 
 Reverse Proxy Instances
-^^^^^^^^^^^^^^^^^^^^^^^
-WebSEAL reverse proxy instances form the core of most Verify Access deployments. There are a large number of configuration 
-options which can be specified for this section. A reverse proxy isntance typically defines one or more junctions to 
+=======================
+Properties to configure a WebSEAL Reverse Proxy instance. A reverse proxy instance typically defines one or more junctions to 
 protected application servers. This section can also be used to define configuration for the ``webseal.conf`` file as well 
 as run the integration wizards for MMFA, AAC and Federation capabilities from the Federated Runtime Server. A detailed 
 list of all of the avaliable configuration properties can be found `here <https://ibm-security.github.io/pyisva>`_. 
@@ -255,217 +264,49 @@ TCP traffic is being proxied by WebSEAL). Some advanced configuratioin options c
 configuration must be used to set key/value entries in the reverse proxy config file.
 
 
-An example configuration is:
+.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Reverse_Proxy
+   :members:
 
-.. code-block:: yaml
 
-       reverse_proxy:
-         - name: "default-proxy"
-           listening_port: 7234
-           domain: "Default"
-           ldap:
-             ssl_yn: "no"
-           http:
-             enable: "no"
-           https:
-             enable: "yes"
-             port: 9443
-           nw_interface_yn: "yes"
-           stanza_configuration:
-             - stanza: "junction"
-               entry_name: "macro"
-               value: "*JSESS*, *VCAP*, *WAS*, PD_STATEFUL*"
-               operation: "add"
-             - stanza: "session"
-               entry_name: "timeout"
-               value: "28800"
-               operation: "update"
-             - stanza: "session"
-               entry_name: "inactive-timeout"
-               value: "28800"
-               operation: "update"
-             - stanza: "local-response-macros"
-               entry_name: "macro"
-               value: "URL:requestURL"
-               operation: "add"
-             - stanza: "local-response-macros"
-               entry_name: "macro"
-               value: "URL:requestURL"
-               operation: "add"
-             - stanza: "local-response-macros"
-               entry_name: "macro"
-               value: "REFERER:referer"
-               operation: "add"
-             - stanza: "eai"
-               entry_name: "eai-auth"
-               value: "https"
-               operation: "update"
-             - stanza: "oauth"
-               entry_name: "oauth-auth"
-               value: "https"
-               operation: "update"
-             - stanza: "ba"
-               entry_name: "ba-auth"
-               value: "https"
-               operation: "update"
-             - stanza: "acnt-mgt"
-               entry_name: "single-signoff-uri"
-               operation: "delete"
-             - stanza: "acnt-mgt"
-               entry_name: "enable-local-response-redirect"
-               value: "yes"
-               operation: "update"
-             - stanza: "local-response-redirect"
-               entry_name: "local-response-redirect-uri"
-               value: "[login] /home"
-               operation: "add"
-           junctions:
-             - junction_point: "/home"
-               server_hostname: demo.application
-               server_port: 9080
-               remote_http_header:
-                 - "iv-user"
-                 - "iv-creds"
-               request_encoding: "utf8_uri"
-               junction_type: "tcp"
-               transparent_path_junction: "yes"
-               scripting_support: "no"
-             - junction_point: "/static"
-               server_hostname: resource.server
-               server_port: 9080
-               remote_http_header:
-                 - "iv-user"
-                 - "iv-creds"
-               request_encoding: "utf8_uri"
-               junction_type: "tcp"
-               transparent_path_junction: "yes"
-               scripting_support: "no"
-             - junction_point: "/protected"
-               server_hostname: protected.application
-               server_port: 9443
-               remote_http_header:
-                 - "iv-user"
-                 - "iv-creds"
-               request_encoding: "utf8_uri"
-               junction_type: "ssl"
-               transparent_path_junction: "yes"
-               scripting_support: "no"
-             - junction_point: "/accounts"
-               server_hostname: protected.application
-               server_port: 9443
-               remote_http_header:
-                 - "iv-user"
-                 - "iv-creds"
-               request_encoding: "utf8_uri"
-               junction_type: "ssl"
-               transparent_path_junction: "yes"
-               scripting_support: "no"
-             - junction_point: "/scim"
-               server_hostname: isvaruntime
-               server_port: 9443
-               remote_http_header:
-                 - "iv-user"
-                 - "iv-groups"
-                 - "iv-creds"
-               request_encoding: "utf8_uri"
-               junction_cookie_javascript_block: "inhead"
-               junction_type: "ssl"
-               transparent_path_junction: "yes"
-               scripting_support: "yes"
-               client_ip_http: "yes"
-               username: "easuser"
-               password: @secrets/isva-secrets/runtime_password
-               enable_basic_auth: true
-             - junction_point: "/intent"
-               server_hostname: protected.application.server
-               server_port: 9443
-               remote_http_header:
-                 - "iv-user"
-                 - "iv-creds"
-               request_encoding: "utf8_uri"
-               junction_type: "ssl"
-               transparent_path_junction: "no"
-               scription_support: "no"
-             - junction_point: "/ob"
-               server_hostname: application.server
-               server_port: 9080
-               remote_http_header:
-                 - "iv-user"
-                 - "iv-groups"
-                 - "iv-creds"
-               request_encoding: "utf8_uri"
-               junction_cookie_javascript_block: "inhead"
-               junction_type: "ssl"
-               transparent_path_junction: "no"
-               scripting_support: "yes"
-               client_ip_http: "yes"
-               username: "application_user"
-               password: @secrets/isva-secrets/app_pwd
-               enable_basic_auth: true
-           mmfa_configuration:
-             lmi:
-               hostname: isvaconfig
-               port: 443
-               user: admin
-               password: @secrets/isva-secrets:admin_pwd
-             runtime:
-               hostname: isvaruntime
-               port: #TODO
-               user: #TODO
-               password: #TODO
-             channel: "browser"
-             reuse_acls: true
-             reuse_pops: true
-             reuse_certs: true
-           aac_configuration:
-             hostname: #TODO
-             port: 443
-             junction: "/mga"
-             user: "easuser"
-             password: @secrets/isva-secrets:runtime_pwd
-             reuse_acls: true
-             reuse_certs: true
-         - name: "verify_mobile"
-           listening_port: 7235
-           domain: "Default"
-           ldap:
-             ssl_yn: "yes"
-             port: 636
-           http:
-             enabled: "no"
-           https:
-             enabled: "yes"
-             port: 9443
-           junctions:
-             - junction_point: "/scim"
-               server_hostname: isvaruntime
-               server_port: 443
-               remote_http_header:
-                 - "iv-user"
-                 - "iv-groups"
-                 - "iv-creds"
-               request_encoding: "utf8_uri"
-               junction_cookie_javascript_block: "inhead"
-               junction_type: "ssl"
-               transarent_path_junction: "yes"
-               scripting_support: "yes"
-               scient_ip_http: "yes"
-               username: "easuser"
-               password: @secrets/isva-secrets:runtime_pwd
-               enable_basic_auth: true
-           mmfa_cofiguration:
-             lmi:
-               hostname: isvaconfig
-               port: 443
-               user: admin
-               password: @secrts/isva-secrets:admin_pwd
-             runtime:
-               hostname: "isvaruntime"
-               port: 443
-               user: "easuser"
-               password: @secrts/isva-secrets:runtime_pwd
-             channel: "mobile"
-             reuse_acls: true
-             reuse_pops: true
-             reuse_certs: true
+.. _pdadmin:
 
+Policy Directory Admin
+======================
+Administrators can also use the ``pdadmin`` tool to modify the configured User Registry and Policy Server. This tool is
+used to: create Access Control Lists (ACL's); create Proteced Object Policies (POP's); create users or groups; as well 
+as attaching ACL's or POP's to a reverse proxy instance's object space.
+
+
+.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.PD_Admin
+   :members:
+
+
+API Access Control
+==================
+Properties to configure an API Authorization Server. An API authoriztation server typically defines one or more resource 
+servers which have authentication requirements to permit access. This section can also be used to configure Cross-Origin 
+Resource Sharing (CORS) policies.
+
+Authorization Server
+____________________
+Authorization servers are the points of contact for external traffic to access protected resource servers. Each server 
+has its own object space in the Verify Access policy server.
+
+Resource Servers
+________________
+Resource servers are third party application servers / microservices that are being protected by the Authorization 
+server.
+
+Document Root
+_____________
+The document root defines a static set of web files (HTML, JS, CSS, ect.) which can be served by the Authroization
+server.
+
+Cross-Origin Resource Sharing
+_____________________________
+The CORS properties can be used to configure the URI's whihc are permitted to make cross-origin resource requests as 
+well as the types of resources which are permitted to be shared.
+
+
+.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Api_Access_Control
+   :members:

@@ -67,7 +67,7 @@ interface used to configure the appliance is not changed (as this will result in
     .. note:: Interfaces can only be updated using the LMI, they cannot be created.
 
 
-.. autoclas::  src.verify_access_autoconf.appliance.Applaince.Networking
+.. autoclass::  src.verify_access_autoconf.appliance.Appliance.Networking
    :members:
 
 

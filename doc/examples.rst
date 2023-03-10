@@ -25,6 +25,9 @@ The WebSEAL / AAC deployment defines a Verify Access deployment with a single We
 configured to perform authentication using the AAC authetnication capabilities.
 
 
+.. include:: ../examples/webseal_authsvc_login.yaml
+   :literal:
+
 
 Mobile Multi-Factor Authentication
 ==================================

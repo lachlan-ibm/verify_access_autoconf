@@ -2,6 +2,7 @@
 import logging
 import requests
 import json
+import typing
 
 from .util.constants import HEADERS
 from .util.configure_util import deploy_pending_changes
@@ -54,7 +55,7 @@ class Docker_Configurator(object):
             'Password to authenticate as ``username``.'
             db_name: str
             'Name of the database instance to use.'
-            extra_config: typing.Optional(dict)
+            extra_config: typing.Optional[dict]
             'Database type specific configuration.'
 
         runtime_database: typing.Optional[Database]

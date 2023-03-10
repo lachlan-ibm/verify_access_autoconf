@@ -1,0 +1,6 @@
+Federations Configuration
+#########################
+
+
+Example
+=======
