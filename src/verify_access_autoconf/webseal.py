@@ -934,7 +934,7 @@ class WEB_Configurator(object):
         'List of grous to add to the User Registry. These will be created as "full" Verify Access groups.'
         acls: typing.Optional[typing.List[Access_Control_List]]
         'List of ACL\'s to create in the Policy Server.'
-        pops: typing.optional[typing.List[Protected_Object_Policy]]
+        pops: typing.Optional[typing.List[Protected_Object_Policy]]
         'List of POP\'s to create in the Policy Server.'
         reverse_proxies: typing.Optional[typing.List[Reverse_Proxy]]
         'List of ACL\'s and POP\'s to attach to a WebSEAL reverse proxy instance.'
