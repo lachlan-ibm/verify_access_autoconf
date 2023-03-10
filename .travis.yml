@@ -1,4 +1,4 @@
-dist: xenial
+dist: jammy
 language: python
 
 stages:
@@ -20,7 +20,9 @@ jobs:
       python:
         - "3.8"
         - "3.9"
-        - "3.10-dev"
+        - "3.10"
+        - "3.11"
+        - "3.12"
     - stage: deploy
       script: 
         - ./.deploy.sh
