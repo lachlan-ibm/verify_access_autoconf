@@ -1424,40 +1424,221 @@ class WEB_Configurator(object):
         class Authorization_Server(typing.TypedDict):
 
             class Resource(typing.TypedDict):
+
+                class Response_Header(typing.TypedDict):
+                    name: str
+                    'The name of the response header.'
+                    value: str
+                    'The value of the response header'
+
+                class Attribute(typing.TypedDict):
+                    pos: str
+                    'The position of this attribute in the ordered list of all attributes.'
+                    action: str
+                    'The action to perform for this attribute. Valid values are "put" and "remove".'
+                    attribute: str
+                    'The name of the attribute.'
+
+                class Claim(typing.TypedDict):
+                    type: str
+                    'The type of claim to add to the JWT. Valid values are either "text" for a literal text claim or "attr" for a credential attribute claim.'
+                    value: str
+                    'The value for the claim. If the type is "text" this will be the literal text that is added to the JWT. If the type is "attr" this will be the name of the credential attribute to add to the JWT.'
+                    claim_name: str
+                    'The name of the claim that is added to the JWT. For attr type claims this is optional and if not specified the claim name will be set as the name of the credential attribute. If the type is attr and the value contains a wildcard this field is invalid and if specified will result in an error. '
+
                 server_hostname: str
-                juntion_point: str
+                'The DNS host name or IP address of the target back-end server.'
+                server_port: int
+                'TCP port of the back-end third-party server. Default is 80 for TCP junctions and 443 for SSL junctions.'
+                virtual_hostname: typing.Optional[str]
+                'Virtual host name that is used for the junctioned Web server.'
+                server_dn: typing.Optional[str]
+                'Specifies the distinguished name of the junctioned Web server.'
+                sever_cn: typing.Optional[str]
+                'Specifies the common name, or subject alternative name, of the junctioned Web server.'
+                description: typing.Optional[str]
+                'An optional description for this junction.'
+                junction_point: str
+                'Name of the location in the Reverse Proxy namespace where the root of the back-end application server namespace is mounted.
+                junction_type: str
+                'Type of junction. Valid values: "tcp", "ssl", "tcpproxy", "sslproxy",'
+                stateful_junction: typing.Optional[str]
+                'Specifies whether the junction supports stateful applications. By default, junctions are not stateful. Valid value is "yes" or "no".'
+                policy_type: str
+                'The type of Policy. The valid values are "unauthenticated", "anyauthenticated", "none", "default" or "custom".'
+                policy_name: typing.Optional[str]
+                'The name of the custom policy if the type is custom. '
+                authentication_type: str
+                'The type of Oauth authentication. The valid values are "default" or "oauth".'
+                oauth_introspection_transport: typing.Optional[str]
+                'The transport type. The valid values are "none", "http", "https" or "both".'
+                oauth_introspection_proxy: typing.Optional[str]
+                'The proxy, if any, used to reach the introspection endpoint.'
+                oauth_introspection_auth_method: typing.Optional[str]
+                'The method for passing the authentication data to the introspection endpoint. Valid values are "client_secret_basic" or "client_secret_post".
+                oauth_introspection_endpoint: typing.Optional[str]
+                'This is the introspection endpoint which will be called to handle the token introspection.'
+                oauth_introspection_client_id: typing.Optional[str]
+                'The client identifier which is used for authentication with the external OAuth introspection endpoint.
+                oauth_introspection_client_secret: typing.Optional[str]
+                'The client secret which is used for authentication with the external OAuth introspection endpoint.'
+                oauth_introspection_client_id_hdr: typing.Optional[str]
+                'The name of the HTTP header which contains the client identifier which is used to authenticate to the introspection endpoint. Only valid if client_id has not been set.'
+                oauth_introspection_token_type_hint: typing.Optional[str]
+                'A hint about the type of the token submitted for introspection.
+                oauth_introspection_mapped_id: typing.Optional[str]
+                'A formatted string which is used to construct the Verify Access principal name from elements of the introspection response. Claims can be added to the identity string, surrounded by '{}'.'
+                oauth_introspection_external_user: typing.Optional[str]
+                'A boolean which is used to indicate whether the mapped identity should correspond to a known Verify Access identity or not.'
+                oauth_introspection_response_attributes: typing.List[Attribute]
+                'A list of rules indicating which parts of the json response should be added to the credential.'
+                static_response_headers: typing.List[Response_Header]
+                'A list of header names and values that should be added to the HTTP response. List of key value pairs eg: ``{"name":"Access-Control-Max-Age", "value":"600"}``'
+                jwt_header_name: typing.Optional[str]
+                'The name of the HTTP header that will contain the JWT.'
+                jwt_certificate: typing.Optional[str]
+                'The label of the personal certificate that will sign the JWT.'
+                jwt_claims: typing.Optional[Claim]
+                'The list of claims to add to the JWT.'
+                junction_hard_limit: str
+                'Defines the hard limit percentage for consumption of worker threads. Valid value is an integer from "0" to "100".'
+                junction_soft_limit: str
+                'Defines the soft limit percentage for consumption of worker threads. Valid value is an integer from "0" to "100".'
+                basic_auth_mode: typing.Optional[str]
+                'Defines how the Reverse Proxy server passes client identity information in HTTP basic authentication (BA) headers to the back-end server. The value is one of: "filter" (default), "ignore", "supply", "gso".'
+                tfim_sso: str
+                'Enables IBM Security Federated Identity Manager single sign-on (SSO) for the junction. Valid value is "yes" or "no".'
+                remote_http_header: typing.Optional[typing.List[str]]
+                'Controls the insertion of Security Verify Access specific client identity information in HTTP headers across the junction. The value is an array containing a combination of: "iv-user", "iv-user-l", "iv-groups", "iv-creds" or "all".'
+                http2_junction: typing.Optional[str]
+                'Specifies whether the junction supports the HTTP/2 protocol. By default, junctions do not support the HTTP/2 protocol. A valid value is "yes" or "no".'
+                http2_proxy: typing.Optional[str]
+                'Specifies whether the junction proxy support the HTTP/2 protocol. By default, junction proxies do not support the HTTP/2 protocol. A valid value is "yes" or "no".'
+                sni_name: typing.Optional[str]
+                'The server name indicator (SNI) to send to TLS junction servers. By default, no SNI is sent.'
+                preserve_cookie: typing.Optional[str]
+                'Specifies whether modifications of the names of non-domain cookies are to be made. Valid value is "yes" or "no".
+                cookie_include_path: str
+                'Specifies whether script generated server-relative URLs are included in cookies for junction identification. Valid value is "yes" or "no".'
+                transparent_path_junction: str
+                'Specifies whether a transparent path junction is created. Valid value is "yes" or "no".'
+                mutual_auth: str
+                'Specifies whether to enforce mutual authentication between a front-end Reverse Proxy server and a back-end Reverse Proxy server over SSL. Valid value is "yes" or "no".'
+                insert_ltpa_cookies: str
+                'Controls whether LTPA cookies are passed to the junctioned Web server. Valid value is "yes" or "no".'
+                insert_session_cookies: str
+                'Controls whether to send the session cookie to the junctioned Web server. Valid value is "yes" or "no".'
+                request_encoding: str
+                'Specifies the encoding to use when the system generates HTTP headers for junctions. Possible values for encoding are: "utf8_bin", "utf8_uri", "lcp_bin", and "lcp_uri".
+                enable_basic_auth: str
+                'Specifies whether to use BA header information to authenticate to back-end server. Valid value is "yes" or "no".'
+                key_label: typing.Optional[str]
+                'The key label for the client-side certificate that is used when the system authenticates to the junctioned Web server.'
+                gso_respource_group: typing.Optional[str]
+                'The name of the GSO resource or resource group.'
+                junction_cookie_javascript_block: str
+                'Controls the junction cookie JavaScript block. The value should be one of: "trailer", "inhead", "onfocus", "xhtml10".'
+                client_ip_http: str
+                'Specifies whether to insert the IP address of the incoming request into an HTTP header for transmission to the junctioned Web server. Valid value is "yes" or "no".'
+                version_two_cookies: typing.Optional[str]
+                'Specifies whether LTPA version 2 cookies (LtpaToken2) are used. Valid value is "yes" or "no".'
+                ltpa_keyfile: typing.Optional[str]
+                'Location of the key file that is used to encrypt the LTPA cookie data.
+                authz_rules: str
+                'Specifies whether to allow denied requests and failure reason information from authorization rules to be sent in the Boolean Rule header (AM_AZN_FAILURE) across the junction. Valid value is "yes" or "no".'
+                fsso_config_file: str
+                'The name of the configuration file that is used for forms based single sign-on.'
+                username: typing.Optional[str]
+                'The Reverse Proxy user name. Used to send BA header information to the back-end server.'
+                password: typing.Optional[str]
+                'The Reverse Proxy password. Used to send BA header information to the back-end server.'
+                local_ip: typing.Optional[str]
+                'Specifies the local IP address that the Reverse Proxy uses when the system communicates with the target back-end server.'
+                query_contents: str
+                'Provides the Reverse Proxy with the correct name of the query_contents program file and where to find the file. By default, the Windows file is called query_contents.exe and the UNIX file is called query_contents.sh.'
+                case_sensitive_url: str
+                'Specifies whether the Reverse Proxy server treats URLs as case sensitive. Valid value is "yes" or "no".'
+                windows_style_url: str
+                'Specifies whether Windows style URLs are supported. Valid value is "yes" or "no".'
+                ltpa_keyfile_password: typing.Optional[str]
+                'Password for the key file that is used to encrypt LTPA cookie data.'
+                https_port: int
+                'HTTPS port of the back-end third-party server. Applicable when the junction type is "ssl".'
+                http_port: int
+                'HTTP port of the back-end third-party server. Applicable when the junction type is "tcp".'
+                proxy_hostname: typing.Optional[str]
+                'The DNS host name or IP address of the proxy server. Applicable when the junction type is "sslproxy".'
+                proxy_port: typing.Optional[int]
+                'The TCP port of the proxy server. Applicable when the junction type is "tcpproxy".'
+                sms_environment: typing.Optional[str]
+                'Only applicable for virtual junctions. Specifies the replica set that sessions on the virtual junction are managed under.'
+                vhost_label: typing.Optional[str]
+                'Only applicable for virtual junctions. Causes a second virtual junction to share the protected object space with the initial virtual junction.'
+                delegation_support: typing.Optional[str]
+                'This option is valid only with junctions that were created with the type of "ssl" or "sslproxy". Indicates single sign-on from a front-end Reverse Proxy server to a back-end Reverse Proxy server.
+                scripting_support: typing.Optional[str]
+                'Supplies junction identification in a cookie to handle script-generated server-relative URLs. '
+                force: str
+                'Specifies whether to overwrite an existing junction of the same name. Valid value is "yes" or "no".'
 
             name: str
+            'This is the new instance name, which is a unique name that identifies the instance.'
             hostname: str
+            'The host name of the local host. This name is used when constructing the authorization server name.'
             auth_port: int
+            'The port on which authorization requests will be received.'
             admin_port: int
+            'The port on which Security Verify Access administration requests will be received.
             domain: str
+            'The Security Verify Access domain.'
             addresses: typing.Optional[typing.List[str]]
+            'A json array containing a list of local addresses on which the authorization server will listen for requests.'
             ssl: str
+            'Whether or not to enable SSL between the Security Verify Access authorization server and the LDAP server.'
             ssl_port: str
+            'The SSL port on which the LDAP server will be contacted. Only valid if ``ssl`` set to "yes".'
             key_file: str
+            'The name of the keyfile that will be used when communicating with the LDAP server over SSL.'
             key_label: str
+            'The label of the certificate within the keyfile to use. '
             resources: typing.Optional[typing.List[Resource]]
+            'List of resource servers to configure'
             document_root: typing.Optional[typing.List[str]]
+            'List of documents to upload to the document root.'
 
         class Policy(typing.TypedDict):
             name: str
-            groups: typing.List[str]
-            attributes: typing.List[str]
+            'The name of the policy.'
+            groups: typing.Optional[typing.List[str]]
+            'The groups referenced by this policy. User must be a member of at least one group for this policy to be authorised. The default is no groups if not specified.'
+            attributes: typing.Optional[typing.List[str]]
+            'The attribute matches referenced by this policy. Each attribute must be matched for this policy to be authorised. The default is no attributes if not specified.'
 
         class Cross_Origin_Resource_Sharing(typing.TypedDict):
             name: str
+            'The name of the CORS policy.'
             allowed_origin: typing.Optional[typing.List[str]]
-            allowed_credentials: typing.Optional[typing.List[str]]
+            'An array of origins which are allowed to make cross origin requests to this resource. Each origin must contain the schema and any non-default port information. A value of * indicates that any origin will be allowed.'
+            allow_credentials: typing.Optional[bool]
+            'Controls whether or not the Access-Control-Allow-Credentials header will be set. If not present, this value will default to false.'
             exposed_headers: typing.Optional[typing.List[str]]
-            handle_preflight: bool
+            'Controls the values populated in the Access-Control-Expose-Headers header.'
+            handle_preflight: typing.Optional[bool]
+            'Controls whether or not the Reverse Proxy will handle pre-flight requests. If not present, this value will default to false.'
             allowed_methods: typing.Optional[typing.List[str]]
+            'Controls the methods permitted in pre-flight requests and the subsequent Access-Control-Allow-Methods header. This option only relates to pre-flight requests handled by the Reverse Proxy and will be ignored if handle_preflight is set to false. Methods are case sensitive and simple methods (ie: GET, HEAD and POST) are always implicitly allowed.'
             allowed_headers: typing.Optional[typing.List[str]]
-            max_age: int
+            'Controls the headers permitted in pre-flight requests and the subsequent Access-Control-Allow-Headers header. This option only relates to pre-flight requests handled by the Reverse Proxy and will be ignored if handle_preflight is set to false.'
+            max_age: typing.Optional[int]
+            'Controls the Access-Control-Max-Age header added to pre-flight requests. If set to zero, the header will not be added to pre-flight responses. If set to -1, clients will be told not to cache at all. If not present, this value will default to zero.'
 
         authz_servers: typing.Optional[typing.List[Authorization_Server]]
+        'List of API Authorization servers to create.'
         policies: typing.Optional[typing.List[Policy]]
+        'List of API access control policies to create'
         cors: typing.Optional[typing.List[Cross_Origin_Resource_Sharing]]
+        'List of Cross-Origin Resource Sharing policies to create.'
 
 
     def api_access_control(self, runtime, config):
@@ -1468,6 +1649,13 @@ class WEB_Configurator(object):
         else:
             _logger.error("API Access Control was unable to store admin credential")
             return
+
+        if config.policies != None:
+            self.__apiac_policies(config.policies)
+
+        if config.cors != None:
+            self.__apiac_cors(config.cors)
+            
         if config.authz_servers != None:
             for auth_server in config.authz_servers:
                 rsp = self.web.api_access_control.authz_server.create_server(auth_server.name, hostname=auth_server.hostname,
@@ -1488,11 +1676,6 @@ class WEB_Configurator(object):
                 if auth_server.resources != None:
                     self.__apiac_resources(auth_server.resources)
 
-        if config.policies != None:
-            self.__apiac_policies(config.policies)
-
-        if config.cors != None:
-            self.__apiac_cors(config.cors)
 
 
     def configure(self):
