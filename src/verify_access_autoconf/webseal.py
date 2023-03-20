@@ -761,6 +761,8 @@ class WEB_Configurator(object):
 
     class PD_Admin(typing.TypedDict):
         '''
+        .. note:: Configuration to connect to the user registry is read from the ``webseal.runtime`` entry.
+
         Example::
 
                 pdadmin:
@@ -1398,6 +1400,8 @@ class WEB_Configurator(object):
 
     class Api_Access_Control(typing.TypedDict):
         '''
+        .. note:: Configuration to connect to the user registry is read from the ``webseal.runtime`` entry.
+
         Example::
 
                 api_access_control:
@@ -1460,7 +1464,7 @@ class WEB_Configurator(object):
                 description: typing.Optional[str]
                 'An optional description for this junction.'
                 junction_point: str
-                'Name of the location in the Reverse Proxy namespace where the root of the back-end application server namespace is mounted.
+                'Name of the location in the Reverse Proxy namespace where the root of the back-end application server namespace is mounted.'
                 junction_type: str
                 'Type of junction. Valid values: "tcp", "ssl", "tcpproxy", "sslproxy",'
                 stateful_junction: typing.Optional[str]
@@ -1476,19 +1480,19 @@ class WEB_Configurator(object):
                 oauth_introspection_proxy: typing.Optional[str]
                 'The proxy, if any, used to reach the introspection endpoint.'
                 oauth_introspection_auth_method: typing.Optional[str]
-                'The method for passing the authentication data to the introspection endpoint. Valid values are "client_secret_basic" or "client_secret_post".
+                'The method for passing the authentication data to the introspection endpoint. Valid values are "client_secret_basic" or "client_secret_post".'
                 oauth_introspection_endpoint: typing.Optional[str]
                 'This is the introspection endpoint which will be called to handle the token introspection.'
                 oauth_introspection_client_id: typing.Optional[str]
-                'The client identifier which is used for authentication with the external OAuth introspection endpoint.
+                'The client identifier which is used for authentication with the external OAuth introspection endpoint.'
                 oauth_introspection_client_secret: typing.Optional[str]
                 'The client secret which is used for authentication with the external OAuth introspection endpoint.'
                 oauth_introspection_client_id_hdr: typing.Optional[str]
                 'The name of the HTTP header which contains the client identifier which is used to authenticate to the introspection endpoint. Only valid if client_id has not been set.'
                 oauth_introspection_token_type_hint: typing.Optional[str]
-                'A hint about the type of the token submitted for introspection.
+                'A hint about the type of the token submitted for introspection.'
                 oauth_introspection_mapped_id: typing.Optional[str]
-                'A formatted string which is used to construct the Verify Access principal name from elements of the introspection response. Claims can be added to the identity string, surrounded by '{}'.'
+                'A formatted string which is used to construct the Verify Access principal name from elements of the introspection response. Claims can be added to the identity string, surrounded by "{}".'
                 oauth_introspection_external_user: typing.Optional[str]
                 'A boolean which is used to indicate whether the mapped identity should correspond to a known Verify Access identity or not.'
                 oauth_introspection_response_attributes: typing.List[Attribute]
@@ -1518,7 +1522,7 @@ class WEB_Configurator(object):
                 sni_name: typing.Optional[str]
                 'The server name indicator (SNI) to send to TLS junction servers. By default, no SNI is sent.'
                 preserve_cookie: typing.Optional[str]
-                'Specifies whether modifications of the names of non-domain cookies are to be made. Valid value is "yes" or "no".
+                'Specifies whether modifications of the names of non-domain cookies are to be made. Valid value is "yes" or "no".'
                 cookie_include_path: str
                 'Specifies whether script generated server-relative URLs are included in cookies for junction identification. Valid value is "yes" or "no".'
                 transparent_path_junction: str
@@ -1530,7 +1534,7 @@ class WEB_Configurator(object):
                 insert_session_cookies: str
                 'Controls whether to send the session cookie to the junctioned Web server. Valid value is "yes" or "no".'
                 request_encoding: str
-                'Specifies the encoding to use when the system generates HTTP headers for junctions. Possible values for encoding are: "utf8_bin", "utf8_uri", "lcp_bin", and "lcp_uri".
+                'Specifies the encoding to use when the system generates HTTP headers for junctions. Possible values for encoding are: "utf8_bin", "utf8_uri", "lcp_bin", and "lcp_uri".'
                 enable_basic_auth: str
                 'Specifies whether to use BA header information to authenticate to back-end server. Valid value is "yes" or "no".'
                 key_label: typing.Optional[str]
@@ -1544,7 +1548,7 @@ class WEB_Configurator(object):
                 version_two_cookies: typing.Optional[str]
                 'Specifies whether LTPA version 2 cookies (LtpaToken2) are used. Valid value is "yes" or "no".'
                 ltpa_keyfile: typing.Optional[str]
-                'Location of the key file that is used to encrypt the LTPA cookie data.
+                'Location of the key file that is used to encrypt the LTPA cookie data.'
                 authz_rules: str
                 'Specifies whether to allow denied requests and failure reason information from authorization rules to be sent in the Boolean Rule header (AM_AZN_FAILURE) across the junction. Valid value is "yes" or "no".'
                 fsso_config_file: str
@@ -1576,7 +1580,7 @@ class WEB_Configurator(object):
                 vhost_label: typing.Optional[str]
                 'Only applicable for virtual junctions. Causes a second virtual junction to share the protected object space with the initial virtual junction.'
                 delegation_support: typing.Optional[str]
-                'This option is valid only with junctions that were created with the type of "ssl" or "sslproxy". Indicates single sign-on from a front-end Reverse Proxy server to a back-end Reverse Proxy server.
+                'This option is valid only with junctions that were created with the type of "ssl" or "sslproxy". Indicates single sign-on from a front-end Reverse Proxy server to a back-end Reverse Proxy server.'
                 scripting_support: typing.Optional[str]
                 'Supplies junction identification in a cookie to handle script-generated server-relative URLs. '
                 force: str
@@ -1589,7 +1593,7 @@ class WEB_Configurator(object):
             auth_port: int
             'The port on which authorization requests will be received.'
             admin_port: int
-            'The port on which Security Verify Access administration requests will be received.
+            'The port on which Security Verify Access administration requests will be received.'
             domain: str
             'The Security Verify Access domain.'
             addresses: typing.Optional[typing.List[str]]

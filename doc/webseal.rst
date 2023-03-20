@@ -64,36 +64,44 @@ Example
                       password: "passw0rd"
 
 
-.. _webseal_runtime_component:
-
-Runtime component
-=================
-The WebSEAL runtime server is the Directory Server which contains the reverse proxy's user registry and policy server. 
-This is typically a LDAP server external to the deployment, however an example LDAP server is made available to 
-deployments for testing.
-
-The Verify Access specific LDAP schemas can be found in the System -> File Downloads section of an appliance/configuration
-container in the ``isva`` directory.
-
-Any PKI required to verify this connection should be imported into a SSL database before the runtime component is 
-configured.
-
-
-.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Runtime
-   :members:
-
-
 .. _webseal_reverse_proxy:
 
-Reverse Proxy
-=============
-The WebSEAL reverse proxy configuration creates reverse proxy instances and associated configurations. This option can 
-be used to create one or more reverse proxy instances along with associated backend server and authentication 
-configuration. A complete list of the available configuration properties can be found 
-`here <https://ibm-security.github.io/pyisva>`_. An example configuration is:
+Reverse Proxy Instances
+=======================
+Properties to configure a WebSEAL Reverse Proxy instance. A reverse proxy instance typically defines one or more junctions to 
+protected application servers. This section can also be used to define configuration for the ``webseal.conf`` file as well 
+as run the integration wizards for MMFA, AAC and Federation capabilities from the Federated Runtime Server. 
+
+Stanza configuration
+____________________
+For each WebSEAL reverse proxy instance, administrators are able to define section/key/value entries to modify the 
+``webseal.conf`` file for that instance. Each stanza modification must also include an operation to either: add an 
+entry, creating duplicate entries if the particular section/key combination already exists; update an entry if it already 
+exists, or add it if it does not; and remove an entry if it exists.
+
+
+Junction configuration
+______________________
+For each WebSEAL instance, administrators will typically define one or more standard or virtual junctions. Junctions are 
+how an administrator defines the relationship and behavior between a WebSEAL server and an application server (for whom 
+TCP traffic is being proxied by WebSEAL). Some advanced configuratioin options cannot be set in this entry and the Stanza 
+configuration must be used to set key/value entries in the reverse proxy config file.
 
 
 .. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Reverse_Proxy
+   :members:
+
+
+.. _pdadmin:
+
+Policy Directory Admin
+======================
+Administrators can also use the ``pdadmin`` tool to modify the configured User Registry and Policy Server. This tool is
+used to: create Access Control Lists (ACL's); create Proteced Object Policies (POP's); create users or groups; as well 
+as attaching ACL's or POP's to a reverse proxy instance's object space.
+
+
+.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.PD_Admin
    :members:
 
 
@@ -229,55 +237,18 @@ example configuration is:
 
 Runtime Component
 =================
-The runtime configuration defines the runtime policy server and user registry used by WebSEAL. This is typically a Directory 
-server and one is providede by Verify Access for testing and demonstration purposes. A detailed list of all of the avaliable 
-configuration properties can be found `here <https://ibm-security.github.io/pyisva>`_. An example configuration is:
+The WebSEAL runtime server is the Directory Server which contains the reverse proxy's user registry and policy server. 
+This is typically a LDAP server external to the deployment, however an example LDAP server is made available to 
+deployments for testing.
+
+The Verify Access specific LDAP schemas can be found in the System -> File Downloads section of an appliance/configuration
+container in the ``isva`` directory.
+
+Any PKI required to verify this connection should be imported into a SSL database before the runtime component is 
+configured.
 
 
 .. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Runtime
-   :members:
-
-
-.. _webseal_reverse_proxy:
-
-Reverse Proxy Instances
-=======================
-Properties to configure a WebSEAL Reverse Proxy instance. A reverse proxy instance typically defines one or more junctions to 
-protected application servers. This section can also be used to define configuration for the ``webseal.conf`` file as well 
-as run the integration wizards for MMFA, AAC and Federation capabilities from the Federated Runtime Server. A detailed 
-list of all of the avaliable configuration properties can be found `here <https://ibm-security.github.io/pyisva>`_. 
-
-
-Stanza configuration
-____________________
-For each WebSEAL reverse proxy instance, administrators are able to define section/key/value entries to modify the 
-``webseal.conf`` file for that instance. Each stanza modification must also include an operation to either: add an 
-entry, creating duplicate entries if the particular section/key combination already exists; update an entry if it already 
-exists, or add it if it does not; and remove an entry if it exists.
-
-
-Junction configuration
-______________________
-For each WebSEAL instance, administrators will typically define one or more standard or virtual junctions. Junctions are 
-how an administrator defines the relationship and behavior between a WebSEAL server and an application server (for whom 
-TCP traffic is being proxied by WebSEAL). Some advanced configuratioin options cannot be set in this entry and the Stanza 
-configuration must be used to set key/value entries in the reverse proxy config file.
-
-
-.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Reverse_Proxy
-   :members:
-
-
-.. _pdadmin:
-
-Policy Directory Admin
-======================
-Administrators can also use the ``pdadmin`` tool to modify the configured User Registry and Policy Server. This tool is
-used to: create Access Control Lists (ACL's); create Proteced Object Policies (POP's); create users or groups; as well 
-as attaching ACL's or POP's to a reverse proxy instance's object space.
-
-
-.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.PD_Admin
    :members:
 
 
