@@ -3,6 +3,7 @@
 import json
 import os
 import logging
+import typing
 
 from .util.configure_util import deploy_pending_changes
 from .util.data_util import Map
@@ -22,25 +23,128 @@ class FED_Configurator(object):
         self.config = config
 
 
+    class Point_Of_Contact_Profiles(typing.TypedDict):
+        '''
+        Example::
+
+                point_of_contact_profiles:
+                - name: "MyPoCProfile"
+                  description: "MyPoCProfile description"
+                  authenticate_callbacks:
+                  - index: 0
+                    module_reference_id: "websealPocAuthenticateCallback"
+                    parameters:
+                    - name: "authentication.level"
+                      value: "1"
+                  sign_in_callbacks:
+                  - index": 0
+                    module_reference_id: "websealPocSignInCallback"
+                    parameters:
+                    - name: "fim.user.response.header.name"
+	                  value: "am-fim-eai-user-id"
+                  local_id_callbacks:
+                  - index: 0
+                    module_reference_id: "websealPocLocalIdentityCallback"
+                    parameters:
+                    - name: "fim.cred.request.header.name"
+                      "value": "iv-creds"
+                  sign_out_callbacks:
+                  - index: 0
+                    module_reference_id: "websealPocSignOutCallback"
+                    parameters:
+                    - name: "fim.user.session.id.request.header.name"
+	                  value: "user_session_id"
+                  authn_policy_callbacks:
+                  - index: 0
+                    module_reference_id: "genericPocAuthnPolicyCallback"
+                    parameters:
+                    - name: "authentication.level"
+                      value: "1"
+
+        '''
+        class Point_Of_Contact_Profile(typing.TypedDict):
+
+            class Point_Of_Contact_Callback(typing.TypedDict):
+
+                class Point_Of_Contact_Parameter(typing.TypedDict):
+                    name:  str
+                    'The name of the parameter.'
+                    value: str
+                    'The value of the parameter.'
+
+                index: int
+                'A number reflects the position in the callbacks array.'
+                module_reference_id: str
+                'The module ID referened in the callback. It must be one of the supported module IDs.'
+                parameters: typing.Optional[typing.List[Point_Of_Contact_Parameter]]
+                'The parameters used by the callback.'
+
+            name: str
+            'A meaningful name to identify this point of contact profile.'
+            description: typing.Optional[str]
+            'A description of the point of contact profile.'
+            authenticate_callbacks: typing.Optional[typing.List[Point_Of_Contact_Callback]]
+            'An array of callbacks for authentication.'
+            sign_in_callbacks: typing.Optional[typing.List[Point_Of_Contact_Callback]]
+            'An array of callbacks for sign in.'
+            local_id_callbacks: typing.Optional[typing.List[Point_Of_Contact_Callback]]
+            'An array of callbacks for local identity.'
+            sign_out_callbacks: typing.Optional[typing.List[Point_Of_Contact_Callback]]
+            'An array of callbacks for sign out.'
+            authn_policy_callbacks: typing.Optional[typing.List[Point_Of_Contact_Callback]]
+            'An array of callbacks for authentication policy.'
+
+        point_of_contact_profiles: typing.List[Point_Of_Contact_Profile]
+        'List of point of contact profiles to configure'
+        active_profile: str
+        'The name of the Point of Contact profile which should be the active profile. Only one profile can be active at a time.'
+
     def configure_poc(self, federation_config):
-        if federation_config.points_of_contact != None:
-            for poc in ederation_config.points_of_contact:
-                rsp = self.fed.poc.create_like_credential(name=poc.name, description=poc.description,
-                        authenticate_callbacks=poc.authenticate_callbacks, local_id_callbacks=poc.local_id_callbacks,
-                        sign_out_callbacks=poc.sign_out_callbacks, sing_in_callbacks=poc.sign_in_callbacks,
-                        authn_policy_callbacks=poc.authn_policy_callbacks)
+        if federation_config.point_of_contact_profiles != None:
+            for poc in federation_config.point_of_contact_profiles:
+                methodArgs = copy.deepcopy(poc)
+                #Convert keys from snake to camel case
+                for prop in ["sign_in_callbacks", "local_id_callbacks", "sign_out_callbacks", "authn_policy_callbacks"]:
+                    if prop in methodArgs:
+                        methodArgs[prop] = remap_dict(methodArgs.pop(prop), {"module_reference_id", "moduleReferenceId"})
+
+                rsp = self.fed.poc.create_like_credential(**methodArgs)
                 if rsp.success == True:
                     _logger.info("Successfully configured {} Point of Contact".format(poc.name))
                 else:
                     _logger.error("Failed to configure {} point of contact with config:\n{}\n{}".format(
                         poc.name, json.dumps(poc, indent=4), rsp.data))
 
+            if "active_profile" in federation_config.point_of_contact_profiles:
+                poc_profiles = self.fed.poc.get_profiles().json
+                if poc_profiles:
+                    profile_to_activate = list(filter(lambda x: x['name'] == federation_config.point_of_contact_profiles.active_profile))
+                    if profile_to_activate and len(profile_to_activate) == 1:
+                        rsp = self.fed.poc.set_current_profile(profile_to_activate[0]['id'])
+                        if rsp.success == True:
+                            _logger.info("Successfully updated the active POC profile to {}".format(
+                                                            federation_config.point_of_contact_profiles.active_profile))
+                        else:
+                            _logger.error("Failed to update the active POC profile to {}".format(
+                                                            federation_config.point_of_contact_profiles.active_profile))
+                    else:
+                        _logger.error("Could not find the {} POC profile to activate".format(
+                                                            federation_config.point_of_contact_profiles.active_profile))
+
+
+    def configure_sts(self, federation_config):
+        #TODO
+        return
+
+    def configure_access_policies(self, federation_config):
+        #TODO
+        return
 
     def configure_alias_service(self, federation_config):
         #TODO
         return
 
-    def configure_access_policy(self, federation_config):
+    def configure_attribute_sources(self, federation_config):
         #TODO
         return
 
@@ -266,10 +370,12 @@ class FED_Configurator(object):
         if self.config.federation == None:
             _logger.info("No Federation configuration detected, skipping")
             return
-        configure_poc(self.config.federation)
-        configur_alias_service(self.config.federation)
-        configure_access_policy(self.config.federation)
-        configure_federations(self.config.federtaion)
+        self.configure_poc(self.config.federation)
+        self.configure_sts(self.config.federation)
+        self.configure_access_policies(self.config.federation)
+        self.configur_alias_service(self.config.federation)
+        self.configure_attribute_sources(self.config.federation)
+        self.configure_federations(self.config.federtaion)
 
 if __name__ == "__main__":
     configure()

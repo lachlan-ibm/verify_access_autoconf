@@ -6,6 +6,19 @@ import kubernetes
 import pathlib
 from . import constants as const
 
+def to_camel_case(snake_case):
+    parts = snake_case.split('_')
+    return parts[0] + ''.join(x.title() for x in parts[1:])
+
+
+def remap_keys(data_dict, remap_dict):
+    '''
+    old_dict: dictionary with keys to be remapped
+    remap_dict: dictionary with mapping {old_key: new_key}
+    '''
+    return {remap_dict.get(k, k): v for k, v in data_dict.items()}
+
+
 class Map(dict):
     def __init__(self, *args, **kwargs):
         super(Map, self).__init__(*args, **kwargs)
