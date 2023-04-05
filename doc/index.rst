@@ -8,7 +8,7 @@ Welcome to verify-access-autoconf documentation!
 verify-access-configuratior is an automation layer written on top of pyISVA. THis library should be used to apply 
 YAML configuration files to a Verify Access deployment.
 
-This library is designed to work with both Appliance and Contaienr based deployments, and is not idempotent.
+This library is designed to work with both Appliance and Container based deployments, and is not idempotent.
 
 
 Installation
@@ -19,7 +19,7 @@ You can install ``verify-access-autoconf`` with ``pip``:
 
     $ pip install verify-access-autoconf
 
-.. _verify_access_autoconf_architecture
+.. _verify_access_autoconf_architecture:
 
 Architecture
 ------------
@@ -30,17 +30,22 @@ in a WebSEAL reverse proxy).
 Example configurations can be found in the ``examples`` directory with additional documentation `here <examples>`.
 
 
+.. _verify_access_autoconf_modules:
+
 Modules
 _______
 
 The configuration process is broken into six modules. Each module is responsible for configuring a subset of
 Verify Access features. The order of configuration is:
- - base
- - appliance (if applicable)
- - container (if applicable)
- - webseal
- - access control
- - federations
+
+- base
+- appliance (if applicable)
+- container (if applicable)
+- webseal
+- access control
+- federations
+
+.. _verify_access_autoconf_yaml_keywords:
 
 YAML configuration keywords
 ___________________________
@@ -59,22 +64,25 @@ can be used in configuration files:
 
                     admin_password: !secret default/isva-secrets:admin_secret
 
- - ``!environment``: Used to set the value of the given key as the value read fronm the given environment variable,
+ - ``!environment``: Used to set the value of the given key as the value read from the given environment variable,
                     eg::
 
                         admin_password: !secret ISVA_ADMIN_SECRET
 
+
+.. _verify_access_autoconf_env_vars:
+
 Environment properties
 ______________________
 
-In addition to the supplied YAML configuration, some properties can alternatibely be set as environment variables. If
+In addition to the supplied YAML configuration, some properties can alternatively be set as environment variables. If
 these variables are set, they take priority over values set in configuration files.
 
 - ``ISVA_CONFIG_BASE``
                         This variable is the root directory of all configuration files for the given Verify Access 
                         Deployment. This can include: YAML configuration files; HTML template pages; JavaScript mapping
                         rules; XML configuration files.
-                        If this environment varaiable is not set then the user's ``$HOME`` directory is used.
+                        If this environment variable is not set then the user's ``$HOME`` directory is used.
 
 - ``ISVA_CONFIG_YAML``
                         This variable defines the YAML configuration file to deploy. This can be either relative
@@ -95,7 +103,7 @@ these variables are set, they take priority over values set in configuration fil
                         The password required to authenticate as the user defined by ``ISVA_MGMT_USER``.
 
 - ``ISVA_MGMT_OLD_PWD``
-                        If a password change is required then this varible defines the password for ``ISVA_MGMT_USER``
+                        If a password change is required then this variable defines the password for ``ISVA_MGMT_USER``
                         before the configuration is applied.
 
 - ``ISVA_KUBERNETES_YAML_CONFIG``
@@ -107,18 +115,18 @@ these variables are set, they take priority over values set in configuration fil
                         *note:* This is only applicable for Container deployments using Kubernetes orchestration.
 
 - ``ISVA_DOCKER_COMPOSE_CONFIG``
-                        This varible defines the Docker-Compose deployment configuration file required to run
+                        This variable defines the Docker-Compose deployment configuration file required to run
                         ``docker-compose`` commands for your Verify Access deployment. This file path can 
                         either be absolute or relative to the ``ISVA_CONFIG_BASE`` variable.
 
                         *note:* This is only applicable for Container deployments using Docker-Compose orchestration.
 
 - ``ISVA_CONFIGURATOR_LOG_LEVEL``
-                        This varible set the logging level for the configurator. The default log level is ``INFO``.
+                        This variable set the logging level for the configurator. The default log level is ``INFO``.
 
 
 
-Detailed information on configuration object strucutre can be found in the submodule documentation
+Detailed information on configuration object structure can be found in the submodule documentation
 
 .. toctree::
    :maxdepth: 2

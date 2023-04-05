@@ -101,7 +101,7 @@ class Appliance_Configurator(object):
                             break # Log error in outer if block
 
         if rsp != None and rsp.success == True:
-            _logger.info("Successfuly set address for interface {}".format(iface.label))
+            _logger.info("Successfully set address for interface {}".format(iface.label))
         else:
             _logger.error("Failed to update address for interface {} with config:\n{}\n{}".format(
                 iface.label, json.dumps(iface, indent=4), rsp.data))
@@ -141,7 +141,7 @@ class Appliance_Configurator(object):
             enabled: bool
             'Enable this route.'
             interface: str
-            'Interface this route is attaced to.'
+            'Interface this route is attached to.'
             comment: typing.Optional[str]
             'Optional comment to add to route.'
             address: str
@@ -270,7 +270,7 @@ class Appliance_Configurator(object):
                      secondary_master: "isva.secondary.master"
                      nodes:
                      - "isva.node"
-                     resitrcted_nodes:
+                     restricted_nodes:
                      - "isva.restricted.node"
 
         '''
@@ -282,7 +282,7 @@ class Appliance_Configurator(object):
             port: str
             'Port database is listening on.'
             ssl: bool
-            'Enable SSL entryption of connections.'
+            'Enable SSL encryption of connections.'
             ssl_keystore: typing.Optional[str]
             'SSL database to use to verify connections. Only valid if ``ssl == true``.'
             user: str
@@ -324,7 +324,7 @@ class Appliance_Configurator(object):
                 }
             rsp = self.appliance.get_system_settings().cluster.set_config_db(**methodArgs)
             if rsp.success == True:
-                _logger.info("Successfully set the configuration databaase")
+                _logger.info("Successfully set the configuration database")
             else:
                 _logger.error("Failed to set the configuration database with:{}\n{}".format(
                     json.dumps(config.config_database, indent=4), rsp.content))

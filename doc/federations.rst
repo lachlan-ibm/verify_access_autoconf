@@ -1,11 +1,11 @@
 Federations Configuration
 #########################
-The Federaton module is used to integrate Verify Access with third party applications to provide or 
+The Federation module is used to integrate Verify Access with third party applications to provide or 
 accept identity information. This module can be use fro both: supplying third party applications with 
-identiy informaton (Verify Access is the identiy source); or accepting identity information (Verify 
+identity information (Verify Access is the identity source); or accepting identity information (Verify 
 Access is the identity consumer).
 
-Integration with third party applications is acheived via Identity standards, such as OIDC or SAML 2.0.
+Integration with third party applications is achieved via Identity standards, such as OIDC or SAML 2.0.
 
 
 Example
@@ -148,6 +148,7 @@ Example
 
 Point Of Contact
 ================
+The point of contact profile is used to control how the runtime server communicates with the point of contact server (usually WebSEAL).
 
 
 .. autoclass:: src.verify_access_autoconf.federation.FED_Configurator.Point_Of_Contact_Profiles
@@ -156,19 +157,51 @@ Point Of Contact
 
 Alias Service
 =============
+The alias service stores and retrieves aliases that are related to a federated identity. Persistent name identifier format allows 
+you to link a user at the identity provider with a user at the service provider. Verify Access stores these account linkages in 
+a high-volume database or an LDAP database. 
+
+
+.. autoclass:: src.verify_access_autoconf.federation.FED_Configurator.Alias_Service
+   :members:
 
 
 Attribute Sources
 =================
+Identity attribute sources for federated identities.
+
+
+.. autoclass:: src.verify_access_autoconf.federation.FED_Configurator.Attribute_Sources
+    :members:
 
 
 Access Policies
 ===============
+Access policies can be applied to the deployment types:
+- SAML 2.0 identity provider federation
+- SAML 2.0 service provider partner to an identity provider federation
+- OpenID Connect and API Protection Definition
+
+
+.. autoclass:: src.verify_access_autoconf.federation.FED_Configurator.Access_Policies
+    :members:
+
 
 
 Security Token Service
 ======================
 
 
+.. autoclass:: src.verify_access_autoconf.federation.FED_Configurator.Security_Token_Service
+    :members:
+
+
 Federations
 ===========
+
+
+.. autoclass:: src.verify_access_autoconf.federation.FED_Configurator.Federations
+    :members:
+
+.. autoclass:: src.verify_access_autoconf.federation.Federation_Common
+    :members:

@@ -46,7 +46,7 @@ class WEB_Configurator(object):
         else:
             _logger.error("Failed to create stanza entry:\n{}\n{}".format(json.dumps(entry, indent=4), rsp.content))
 
-    def __detele_stanza(self, proxy_id, entry):
+    def __delete_stanza(self, proxy_id, entry):
         rsp = None
         if entry.entry_id:
             rsp = self.web.reverse_proxy.delete_configuration_stanza_entry(proxy_id, entry.stanza, entry.entry_id,
@@ -153,7 +153,7 @@ class WEB_Configurator(object):
         '''
         .. note:: Configuration to connect to the user registry is read from the ``webseal.runtime`` entry.
 
-        .. note:: Federations configured in ths step must already exist. If federations are beign created and configured
+        .. note:: Federations configured in ths step must already exist. If federations are being created and configured
                   for WebSEAL at the same time then the reverse proxy configuration should be added to the federation
                   configuration dictionary.
 
@@ -200,7 +200,7 @@ class WEB_Configurator(object):
                 username: str
                 'Username to use for basic authentication.'
                 password: str
-                'Passowrd to use for basic authentication.'
+                'Password to use for basic authentication.'
 
             junction: str
             'Junction to create.'
@@ -220,7 +220,7 @@ class WEB_Configurator(object):
                 username: str
                 'Username to use for basic authentication.'
                 password: str
-                'Passowrd to use for basic authentication.'
+                'Password to use for basic authentication.'
 
             channel: str
             'MMFA channel to configure. "mobile" | "browser" | "both".'
@@ -244,7 +244,7 @@ class WEB_Configurator(object):
                 username: str
                 'Username to use for basic authentication.'
                 password: str
-                'Passowrd to use for basic authentication.'
+                'Password to use for basic authentication.'
 
             name: str
             'Name of the Federation.'
@@ -382,7 +382,7 @@ class WEB_Configurator(object):
         host: str
         'The host name that is used by the Security Verify Access policy server to contact the appliance.'
         nw_interface_yn: typing.Optional[str]
-        'Specifies whether to use a logical network interface for the instance. only valid for applaince deployments. "yes" | "no".'
+        'Specifies whether to use a logical network interface for the instance. Only valid for appliance deployments. "yes" | "no".'
         ip_address: typing.Optional[str]
         'The IP address for the logical interface. Only valid for appliance deployments where ``nw_interface_yn == "yes"``. "yes" | "no".'
         listening_port: int
@@ -398,13 +398,13 @@ class WEB_Configurator(object):
         junctions: typing.Optional[typing.List[Junction]]
         'Junctions to backend resource servers for this reverse proxy instance.'
         aac_config: typing.Optional[AAC_Configuration]
-        'Properties for configuring this reverse proxy instance for use with advanced access control authenticaiton and context based access service.'
+        'Properties for configuring this reverse proxy instance for use with advanced access control authentication and context based access service.'
         mmfa_config: typing.Optional[MMFA_Configuration]
         'Properties for configuring this reverse proxy instance to deliver MMFA capabilities.'
         federation: typing.Optional[Federation_Configuration]
         'Properties for integrating with a running Federation runtime.'
         stanza_configuration: typing.Optional[Stanza_Configuration]
-        'List of modifications to perform on the webseald.conf configuration file for this reverse proxy instance.'
+        'List of modifications to perform on the ``webseald.conf`` configuration file for this reverse proxy instance.'
 
     def wrp(self, runtime, proxy):
         wrp_instances = self.web.reverse_proxy.list_instances().json
@@ -502,7 +502,7 @@ class WEB_Configurator(object):
                                                                                  stanza=entry.stanza, entry=entry.entry,
                                                                                  value=entry.value)
             else:
-                _logger.error("Unable to determine opreation for stanza file modification:\n{}\n. . . skipping".format(
+                _logger.error("Unable to determine operation for stanza file modification:\n{}\n. . . skipping".format(
                                                                                                                 entry))
                 continue
             if rsp.success == True:
@@ -638,7 +638,7 @@ class WEB_Configurator(object):
                     })
         rsp = self.web.runtime_component.configure(**config)
         if rsp.success == True:
-            _logger.info("Successfullt configured RTE")
+            _logger.info("Successfully configured RTE")
         else:
             _logger.error("Failed to configure RTE with config:\n{}\n{}".format(
                 json.dumps(runtime, indent=4), rsp.data))
@@ -653,7 +653,7 @@ class WEB_Configurator(object):
     def _pdadmin_acl(self, runtime, acl):
         pdadminCommands = ["acl create {}".format(acl.name)]
         if acl.description:
-            pdadminCommands += ["acl modify {} set desription {}".format(acl.name, acl.description)]
+            pdadminCommands += ["acl modify {} set description {}".format(acl.name, acl.description)]
         if acl.attributes:
             for attribute in acl.attributes:
                 pdadminCommands += ["acl modify {} set attribute {} {}".format(acl.name, attribute.name,
@@ -670,19 +670,19 @@ class WEB_Configurator(object):
             pdadminCommands += ["acl modify {} set any-other {}".format(acl.name, acl.any_other)]
 
         if acl.unauthenticated:
-            pdadmiNCommands += ["acl modify {} set unauthenticated {}".format(acl.name, acl.unauthenticated)]
+            pdadminCommands += ["acl modify {} set unauthenticated {}".format(acl.name, acl.unauthenticated)]
 
         rsp = self.web.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
         if rsp.success == True:
-            _logger.info("Successfullt created acl {}".format(acl.name))
+            _logger.info("Successfully created acl {}".format(acl.name))
         else:
             _logger.error("Failed to create acl {} with config:\n{}\n{}".format(acl.name, json.dumps(acl, indent=4),
                 rsp.content))
 
     def _pdadmin_pop(self, runtime, pop):
-        pdadminCommnads = ["pop create {}".format(pop.name)]
+        pdadminCommands = ["pop create {}".format(pop.name)]
         if pop.description:
-            pdadminCommands += ["pop modify {} set desription {}".format(pop.name, pop.description)]
+            pdadminCommands += ["pop modify {} set description {}".format(pop.name, pop.description)]
 
         if pop.attributes:
             for attribute in pop.attributes:
@@ -706,7 +706,7 @@ class WEB_Configurator(object):
 
         rsp = self.web.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
         if rsp.success == True:
-            _logger.info("Successfullt created pop {}".format(pop.name))
+            _logger.info("Successfully created pop {}".format(pop.name))
         else:
             _logger.error("Failed to create pop {} with config:\n{}\n{}".format(pop.name, json.dumps(pop, indent=4),
                 rsp.content))
@@ -725,7 +725,7 @@ class WEB_Configurator(object):
 
         rsp = self.web.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
         if rsp.success == True:
-            _logger.info("Successfullt attached acls/pops to {}".format(proxy_config.host))
+            _logger.info("Successfully attached acls/pops to {}".format(proxy_config.host))
         else:
             _logger.error("Failed to attach acls/pops to {} with config:\n{}\n{}".format(proxy_config.host,
                 json.dumps(proxy_config, indent=4),
@@ -741,7 +741,7 @@ class WEB_Configurator(object):
             ]
         rsp = self.web.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
         if rsp.success == True:
-            _logger.info("Successfullt created user {}".format(user.name))
+            _logger.info("Successfully created user {}".format(user.name))
         else:
             _logger.error("Failed to create user {} with config:\n{}\n{}".format(user.name, json.dumps(user, indent=4),
                 rsp.content))
@@ -753,7 +753,7 @@ class WEB_Configurator(object):
                 pdadminCommands += ["group modify {} add user {}".format(group.name, user)]
         rsp = self.web.policy_administration.execute(runtime.admin_user, runtime.admin_password, pdadminCommands)
         if rsp.success == True:
-            _logger.info("Successfullt created group {}".format(group.name))
+            _logger.info("Successfully created group {}".format(group.name))
         else:
             _logger.error("Failed to create group {} with config:\n{}\n{}".format(group.name,
                 json.dumps(group, indent=4), rsp.content))
@@ -825,7 +825,7 @@ class WEB_Configurator(object):
 
         class User(typing.TypedDict):
             username: str
-            'The name the user will authenticate as. By default this is the UID LDAP attribte.'
+            'The name the user will authenticate as. By default this is the UID LDAP attribute.'
             first_name: typing.Optional[str]
             'The CN LDAP attribute for this user. If not set then ``username`` will be used.'
             last_name: typing.Optional[str]
@@ -933,7 +933,7 @@ class WEB_Configurator(object):
         users: typing.Optional[typing.List[User]]
         'List of users to add to the User Registry. These will be created as "full" Verify Access users.'
         groups: typing.Optional[typing.List[Group]]
-        'List of grous to add to the User Registry. These will be created as "full" Verify Access groups.'
+        'List of groups to add to the User Registry. These will be created as "full" Verify Access groups.'
         acls: typing.Optional[typing.List[Access_Control_List]]
         'List of ACL\'s to create in the Policy Server.'
         pops: typing.Optional[typing.List[Protected_Object_Policy]]
@@ -1069,7 +1069,7 @@ class WEB_Configurator(object):
                 _logger.error("Failed to configure user mapping using {} config file".format(user_mapping_file['name']))
 
 
-    class Form_Signle_Sign_On(typing.TypedDict):
+    class Form_Single_Sign_On(typing.TypedDict):
         '''
         Example::
 
@@ -1079,7 +1079,7 @@ class WEB_Configurator(object):
 
         '''
         fsso: typing.List[str]
-        'List of configuration files to be uloaded as Form Single Sign-On rules.'
+        'List of configuration files to be uploaded as Form Single Sign-On rules.'
 
     def form_single_sign_on(self, config):
         for fsso_config in config:

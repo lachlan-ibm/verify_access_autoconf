@@ -67,7 +67,7 @@ interface used to configure the appliance is not changed (as this will result in
     .. note:: Interfaces can only be updated using the LMI, they cannot be created.
 
 
-.. autoclass::  src.verify_access_autoconf.appliance.Appliance.Networking
+.. autoclass::  src.verify_access_autoconf.appliance.Appliance_Configurator.Networking
    :members:
 
 
@@ -79,11 +79,11 @@ The date and time settings can be adjusted on a Verify Access appliance or synch
 are also able to set the time zone of the appliance using canonical name.
 
 To set the Date/Time configuration using either a NTP server or manually setting the date via a formatted string. A 
-complete list of the avaliable configuration properties can be found `here <https://ibm-security.github.io/pyisva>`_. 
+complete list of the available configuration properties can be found `here <https://ibm-security.github.io/pyisva>`_. 
 An example configuration is:
 
 
-.. autoclass::  src.verify_access_autoconf.appliance.Applaince.Date_Time
+.. autoclass::  src.verify_access_autoconf.appliance.Appliance_Configurator.Date_Time
    :members:
 
 
@@ -100,5 +100,5 @@ configuration properties can be found :ref:`here <pyisva:systemsettings#cluster>
     .. note:: PKI required to connect to any servers should be imported in the previous step.
 
 
-.. autoclass::  src.verify_access_autoconf.appliance.Applaince.Cluster_Configuration
+.. autoclass::  src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration
    :members:

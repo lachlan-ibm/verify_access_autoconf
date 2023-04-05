@@ -141,7 +141,6 @@ URL Mapping
 A URL mapping table is used to map WebSEAL access control lists (ACLs) and protected object policies (POPs) to dynamically
 generated URLs, such as URLs with query string parameters. URLs can be matched using a subset of UNIX shell pattern 
 matching (including wildcards). A complete list of supported regex can be found `here <https://www.ibm.com/docs/en/sva/latest?topic=configuration-supported-wildcard-pattern-matching-characters#ref_wildcard_sup>`_
-An example URL mapping configuration is:
 
 
 .. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Url_Mapping
@@ -154,7 +153,8 @@ User Mapping
 ============
 User mapping can be used to modify or enrich an authenticated user's credential data. This can be used to both switch the 
 identity of a user or add attributes to a user's existing credential. User mapping rules are added to a Verify Access 
-deployment using XLST rules. Detailed information about user mapping XSLT configuration can be found `here <https://www.ibm.com/docs/en/sva/latest?topic=methods-authenticated-user-mapping>`_. The name of the XSLT file will be used as the name of the user mapping rule
+deployment using XLST rules. Detailed information about user mapping XSLT configuration can be found `here <https://www.ibm.com/docs/en/sva/latest?topic=methods-authenticated-user-mapping>`_. 
+The name of the XSLT file will be used as the name of the user mapping rule.
 
 
 .. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.User_Mapping
@@ -167,12 +167,12 @@ Forms Based Single Sign-On
 ==========================
 The FSSO (forms single sing-on) module can be used by WebSEAL to authenticate a user to a junctioned application server. 
 The module is capable of intercepting authentication requests from an application server, and then supplying the required 
-identity information (retrieved from either the WebSEAl user regitry or a HTTP service) to the application server to complete 
-the authentication challenge. More detailed information about FSSO concepts can be found `here <https://www.ibm.com/docs/en/sva/latest?topic=solutions-forms-single-sign-concepts>`_. The name of the FSSO configuration file will be used as the name of the resulting FSSO configuration in 
-Verify Access. An example FSSO configuration is:
+identity information (retrieved from either the WebSEAl user registry or a HTTP service) to the application server to complete 
+the authentication challenge. More detailed information about FSSO concepts can be found `here <https://www.ibm.com/docs/en/sva/latest?topic=solutions-forms-single-sign-concepts>`_. 
+The name of the FSSO configuration file will be used as the name of the resulting FSSO configuration in Verify Access.
 
 
-.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Form_Signle_Sign_On
+.. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Form_Single_Sign_On
    :members:
 
 
@@ -181,12 +181,11 @@ Verify Access. An example FSSO configuration is:
 HTTP Transformation Rules
 =========================
 HTTP transformation rules allow WebSEAL to inspect and rewrite request and response objects as they pass through the 
-reverse proxy. HTTP transforms can be applied: when the request is recieved (by WebSEAL); after an authorization decision has been 
-made; and when the response is recieved (by WebSEAL). Prior to Verify Access 10.0.4.0 only XSLT rules were supported, 
+reverse proxy. HTTP transforms can be applied: when the request is received (by WebSEAL); after an authorization decision has been 
+made; and when the response is received (by WebSEAL). Prior to Verify Access 10.0.4.0 only XSLT rules were supported, 
 from 10.0.4.0 onwards, LUA scripts can also be used to write HTTP transforms. Detailed information about HTTP 
 transformation concepts can be found `here <https://www.ibm.com/docs/en/sva/latest?topic=junctions-http-transformations>`_. 
 The name of the HTTP transform file will be used as the name of the resulting HTTP transformation rule in Verify Access. 
-An example HTTP transformation configuration is:
 
 
 .. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Http_Transformations
@@ -197,9 +196,9 @@ An example HTTP transformation configuration is:
 
 Kerberos
 ========
-The SPNEGO/Kerberos module can be used to enable SSO solutuions to Microsoft (Active Directory) systems via Kerberos 
+The SPNEGO/Kerberos module can be used to enable SSO solutions to Microsoft (Active Directory) systems via Kerberos 
 delegation. Kerberos is configured by setting properties by id and subsections. There are several top level id's which 
-can be used to configure Kerberos Realms, Local Domain Realms, Certificate Authority paths and Keyfiles. An example 
+can be used to configure Kerberos Realms, Local Domain Realms, Certificate Authority paths and key files. An example 
 configuration is:
 
 
@@ -254,7 +253,7 @@ configured.
 
 API Access Control
 ==================
-Properties to configure an API Authorization Server. An API authoriztation server typically defines one or more resource 
+Properties to configure an API Authorization Server. An API authorization server typically defines one or more resource 
 servers which have authentication requirements to permit access. This section can also be used to configure Cross-Origin 
 Resource Sharing (CORS) policies.
 
@@ -270,12 +269,12 @@ server.
 
 Document Root
 _____________
-The document root defines a static set of web files (HTML, JS, CSS, ect.) which can be served by the Authroization
+The document root defines a static set of web files (HTML, JS, CSS, ect.) which can be served by the Authorization
 server.
 
 Cross-Origin Resource Sharing
 _____________________________
-The CORS properties can be used to configure the URI's whihc are permitted to make cross-origin resource requests as 
+The CORS properties can be used to configure the URI's which are permitted to make cross-origin resource requests as 
 well as the types of resources which are permitted to be shared.
 
 

@@ -10,7 +10,7 @@ SLA / First steps
 =================
 The configurator can be used to accept the Service License Agreement as well as the "first steps" LMI prompts, including 
 enabling FIPS compliance. This is always done with the admin account using the default password.
-Failing this step does not result in the autoconfig aborting.
+Failing this step does not result in autoconfig aborting.
 
 
 .. autofunction:: src.verify_access_autoconf.configure.ISVA_Configurator.accept_eula
@@ -27,7 +27,7 @@ The password of the management account may be updated once. This account must al
 have sufficient permission to complete all of the configuration required.
 
 
-.. autoclass:: src.verify_access_autoconf.configure.ISVA_Configurator.AdminPassword
+.. autoclass:: src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Password
    :members:
 
 

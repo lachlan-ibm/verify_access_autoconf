@@ -48,7 +48,7 @@ class ISVA_Configurator(object):
         return False
 
 
-    class AdminPassword(typing.TypedDict):
+    class Admin_Password(typing.TypedDict):
         '''
         Example:: 
 
@@ -56,7 +56,7 @@ class ISVA_Configurator(object):
             mgmt_pwd: 'S3cr37Pa55w0rd!'
             mgmt_old_pwd: 'administrator'
 
-        *note:* These properties are overridded by ``ISVA_MGMT_*`` environment variables
+        *note:* These properties are overridden by ``ISVA_MGMT_*`` environment variables
 
         '''
 
@@ -73,7 +73,7 @@ class ISVA_Configurator(object):
 
         response = self.factory.get_system_settings().sysaccount.update_admin_password(old_password=old[1], password=new[1])
         if response.success == True:
-            _logger.info("Successfullt updated admin password")
+            _logger.info("Successfully updated admin password")
         else:
             _logger.error("Failed to update admin password:/n{}".format(response.data))
 
@@ -99,7 +99,7 @@ class ISVA_Configurator(object):
         # Need to activate appliance
         rsp = self.factory.get_system_settings().licensing.activate_module(code)
         if rsp.success == True:
-            _logger.info("Successfully applied {} licence".format(module))
+            _logger.info("Successfully applied {} license".format(module))
             self.needsRestart = True
         else:
             _logger.error("Failed to apply {} license:\n{}".format(module, rsp.data))
@@ -144,7 +144,7 @@ class ISVA_Configurator(object):
     def activate_appliance(self, config):
         system = self.factory.get_system_settings()
         activations = system.licensing.get_activated_modules().json
-        _logger.debug("Exisitng activations: {}".format(activations))
+        _logger.debug("Existing activations: {}".format(activations))
         if not any(module.get('id', None) == 'wga' and module.get('enabled', "False") == "True" for module in activations):
             self._activateBaseAppliance(config)
         if not any(module.get('id', None) == 'mga' and module.get('enabled', "False") == "True" for module in activations):
@@ -235,7 +235,7 @@ class ISVA_Configurator(object):
                 if database.name not in old_databases:
                     rsp = ssl.create_database(database.name, type='kdb')
                     if rsp.success == True:
-                        _logger.info("Successfully created {} SSL Ceritificate database".format(
+                        _logger.info("Successfully created {} SSL Certificate database".format(
                             database.name))
                     else:
                         _logger.error("Failed to create {} SSL Certificate database".format(
@@ -286,7 +286,7 @@ class ISVA_Configurator(object):
         if config.admin_config != None:
             rsp = self.factory.get_system_settings().admin_settings.update(**config.admin_config)
             if rsp.success == True:
-                _logger.info("Successfullt set admin config")
+                _logger.info("Successfully set admin config")
             else:
                 _logger.error("Failed to set admin config using:\n{}\n{}".format(
                     json.dumps(config.admin_config), rsp.data))
@@ -303,7 +303,7 @@ class ISVA_Configurator(object):
                     rsp = self.factory.get_system_settings().sysaccount.update_user(
                             user.name, password=user.password)
                     if rsp.success == True:
-                        _logger.info("Successfully update passsword for {}".format(user.name))
+                        _logger.info("Successfully update password for {}".format(user.name))
                     else:
                         _logger.error("Failed to update password for {}:\n{}".format(
                             user.name, rsp.data))
@@ -333,12 +333,12 @@ class ISVA_Configurator(object):
             elif group.operation == "delete":
                 rsp = self.factory.get_system_settings().sysaccount.delete_group(group.id)
             else:
-                _logger.error("oepration {} is not permited for groups".format(group.operation))
+                _logger.error("Operation {} is not permitted for groups".format(group.operation))
                 continue
             if rsp.success == True:
                 _logger.info("Successfully {} group {}".format(group.operation, group.id))
             else:
-                _logger.error("Faield to {} group {}:\n{}\n{}".format(
+                _logger.error("Failed to {} group {}:\n{}\n{}".format(
                     group.operation, group.id, json.dumps(group, indent=4), rsp.data))
 
             if group.operation == "update":
@@ -347,7 +347,7 @@ class ISVA_Configurator(object):
                     if rsp.success == True:
                         _logger.info("Successfully added {} to group {}".format(user, group.id))
                     else:
-                        _logger.error("Faield to add user {} to group {}:\n{}\n{}".format(
+                        _logger.error("Failed to add user {} to group {}:\n{}\n{}".format(
                             user, group.id, json.dumps(group, indent=4), rsp.data))
 
 
@@ -357,9 +357,9 @@ class ISVA_Configurator(object):
 
                 account_management:
                   users:
-                  - name: "cfgsvc"
+                  - name: !secret default/isva-secrets:cfgsvc_user
                     operation: "update"
-                    password: "Passw0rd"
+                    password: !secret default/isva-secrets:cfgsvc_secret
                     groups:
                     - "aGroup"
                     - "anotherGroup"
@@ -385,7 +385,7 @@ class ISVA_Configurator(object):
             'Optional list of groups to add user to.'
 
 
-        class Managemnet_Group(typing.TypedDict):
+        class Management_Group(typing.TypedDict):
             '''
             *note*: Groups are created before users; therefore if a user is being created and added to a group then
                     this should be done in the user configuration entry.
@@ -402,7 +402,7 @@ class ISVA_Configurator(object):
         users: typing.Optional[typing.List[Management_User]]
         'Optional list of management users to configure'
 
-        groups: typing.Optional[typing.List[Managemnet_Group]]
+        groups: typing.Optional[typing.List[Management_Group]]
         'Optional list of management groups to configure.'
 
     def account_management(self, config):
@@ -414,14 +414,14 @@ class ISVA_Configurator(object):
 
     def _add_auth_role(self, role):
         if role.operation == "delete":
-            rsp = self.factory.get_system_settings().manangemetauthorization.delete_role(role.name)
+            rsp = self.factory.get_system_settings().mgmt_authorization.delete_role(role.name)
             if rsp.success == True:
                 _logger.info("Successfully removed {} authorization role".format(role.name))
             else:
-                _logger.error("Failed to remove {} authroization role:\n{}".format(
+                _logger.error("Failed to remove {} authorization role:\n{}".format(
                     role.name, rsp.data))
         elif role.operation in ["add", "update"]:
-            configured_roles = self.factory.get_system_settings().managementauthorization.get_roles().json
+            configured_roles = self.factory.get_system_settings().mgmt_authorization.get_roles().json
             exists = False
             for r in configured_roles:
                 if r['name'] == role.name:
@@ -429,13 +429,13 @@ class ISVA_Configurator(object):
                     break
             rsp = None
             if exits == True:
-                rsp = self.factory.get_system_settings().managementauthorization.update_role(
+                rsp = self.factory.get_system_settings().mgmt_authorization.update_role(
                         name=role.name, users=role.users, groups=role.groups, features=role.features)
             else:
-                rsp = self.factory.get_system_settings().managementauthorization.create_role(
+                rsp = self.factory.get_system_settings().mgmt_authorization.create_role(
                         name=role.name, users=role.users, groups=role.groups, features=role.features)
             if rsp.success == True:
-                _logger.info("Successfully configured {} authprization role".format(role.name))
+                _logger.info("Successfully configured {} authorization role".format(role.name))
             else:
                 _logger.error("Failed to configure {} authorization role:\n{}".format(
                     role.name, rsp.data))
@@ -493,7 +493,7 @@ class ISVA_Configurator(object):
             'List of features to authorize users / groups for.'
 
         authorization_enforcement: bool
-        'Enable role based authoriztaion for this deployment.'
+        'Enable role based authorization for this deployment.'
 
         roles: typing.Optional[typing.List[Role]]
         'Optional list of roles to modify for role based authorization.'
@@ -503,10 +503,10 @@ class ISVA_Configurator(object):
             for role in config.management_authorization.roles:
                 self._add_auth_role(role)
             if config.management_authorization.authorization_enforcement:
-                rsp = self.factory.get_system_settings().managementauthorization.enable(
+                rsp = self.factory.get_system_settings().mgmt_authorization.enable(
                         enforce=config.management_authorization.authorization_enforcement)
                 if rsp.success == True:
-                    _logger.info("Successfully enabled role based authroization")
+                    _logger.info("Successfully enabled role based authorization")
                 else:
                     _logger.error("Failed to enable role based authorization:\n{}".format(rsp.data))
 
@@ -524,7 +524,7 @@ class ISVA_Configurator(object):
 
         '''
         name: str
-        'Name of the Advanced Tunint Parameter.'
+        'Name of the Advanced Tuning Parameter.'
         value: str
         'Value of the Advanced Tuning Parameter.'
         description: typing.Optional[str]
@@ -544,7 +544,7 @@ class ISVA_Configurator(object):
                     if rsp.success == True:
                         _logger.info("Successfully removed {} Advanced Tuning Parameter".format(atp.name))
                     else:
-                        _logger.error("Failed to remove {} Advanced tuning paramter:\n{}".format(
+                        _logger.error("Failed to remove {} Advanced Tuning Parameter:\n{}".format(
                             atp.name, rsp.data))
                 elif atp.operation == "update":
                     exits = False
@@ -563,7 +563,7 @@ class ISVA_Configurator(object):
                         _logger.info("Successfully updated {} Advanced Tuning Parameter".format(atp.name))
                     else:
                         _logger.error("Failed to update {} Advanced Tuning Parameter with:\n{}\n{}".format(
-                            atp.name, json.dupms(atp, indent=4), rsp.data))
+                            atp.name, json.dumps(atp, indent=4), rsp.data))
                 elif atp.operation == "add":
                     rsp = self.factory.get_system_settings().advanced_tuning.create_parameter(
                         key=atp.name, value=atp.value, comment=atp.comment)
@@ -571,7 +571,7 @@ class ISVA_Configurator(object):
                         _logger.info("Successfully add {} Advanced Tuning Parameter".format(atp.name))
                     else:
                         _logger.error("Failed to add {} Advanced Tuning Parameter with:\n{}\n{}".format(
-                            atp.name, json.dupms(atp, indent=4), rsp.data))
+                            atp.name, json.dumps(atp, indent=4), rsp.data))
                 else:
                     _logger.error("Unknown operation {} for Advanced Tuning Parameter:\n{}".format(
                         atp.operation, json.dumps(atp, indent=4)))
@@ -581,7 +581,7 @@ class ISVA_Configurator(object):
         '''
         Example::
 
-                snaphost: "snapshot/isva-2023-02-08.snapshot"
+                snapshot: "snapshot/isva-2023-02-08.snapshot"
 
         '''
         snapshot: str
@@ -592,10 +592,10 @@ class ISVA_Configurator(object):
             snapshotConfig = config.snapshot
             rsp = self.factory.get_system_settings().snapshot.upload(snapshotConfig.snapshot)
             if rsp.success == True:
-                _logger.info("Successfully applied snapsnot [{}]".format(snapshotConfig.snapshot))
+                _logger.info("Successfully applied snapshot [{}]".format(snapshotConfig.snapshot))
                 deploy_pending_changes(self.factory, self.config)
             else:
-                _logger.error("Failed to apply snapshot [{}]\n{}".foramt(snapshotConfig.snapshot),
+                _logger.error("Failed to apply snapshot [{}]\n{}".format(snapshotConfig.snapshot),
                         rsp.content)
 
 

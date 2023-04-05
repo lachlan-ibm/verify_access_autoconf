@@ -39,7 +39,7 @@ class AAC_Configurator(object):
                   imc_refresh_token: !secret default/isva-secrets:android_refresh_token
                 - platform: "apple"
                   app_id: "com.ibm.security.verifyapp"
-                  provier: "imc"
+                  provider: "imc"
                   provider_address: "verifypushcreds.mybluemix.net"
                   imc_app_key: !secret default/isva-secrets:apple_app_key
                   imc_client_id: !secret default/isva-secrets:apple_client_id
@@ -256,7 +256,7 @@ class AAC_Configurator(object):
         }
         rsp = self.aac.access_control.configure_resource(**methodArgs)
         if rsp.success == True:
-            _logger.info("Successfully configured {} resource for {}".format(resource.uri, respurce.server))
+            _logger.info("Successfully configured {} resource for {}".format(resource.uri, resource.server))
         else:
             _logger.error("Failed to create resource with configuration:\n{}\n{}".format(
                 json.dumps(resource, indent=4), rsp.data))
@@ -335,7 +335,7 @@ class AAC_Configurator(object):
             policies: str
             'Array of attachments (policy, policy sets, and API protection definitions) that define the access protection for this resource.'
             policy_combining_algorithm: typing.Optional[str]
-            '"permitOverrides" to allow access to the rescource if any of the attachments return permit; "denyOverrides" to deny access to the resource if any of the attachments return deny. Default is "denyOverrides".'
+            '"permitOverrides" to allow access to the resource if any of the attachments return permit; "denyOverrides" to deny access to the resource if any of the attachments return deny. Default is "denyOverrides".'
             cache: int
             '0 to disable the cache for this resource, -1 to cache the decision for the lifetime of the session or any number greater than 1 to set a specific timeout (in seconds) for the cached decision. If not specified a default of 0 will be used.'
 
@@ -345,8 +345,8 @@ class AAC_Configurator(object):
         'List of resources to be created and corresponding policies which should be attached to each resource.'
 
     def access_control(self, aac_config):
-        if aac_config.access_conrol != None:
-            cba = aac_config.access_conrol
+        if aac_config.access_control != None:
+            cba = aac_config.access_control
             if cba.policies != None:
                 old_policies = self.aac.access_control.list_policies().json
                 if old_policies == None: old_policies = []
@@ -369,7 +369,7 @@ class AAC_Configurator(object):
 
         '''
         id: typing.Optional[int]
-        'The Verify Access assigend property id. Either the property ID or name must be defined.'
+        'The Verify Access assigned property id. Either the property ID or name must be defined.'
         name: typing.Optional[str]
         'The name of the advanced configuration property. Either the property ID or name must be defined.'
         value: str
@@ -385,7 +385,7 @@ class AAC_Configurator(object):
                 else:
                     old = list(filter(lambda x: x['id'] == advConf.id, old_config))
                 if old.length != 1:
-                    _logger.error("Could not find {} in list of advanced cnfigurtion parameters".format(advConf.name))
+                    _logger.error("Could not find {} in list of advanced configuration parameters".format(advConf.name))
                     continue
                 else:
                     old = old[0]
@@ -395,7 +395,7 @@ class AAC_Configurator(object):
                 if rsp.success == True:
                     _logger.info("Successfully updated advanced configuration {}".format(old['key']))
                 else:
-                    _logger.error("Failed to upate advanced configuration with:\n{}\n{}".format(
+                    _logger.error("Failed to update advanced configuration with:\n{}\n{}".format(
                         json.dumps(advConf, indent=4), rsp.data))
 
 
@@ -516,7 +516,7 @@ class AAC_Configurator(object):
                 group_dn: str
                 'The LDAP attribute that will be used to construct the group DN.'
 
-            class ISVAUserProperties(typing.TypedDict):
+            class ISVAUserSchemaProperties(typing.TypedDict):
                 '''
                 "urn:ietf:params:scim:schemas:extension:isam:1.0:User"
                 '''
@@ -533,8 +533,8 @@ class AAC_Configurator(object):
                 'Set this field to true if SCIM needs to honour the backend password policy when changing a user password. Defaults to false.'
 
             scheama: str
-            'Name of schema properties to modify. See `_ScimProperties` subclasses for the valid schema names.'
-            properties: typing.Union[ISVAUserProperties, GroupSchemaProperties, EnterpriseSchemaProperties, UserSchemaProperties]
+            'Name of schema properties to modify. See `.*SchemaProperties` classes for the valid schema names.'
+            properties: typing.Union[ISVAUserSchemaProperties, GroupSchemaProperties, EnterpriseSchemaProperties, UserSchemaProperties]
             'Schema unique properties to apply.'
 
         admin_group: str
@@ -701,7 +701,7 @@ class AAC_Configurator(object):
                 'The versioned endpoint for user requests.'
                 authorize_endpoint: typing.Optional[str]
                 'The versioned endpoint for authorization requests.'
-                authenticatiors_endpoint: typing.Optional[str]
+                authenticators_endpoint: typing.Optional[str]
                 'The versioned endpoint for authenticator requests.'
                 authnmethods_endpoint: typing.Optional[str]
                 'The DEPRECATED versioned endpoint for authentication method requests.'
@@ -746,7 +746,7 @@ class AAC_Configurator(object):
                 connection_purge_policy: typing.Optional[str]
                 'Specifies which connections to destroy when a stale connection is detected in a pool. Valid values are: "EntirePool" (When a stale connection is detected, all connections in the pool are marked stale, and when no longer in use, are closed.) "FailingConnectionOnly" (When a stale connection is detected, only the connection which was found to be bad is closed.) "ValidateAllConnections" (When a stale connection is detected, connections are tested and those found to be bad are closed.) (Default value: "EntirePool")'
                 connection_reap_time: typing.Optional[str]
-                'Amount of time between runs of the pool maintenance thread. A value of "-1" disables pool maintenace. Default value is "3m".'
+                'Amount of time between runs of the pool maintenance thread. A value of "-1" disables pool maintenance. Default value is "3m".'
 
 
             class RedisConnection(typing.TypedDict):
@@ -882,7 +882,7 @@ class AAC_Configurator(object):
             'Connection specific properties.'
 
         connections: typing.List[Server_Connection]
-        'List of server connections to create or update. Propertes of indivudual connections are described in the `_Connection` subclasses.'
+        'List of server connections to create or update. Properties of individual connections are described in the `_Connection` subclasses.'
 
     def server_connections(self, config):
         if config.server_connections:
@@ -923,7 +923,7 @@ class AAC_Configurator(object):
 
         '''
         template_files: typing.List[str]
-        'List of files or zipfiles to upload as HTML template pages. Path to files can be relative to the ``ISVA_CONFIG_BASE`` property or fully-qualified file paths.'
+        'List of files or zip-files to upload as HTML template pages. Path to files can be relative to the ``ISVA_CONFIG_BASE`` property or fully-qualified file paths.'
 
     def upload_template_files(self, template_files):
         for file_pointer in template_files:
@@ -932,11 +932,11 @@ class AAC_Configurator(object):
                 rsp = self.aac.template_files.create_file(file_pointer['directory'], file_name=file_pointer['name'],
                         contents=file_pointer['contents'])
             else:
-                rsp = self.aac.template_files.create_directory(file_pointer['directory'], dir_name=file_ponter['name'])
+                rsp = self.aac.template_files.create_directory(file_pointer['directory'], dir_name=file_pointer['name'])
             if rsp.success == True:
                 _logger.info("Successfully created template file {}".format(file_pointer['path']))
             else:
-                _logger.error("Failed to create tempalte file {}".format(file_pointer['path']))
+                _logger.error("Failed to create template file {}".format(file_pointer['path']))
 
 
     class Mapping_Rules(typing.TypedDict):
@@ -968,11 +968,11 @@ class AAC_Configurator(object):
         mapping_rules: typing.List[Mapping_Rule]
         'List of mapping rule types/files to upload.'
 
-    def upload_mapping_rules(self, _type, maping_rules):
+    def upload_mapping_rules(self, _type, mapping_rules):
         for mapping_rule in mapping_rules:
             rsp = self.aac.mapping_rule.create_rule(rule_name=mapping_rule['name'], category=_type, content=mapping_rule['contents'])
             if rsp.success == True:
-                _logger.info("Successfully uploaded {} mapping rule".foramt(mapping_rule['name']))
+                _logger.info("Successfully uploaded {} mapping rule".format(mapping_rule['name']))
             else:
                 _logger.error("Failed to upload {} mapping rule from [{}]".format(mapping_rule['name'], mapping_rule['path']))
 
@@ -1036,7 +1036,7 @@ class AAC_Configurator(object):
         obligations: typing.List[Obligation]
         'List of access control obligations to create.'
 
-    def obligation_confguration(self, aac_config):
+    def obligation_configuration(self, aac_config):
             existing = self.aac.access_control.list_obligations().json
             if existing == None: existing = []
             for obligation in aac_config.obligations:
@@ -1083,7 +1083,7 @@ class AAC_Configurator(object):
                      matcher: "1"
                      storage:
                        session: false
-                       behaior: false
+                       behavior: false
                        device: false
 
         '''
@@ -1097,7 +1097,7 @@ class AAC_Configurator(object):
         class Storage(typing.TypedDict):
             session: bool
             'True if the attribute is collected in the user session. Session attributes are stored temporarily until the session times out.'
-            behaviour: bool
+            behavior: bool
             'True if historic data for this attribute is stored in the database and used for behavior-based attribute matching.'
             device: bool
             'True if the attribute is stored when a device is registered as part of the device fingerprint. '
@@ -1139,19 +1139,19 @@ class AAC_Configurator(object):
                     rsp = self.aac.attrbute.create_attribute(**attribute)
                     verb = "created" if rsp.success == True else "create"
                 if rsp.success == True:
-                    _logger.info("Successfully {} {} attribute.".foramt(verb, attribute.name))
+                    _logger.info("Successfully {} {} attribute.".format(verb, attribute.name))
                 else:
                     _logger.error("Failed to {} attribute:\n{}\n{}".format(verb, json.dumps(attribute, indent=4), rsp.content))
 
 
-    def _configure_api_protection_definition(self, defintion):
+    def _configure_api_protection_definition(self, definition):
         methodArgs = {"name": definition.name, "description": definition.description, "token_char_set": definition.access_token_char_set,
-                "access_token_lifetime": definition.access_token_lifetime, "access_token_length": defintion.access_token_length, 
-                "authorization_code_lifetime": definition.authorizaton_code_lifetime, "authorization_code_length": definition.authorization_code_length,
+                "access_token_lifetime": definition.access_token_lifetime, "access_token_length": definition.access_token_length, 
+                "authorization_code_lifetime": definition.authorization_code_lifetime, "authorization_code_length": definition.authorization_code_length,
                 "refresher_token_length": definition.refresh_token_length, "max_authorization_grant_lifetime": definition.max_authorization_grant_lifetime,
                 "pin_length": definition.pin_length, "enforce_single_use_authorization_grant": definition.enforce_single_use_grant, 
                 "issue_refresh_token": definition.issue_refresh_token, "enforce_single_access_token_per_grant": definition.single_token_per_grant, 
-                "enable_multiple_refresh_tokens_for_fault_tolerance": defintion.multiple_refresh_tokens, "pin_policy_enabled": definition.pin_policy, 
+                "enable_multiple_refresh_tokens_for_fault_tolerance": definition.multiple_refresh_tokens, "pin_policy_enabled": definition.pin_policy, 
                 "grant_types": definition.grant_types, "attribute_sources": definition.attribute_sources
             }
         if definition.oidc:
@@ -1178,9 +1178,9 @@ class AAC_Configurator(object):
                 rsp = self.aac.api_protection.create_mapping_rule(name=definition.name + "PreTokenGeneration",
                         category="OAUTH", file_name=mapping_rule["name"], content=mapping_rule['contents'])
                 if rsp.success == True:
-                    _logger.info("Successfully uploaded {} Pre-Token Mapping Rule".foramt(definition.name))
+                    _logger.info("Successfully uploaded {} Pre-Token Mapping Rule".format(definition.name))
                 else:
-                    _logger.error("Failed to upload {} Pre-Token Mapping Rule".format(defintion.name))
+                    _logger.error("Failed to upload {} Pre-Token Mapping Rule".format(definition.name))
         if definition.post_token_mapping_rule:
             mapping_rule = FILE_LOADER.read_file(definition.post_token_mapping_rule)
             if len(mapping_rule) != 1:
@@ -1188,7 +1188,7 @@ class AAC_Configurator(object):
             else:
                 mapping_rule = mapping_rule[0]
                 rsp = self.aac.api_protection.import_mapping_rule(name=definition.name + "PostTokenGeneration",
-                        categore="OAUTH", file_name=mapping_rule['name'], content=mapping_rule['contents'])
+                        category="OAUTH", file_name=mapping_rule['name'], content=mapping_rule['contents'])
                 if rsp.success == True:
                     _logger.info("Successfully created {} Post-Token Mapping Rule".format(definition.name))
                 else:
@@ -1202,7 +1202,7 @@ class AAC_Configurator(object):
         rsp = self.aac.api_protection.create_client(name=client.name, redirect_uri=client.redirect_uri,
                 company_name=client.company_name, company_url=client.company_url, contact_person=client.contact_person,
                 contact_type=client.contact_type, email=client.email, phone=client.phone, other_info=client.other_info,
-                definition=client.api_defintition, client_id=client.client_id, client_secret=client.client_secret)
+                definition=client.api_definition, client_id=client.client_id, client_secret=client.client_secret)
         if rsp.success == True:
             _logger.info("Successfully created {} API Protection client.".format(client.name))
         else:
@@ -1280,7 +1280,7 @@ class AAC_Configurator(object):
                 cert: str
                 'The certificate label of the signing key for RS/ES signing methods.'
                 enc: OIDC_Encoding
-                'JWT encrption config.'
+                'JWT encryption config.'
                 dynamic_clients: bool
                 'Whether or not the client registration endpoint will be enabled for this definition. If not presented in an update or create then a value of ``false`` will be used.'
                 issue_secret: bool
@@ -1873,6 +1873,8 @@ class AAC_Configurator(object):
 
     def runtime_configuration(self, aac_config):
         if aac_config.runtime_properties:
+            #TODO
+            return
 
     def configure(self):
         if self.config.access_control == None:
@@ -1881,7 +1883,7 @@ class AAC_Configurator(object):
         self.runtime_configuration(self.config.access_control)
         self.upload_files(self.config.access_control)
         self.attributes_configuration(self.config.access_control)
-        self.obligation_confguration(self.config.access_control)
+        self.obligation_configuration(self.config.access_control)
         self.pip_configuration(self.config.access_control)
         self.push_notifications(self.config.access_control)
         self.server_connections(self.config.access_control)

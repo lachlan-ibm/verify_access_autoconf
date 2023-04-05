@@ -12,13 +12,13 @@ Example
                   access_control:
                      authentication:
                         policies:
-                        - name: "Username Passwword"
+                        - name: "Username Password"
                            description: "Username and password authentication policy."
                            enabled: true
                            uri: "urn:ibm:security:authentication:asf:password"
                            policy: "<Policy xmlns=\"urn:ibm:security:authentication:policy:1.0:schema\" PolicyId=\"urn:ibm:security:authentication:asf:password\"><Description>Username and password authentication policy.</Description><Step type=\"Authenticator\"><Authenticator AuthenticatorId=\"urn:ibm:security:authentication:asf:mechanism:password\"/></Step><Actions><Action On=\"null\" type=\"null\"><AttributeAssignments/></Action></Actions></Policy>"
                         mechanisms:
-                        - name: "Username Passowrd"
+                        - name: "Username Password"
                           type: "Username Password"
                           description: "Username password authentication"
                           uri: "urn:ibm:security:authentication:asf:mechanism:password"
@@ -45,11 +45,11 @@ Example
                             namespace: "urn:ibm:security:authentication:asf:mechanism:password"
 
 
-.. _api_protection::
+.. _api_protection:
 
 API Protection
 ==============
-OIDC API portection configuration for definitions and clients. This is capable of creating OpenBanking and FAPI compliant
+OIDC API protection configuration for definitions and clients. This is capable of creating OpenBanking and FAPI compliant
 defintions and clients.
 
 
@@ -57,11 +57,11 @@ defintions and clients.
    :members:
 
 
-.. _authentication::
+.. _authentication:
 
 Authenticaton
 =============
-This section desribes how to create authentication policies and mechanisms. Authentication policies can be used in 
+This section describes how to create authentication policies and mechanisms. Authentication policies can be used in 
 risk-based access or context-based access policies to conditionally enforce additional authentication/authorization 
 requirements.
 
@@ -70,13 +70,13 @@ requirements.
    :members:
 
 
-.. _access_control::
+.. _access_control:
 
 Context Based Access Control
 ============================
 This section covers the configuration of the Context Based Access policy engine of a Verify Access deployment. 
-Context based access policies are capable of definign conditional authentication requirements based on administrator
-defined requirements (such as device registration status, ip reputation, authenciation method enrollment for a user).
+Context based access policies are capable of defining conditional authentication requirements based on administrator
+defined requirements (such as device registration status, ip reputation, authentication method enrollment for a user).
 
 
 .. autoclass:: src.verify_access_autoconf.access_control.AAC_Configurator.Access_Control
@@ -85,10 +85,10 @@ defined requirements (such as device registration status, ip reputation, authenc
 
 Risk Profiles
 =============
-Risk profiles provide administrators with a mechanism to calcuate the "risk" of an authentication request
-based on administrato-defined attributes. For example: creating a risk profile which examines the IPv4 
+Risk profiles provide administrators with a mechanism to calculate the "risk" of an authentication request
+based on administrator-defined attributes. For example: creating a risk profile which examines the IPv4 
 address of an incoming request to identify the location (continent, country, region, etc.) that the request
-is coming from, and conditionaly enforcing addition authentication requirements for more "risky" requests.
+is coming from, and conditionally enforcing addition authentication requirements for more "risky" requests.
 
 
 .. autoclass:: src.verify_access_autoconf.access_control.AAC_Configurator.Risk_Profiles
@@ -107,7 +107,7 @@ to build up credential attributes, which can then be used by subsequent authenti
 
 Obligations
 ===========
-Obligations are used to enforce buisness requirements (such as registering a device) during an authorization
+Obligations are used to enforce business requirements (such as registering a device) during an authorization
 flow before permitting access.
 
 
@@ -125,25 +125,25 @@ context to an authorization policy before making a decision to permit/deny acces
    :members:
 
 
-.. _access_control_template_file::
+.. _access_control_template_file:
 
 HTTP Template Files
 ===================
 This configuration option can be used to set files or directories containing HTML files which are compatible with the 
 AAC and Federation templating engine. The directory structure of any directories to upload should follow the default 
-top level directories. If you are defining a directory it should contian a trailing ``/``.
+top level directories. If you are defining a directory it should contain a trailing ``/``.
 
 
 .. autoclass:: src.verify_access_autoconf.access_control.AAC_Configurator.Template_Files
    :members:
 
 
-.. _access_control_mapping_rule::
+.. _access_control_mapping_rule:
 
 JavaScript Mapping Rules
 ========================
 This configuration option can be used to upload different types or categories of JavaScript Mapping Rules. These rules 
-are typically used to implement custom buisness logic for a particular integration requirement.
+are typically used to implement custom business logic for a particular integration requirement.
 
 
 .. note:: Some types of mapping rules are defined elsewhere, eg OIDC pre/post token mapping rules must be defined with 
@@ -154,7 +154,7 @@ are typically used to implement custom buisness logic for a particular integrati
    :members:
 
 
-.. _access_control_push_notification::
+.. _access_control_push_notification:
 
 Push Notification Service
 =========================
@@ -175,7 +175,7 @@ registered for a user; and is capable of initiating or completing an "out of ban
    :members:
 
 
-.. _access_control_server_connections::
+.. _access_control_server_connections:
 
 Server Connections
 ==================
@@ -190,7 +190,7 @@ connections are used by other AAC components to provide authentication/authoriza
 Advanced Configuration Parameters
 =================================
 The Advanced Configuration Parameters entry is used to set module wide properties for authentication and authorization 
-components. The list of avaliable properties is dependant on the target version of Verify Access beign configured. Administrators
+components. The list of available properties is dependant on the target version of Verify Access being configured. Administrators
 are able to use the Verify Access assigned identifier or the name of the property.
 
 

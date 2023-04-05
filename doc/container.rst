@@ -1,14 +1,14 @@
 Container Configuration
 ########################
 
-This module contains documentaiton for system level configuration applicable for Container based Verify Access
+This module contains documentation for system level configuration applicable for Container based Verify Access
 deployments. Container configuration is defined under the ``container`` top level key. At a minimum an administrator
 should define the ``isva_base_url``, ``isva_admin_user`` and ``isva_admin_password`` keys (or define the applicable
 environment variables).
 
 
 Example
-_______
+=======
 
 
 .. code-block:: yaml
@@ -50,7 +50,7 @@ _______
        db_name: "isva"
 
 
-.. _container::
+.. _container:
 
 Container specific configuration
 ================================
@@ -62,20 +62,20 @@ configuration snapshots which can be subsequently fetched by other containers in
 .. include:: base.rst
 
 
-.. _managing-container-deployments::
+.. _managing-container-deployments:
 
 Managing Container Deployments
 ==============================
 
 Kubernetes / OpenShift
-______________________
+----------------------
 If Verify Access is deployed with Kubernetes, then ``kubectl`` cli tool can be used to promote a configuration snapshot. There are
-two waysa to do this: One, use Kubernetes to restart the deployments; Two, use the autmoated service from the legacy
-"all-in-one" container. It is recommended to use Kubernetes to rollot restarts to deployments where possible.
+two ways to do this: One, use Kubernetes to restart the deployments; Two, use the automated service from the legacy
+"all-in-one" container. It is recommended to use Kubernetes to rollout restarts to deployments where possible.
 
-The ``kubectl rollout restart`` command can be used to restart rever proxy, runtime and DSC deployments. The configurator
-can use deployment names to request a restgart of all of the pods associated with a deployment. If this functionality is
-used then the user running the Kubernetes commands must have sufficient priveledge to restart the containers. An example
+The ``kubectl rollout restart`` command can be used to restart reverse proxy, runtime and DSC deployments. The configurator
+can use deployment names to request a restart of all of the pods associated with a deployment. If this functionality is
+used then the user running the Kubernetes commands must have sufficient privilege to restart the containers. An example
 of a deployment configuration is::
 
                                  container:
@@ -94,11 +94,11 @@ of a deployment configuration is::
 
 
 Docker-Compose
-______________
-If Verify Access is deployted with Docker-Compose, then ``docker-compose`` clit tool can be used to manage runtime
-containers when a snapshot needs to be promoted. The configurator can use the compsoe service names to request a restart 
+--------------
+If Verify Access is deployed with Docker-Compose, then ``docker-compose`` clit tool can be used to manage runtime
+containers when a snapshot needs to be promoted. The configurator can use the compose service names to request a restart 
 of runtime containers. If this functionality is used then the user running the configurator should have sufficient 
-priviledge to restart docker contaienrs. 
+privilege to restart docker containers. 
 An example of a compose deployment configuration is::
 
                                                      container:
@@ -108,10 +108,10 @@ An example of a compose deployment configuration is::
                                                        docker_compose_yaml: "iamlab/docker-compose.yaml"
 
 
-.. _runtime-database-configuration
+.. _runtime-database-configuration:
 
 Database Configuration
 ======================
 The database configuration for container deployments can be done using the :ref:`cluster-configuration` entry.
 
-.. autoclass:: src.verify_access_autoconf.container.Container.Cluster_Configuration
+.. autoclass:: src.verify_access_autoconf.container.Docker_Configurator.Cluster_Configuration

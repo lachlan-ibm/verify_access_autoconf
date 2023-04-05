@@ -46,7 +46,7 @@ class Docker_Configurator(object):
             port: str
             'Port database is listening on.'
             ssl: bool
-            'Enable SSL entryption of connections.'
+            'Enable SSL encryption of connections.'
             ssl_keystore: typing.Optional[str]
             'SSL database to use to verify connections. Only valid if ``ssl == true``.'
             user: str
