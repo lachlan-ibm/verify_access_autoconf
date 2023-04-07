@@ -1,4 +1,7 @@
 #!/bin/python
+"""
+@copyright: IBM
+"""
 import os, kubernetes, logging, sys, yaml, pyisva, datetime, subprocess, shutil, time, json
 from . import constants as const
 from .data_util import Map, FileLoader, CustomLoader, KUBE_CLIENT

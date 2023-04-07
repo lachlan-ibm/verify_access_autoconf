@@ -1,4 +1,7 @@
 #!/bin/python
+"""
+@copyright: IBM
+"""
 import logging
 import requests
 import json

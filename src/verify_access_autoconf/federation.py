@@ -1,4 +1,7 @@
 #!/bin/python3
+"""
+@copyright: IBM
+"""
 
 import json
 import os

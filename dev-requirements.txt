@@ -7,4 +7,3 @@ setuptools
 twine
 sphinx-rtd-theme
 typing
-copy

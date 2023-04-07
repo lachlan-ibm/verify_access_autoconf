@@ -1,4 +1,7 @@
 #!/bin/python 
+"""
+@copyright: IBM
+"""
 import os
 import yaml
 import base64
