@@ -25,7 +25,7 @@ def remap_keys(data_dict, remap_dict):
 def optional_list(x):
     if isinstance(x, list) and len(x) > 0:
         return x
-    else
+    else:
         return [{}]
 
 #Filter a list of dicts on a given key for a given value
