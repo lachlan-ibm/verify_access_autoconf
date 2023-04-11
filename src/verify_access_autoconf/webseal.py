@@ -158,7 +158,7 @@ class WEB_Configurator(object):
 
         .. note:: Federations configured in ths step must already exist. If federations are being created and configured
                   for WebSEAL at the same time then the reverse proxy configuration should be added to the federation
-                  configuration dictionary.
+                  configuration properties.
 
         Example::
 
@@ -400,11 +400,11 @@ class WEB_Configurator(object):
         'HTTPS traffic endpoint properties.'
         junctions: typing.Optional[typing.List[Junction]]
         'Junctions to backend resource servers for this reverse proxy instance.'
-        aac_config: typing.Optional[AAC_Configuration]
+        aac_configuration: typing.Optional[AAC_Configuration]
         'Properties for configuring this reverse proxy instance for use with advanced access control authentication and context based access service.'
-        mmfa_config: typing.Optional[MMFA_Configuration]
+        mmfa_configuration: typing.Optional[MMFA_Configuration]
         'Properties for configuring this reverse proxy instance to deliver MMFA capabilities.'
-        federation: typing.Optional[Federation_Configuration]
+        federation_configuration: typing.Optional[Federation_Configuration]
         'Properties for integrating with a running Federation runtime.'
         stanza_configuration: typing.Optional[Stanza_Configuration]
         'List of modifications to perform on the ``webseald.conf`` configuration file for this reverse proxy instance.'
@@ -594,7 +594,7 @@ class WEB_Configurator(object):
         'The password for the ``sec_master`` user.'
         admin_cert_lifetime: int
         'The lifetime in days for the SSL server certificate.'
-        ssl_complaince: str
+        ssl_compliance: str
         'Specifies whether SSL is compliant with any additional computer security standard. "fips" | "sp800-131-transition" | "sp800-131-strict" | "suite-b-128" | "suite-b-192".'
         ldap: LDAP
         'LDAP server properties.'
