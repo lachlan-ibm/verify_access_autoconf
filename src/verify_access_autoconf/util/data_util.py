@@ -21,6 +21,16 @@ def remap_keys(data_dict, remap_dict):
     '''
     return {remap_dict.get(k, k): v for k, v in data_dict.items()}
 
+#Method guaranteed to return a list with at least dictionary in it (if its not empty)
+def optional_list(x):
+    if isinstance(x, list) and len(x) > 0:
+        return x
+    else
+        return [{}]
+
+#Filter a list of dicts on a given key for a given value
+def filter_list(attribute, value, _list):
+    return list(filter(lambda x: attribute in x and x[attribute] == value, _list))
 
 class Map(dict):
     def __init__(self, *args, **kwargs):

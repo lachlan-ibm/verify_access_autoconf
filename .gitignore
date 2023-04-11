@@ -3,3 +3,5 @@
 config.yaml
 src/isva_configurator.egg-info
 html
+*.egg-info
+dist

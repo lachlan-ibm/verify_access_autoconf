@@ -164,7 +164,7 @@ class WEB_Configurator(object):
 
                   reverse_proxy:
                   - name: "default"
-                    host: "hostname"
+                    host: "ibmsec.verify.access"
                     listening_port: 7234
                     domain: "Default"
                     http:
@@ -180,14 +180,14 @@ class WEB_Configurator(object):
                         port: 443
                       ssl:
                       - enabled: "yes"
-                        key_file: "example.kdb",
+                        key_file: "pdsrv.kdb",
                         cert_file: "server"
-                    aac_configuration_wizard:
+                    aac_configuration:
                       hostname: "localhost"
                       port: 443
                       runtime:
-                        user: "easuser"
-                        password: "password"
+                        user: !secret default/isva-secrets:runtime_user
+                        password: !secret default/isva-secrets:runtime_password
                       junction: "/mga"
                       reuse_acls: True
                       reuse_certs: True
