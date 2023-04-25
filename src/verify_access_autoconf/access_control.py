@@ -74,13 +74,12 @@ class AAC_Configurator(object):
 
     def push_notifications(self, config):
         if config.push_notification_providers:
-            existing = self.aac.push_notification.list_providers().json
+            existing_pnp = optional_list(self.aac.push_notification.list_providers().json)
             for provider in config.push_notification_providers:
-                rsp = None
-                verb = 'None'
-                old = filter_list('app_id', provider.app_id, existing)
-                if old.length != 0:
-                    rsp = self.aac.push_notification.update_provider(old[0]['pnr_id'], **provider)
+                rsp = None; verb = 'None'
+                old_pnp = optional_list(filter_list('app_id', provider.app_id, existing_pnp))[0]
+                if old_pnp:
+                    rsp = self.aac.push_notification.update_provider(old_pnp['pnr_id'], **provider)
                     verb = 'modified' if rsp.success == True else 'modify'
                 else:
                     rsp = self.aac.push_notification.create_provider(**provider)
@@ -141,10 +140,8 @@ class AAC_Configurator(object):
 
     def risk_profiles(self, config):
         if config.risk_profiles:
-            attributes = self.aac.attributes.list_attributes().json
-            old_profiles = self.aac.risk_profiles.list().json
-            if not attributes: attributes = []
-            if not old_profiles: old_profiles = []
+            attributes = optional_list(self.aac.attributes.list_attributes().json)
+            old_profiles = optional_list(self.aac.risk_profiles.list().json)
             for profile in config.risk_profiles:
                 methodArgs = copy.deepcopy(profile)
                 #Re-map attribute name and id keys to correct property
@@ -152,9 +149,9 @@ class AAC_Configurator(object):
                     self._remap_attribute_name_to_id(attributes, methodArgs)
                 rsp = None
                 verb = None
-                old = filter_list('name', profile.name, old_profiles)
-                if old:
-                    rsp = self.aac.risk_profiles.update(old[0]['id'], **methodArgs)
+                old_profile = optional_list(filter_list('name', profile.name, old_profiles))[0]
+                if old_profile:
+                    rsp = self.aac.risk_profiles.update(old_profile['id'], **methodArgs)
                     verb = "updated" if rsp.success == True else "update"
                 else:
                     rsp = self.aac.risk_profiles.create(**methodArgs)
@@ -162,8 +159,8 @@ class AAC_Configurator(object):
                 if rsp.success == True:
                     _logger.info("Successfully {} {} risk profile".format(verb, profile.name))
                 else:
-                    _logger.error("Failed to {} risk profile:\n{}\n{}".format(verb, 
-                                                            json.dumps(profile, indent=4), rsp.data))
+                    _logger.error("Failed to {} risk profile:\n{}\n{}".format(
+                                            verb, json.dumps(profile, indent=4), rsp.data))
 
 
     class Policy_Information_Points(typing.TypedDict):

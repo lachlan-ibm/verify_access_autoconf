@@ -851,7 +851,7 @@ class FED_Configurator(object):
                         })
                 else:
                     methodArgs.update({
-                        "identity_applies_to": idMap.properties..applies_to,
+                        "identity_applies_to": idMap.properties.applies_to,
                         "identity_auth_type": idMap.properties.auth_type,
                         "identity_ba_user": idMap.properties.basic_auth_username,
                         "identity_ba_password": idMap.properties.basic_auth_password,
