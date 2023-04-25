@@ -894,8 +894,8 @@ class FED_Configurator(object):
                         })
                 if sigSetting.validation_key_identifier != None:
                     methodArgs.update({
-                            "validation_key_store": ,
-                            "validation_key_alias": 
+                            "validation_key_store": sigSetting.validation_key_identifier.store,
+                            "validation_key_alias": sigSetting.validation_key_identifier.label
                         })
                 if sigSetting.signing_options != None:
                     methodArgs.update({
