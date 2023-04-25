@@ -1132,7 +1132,7 @@ class FED_Configurator(object):
                             "validate_arti_rsp": sigSettings.validation_options.validate_artifact_response,
                             "validate_logout_req": sigSettings.validation_options.validate_logout_request,
                             "validate_logout_rsp": sigSettings.validation_options.validate_logout_response,
-                            "validate_name_id_req": sigSettings.validation_options.validate_name_id_management_request
+                            "validate_name_id_req": sigSettings.validation_options.validate_name_id_management_request,
                             "validate_name_id_rsp": sigSettings.validation_options.validate_name_id_management_response
                         })
             if config.alias_service_settings != None:
