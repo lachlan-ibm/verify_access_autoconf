@@ -8,7 +8,7 @@ import json
 import typing
 
 from .util.configure_util import deploy_pending_changes
-from .util.data_util import Map, FILE_LOADER
+from .util.data_util import Map, FILE_LOADER, optional_list, filter_list
 
 _logger = logging.getLogger(__name__)
 
@@ -31,8 +31,8 @@ class WEB_Configurator(object):
             _logger.info("Successfully updated stanza [{}] with [{}:{}]".format(
                     entry.stanza, entry.entry_id, entry.value))
         else:
-            _logger.error("Failed to update stanza [{}] with [{}:{}]".format(
-                    entry.stanza, entry.entry_id, entry.value))
+            _logger.error("Failed to update stanza [{}] with [{}:{}]\n{}".format(
+                    entry.stanza, entry.entry_id, entry.value, rsp.content))
 
     def __add_stanza(self, proxy_id, entry):
         rsp = None
@@ -93,8 +93,8 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully ran Advanced Access Control configuration wizard on {} proxy instance".format(proxy_id))
         else:
-            _logger.error("Failed to run AAC configuration wizard on {} proxy instance with config:\n{}".format(
-                proxy_id, json.dumps(aac_config, indent=4)))
+            _logger.error("Failed to run AAC configuration wizard on {} proxy instance with config:\n{}\n{}".format(
+                proxy_id, json.dumps(aac_config, indent=4), rsp.content))
 
 
     def _configure_mmfa(self, proxy_id, mmfa_config):
@@ -124,8 +124,8 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully ran MMFA configuration wizard on {} proxy instance".format(proxy_id))
         else:
-            _logger.error("Failed to run MMFA configuration wizard on {} proxy instance with config:\n{}".format(
-                proxy_id, json.dumps(mmfa_config, indent=4)))
+            _logger.error("Failed to run MMFA configuration wizard on {} proxy instance with config:\n{}\n{}".format(
+                proxy_id, json.dumps(mmfa_config, indent=4), rsp.content))
 
 
     def _configure_federations(self, proxy_id, fed_config):
@@ -133,15 +133,15 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully ran federation configuration utility with")
         else:
-            _logger.error("Federation configuration wizard did not run successfully with config:\n{}".format(
-                json.dumps(fed_config, indent=4)))
+            _logger.error("Federation configuration wizard did not run successfully with config:\n{}\n{}".format(
+                json.dumps(fed_config, indent=4), rsp.content))
 
 
     def _add_junction(self, proxy_id, junction):
         forceJunction = False
-        junctions = self.web.reverse_proxy.list_junctions(proxy_id).json
+        junctions = optional_list(self.web.reverse_proxy.list_junctions(proxy_id).json)
         for jct in junctions:
-            if jct["id"] == junction.junction_point:
+            if jct and jct["id"] == junction.junction_point:
                 junction['force'] = "yes"
 
         rsp = self.web.reverse_proxy.create_junction(proxy_id, **junction)
@@ -149,8 +149,8 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully added junction to {} proxy".format(proxy_id))
         else:
-            _logger.error("Failed to add junction to {} with config:\n{}".format(
-                proxy_id, json.dumps(junction, indnet=4)))
+            _logger.error("Failed to add junction to {} with config:\n{}\n{}".format(
+                proxy_id, json.dumps(junction, indent=4), rsp.content))
 
     class Reverse_Proxy(typing.TypedDict):
         '''
@@ -410,11 +410,9 @@ class WEB_Configurator(object):
         'List of modifications to perform on the ``webseald.conf`` configuration file for this reverse proxy instance.'
 
     def wrp(self, runtime, proxy):
-        wrp_instances = self.web.reverse_proxy.list_instances().json
-        if wrp_instances == None:
-            wrp_instances = []
+        wrp_instances = optional_list(self.web.reverse_proxy.list_instances().json)
         for instance in wrp_instances:
-            if instance['id'] == proxy.name:
+            if instance and instance['id'] == proxy.name:
                 rsp = self.web.reverse_proxy.delete_instance(proxy.name,
                         runtime.admin_user if runtime.admin_user else "sec_master",
                         runtime.admin_password)
@@ -454,7 +452,7 @@ class WEB_Configurator(object):
             _logger.info("Successfully configured proxy {}".format(proxy.name))
         else:
             _logger.error("Configuration of {} proxy failed with config:\n{}\n{}".format(
-                proxy.name, json.dumps(proxy, indent=4), rsp.data))
+                proxy.name, json.dumps(proxy, indent=4), rsp.content))
             return
 
         if proxy.junctions != None:
@@ -477,11 +475,9 @@ class WEB_Configurator(object):
         if self.factory.is_docker() == False:
             rsp = self.web.reverse_proxy.restart_instance(proxy.name)
             if rsp.success == True:
-                _logger.info("Successfully restart {} proxy instance after applying configuration".format(
-                    proxy.name))
+                _logger.info("Successfully restart {} proxy instance after applying configuration".format(proxy.name))
             else:
-                _logger.error("Failed to restart {} proxy instance after applying configuration".format(
-                    proxy.name))
+                _logger.error("Failed to restart {} proxy instance after applying configuration".format(proxy.name))
 
 
     def _runtime_stanza(self, stanza_config):
@@ -501,18 +497,18 @@ class WEB_Configurator(object):
                                                                                 stanza=entry.stanza, entries=entries)
 
             elif entry.operation == "delete":
-                rsp = self.web.runtime_component.delete_configuration_file_entry(respource=entry.resource,
+                rsp = self.web.runtime_component.delete_configuration_file_entry(resource=entry.resource,
                                                                                  stanza=entry.stanza, entry=entry.entry,
                                                                                  value=entry.value)
             else:
-                _logger.error("Unable to determine operation for stanza file modification:\n{}\n. . . skipping".format(
-                                                                                                                entry))
+                _logger.error("Unable to determine operation for stanza file modification:" + 
+                                "\n{}\n. . . skipping".format(entry))
                 continue
             if rsp.success == True:
                 _logger.info("Successfully modified the {} stanza file".format(entry.stanza))
             else:
                 _logger.error("Failed to modify stanza properties file with config:\n{}\n{}".format(
-                                                                                json.dumps(entry, indent=4), rsp.data))
+                                                                                json.dumps(entry, indent=4), rsp.content))
 
 
 
@@ -644,7 +640,7 @@ class WEB_Configurator(object):
             _logger.info("Successfully configured RTE")
         else:
             _logger.error("Failed to configure RTE with config:\n{}\n{}".format(
-                json.dumps(runtime, indent=4), rsp.data))
+                json.dumps(runtime, indent=4), rsp.content))
 
         if runtime.stanza_configuration != None:
             self._runtime_stanza(runtime.stanza_configuration)
@@ -679,8 +675,8 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully created acl {}".format(acl.name))
         else:
-            _logger.error("Failed to create acl {} with config:\n{}\n{}".format(acl.name, json.dumps(acl, indent=4),
-                rsp.content))
+            _logger.error("Failed to create acl {} with config:\n{}\n{}".format(
+                    acl.name, json.dumps(acl, indent=4), rsp.content))
 
     def _pdadmin_pop(self, runtime, pop):
         pdadminCommands = ["pop create {}".format(pop.name)]
@@ -689,8 +685,8 @@ class WEB_Configurator(object):
 
         if pop.attributes:
             for attribute in pop.attributes:
-                pdadminCommands += ["pop modify {} set attribute {} {}".format(pop.name, attrbute.name,
-                    attribute.value)]
+                pdadminCommands += ["pop modify {} set attribute {} {}".format(
+                                    pop.name, attribute.name, attribute.value)]
 
         if pop.tod_access:
             pdadminCommands += ["pop modify {} set tod-access {}".format(pop.name, pop.tod_access)]
@@ -711,8 +707,8 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully created pop {}".format(pop.name))
         else:
-            _logger.error("Failed to create pop {} with config:\n{}\n{}".format(pop.name, json.dumps(pop, indent=4),
-                rsp.content))
+            _logger.error("Failed to create pop {} with config:\n{}\n{}".format(
+                        pop.name, json.dumps(pop, indent=4), rsp.content))
 
     def _pdadmin_proxy(self, runtime, proxy_config):
         pdadminCommands = []
@@ -730,9 +726,8 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully attached acls/pops to {}".format(proxy_config.host))
         else:
-            _logger.error("Failed to attach acls/pops to {} with config:\n{}\n{}".format(proxy_config.host,
-                json.dumps(proxy_config, indent=4),
-                rsp.content))
+            _logger.error("Failed to attach acls/pops to {} with config:\n{}\n{}".format(
+                    proxy_config.host, json.dumps(proxy_config, indent=4), rsp.content))
 
     def _pdadmin_user(self, runtime, user):
         firstName = user.first_name if user.first_name else user.name
@@ -746,8 +741,8 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully created user {}".format(user.name))
         else:
-            _logger.error("Failed to create user {} with config:\n{}\n{}".format(user.name, json.dumps(user, indent=4),
-                rsp.content))
+            _logger.error("Failed to create user {} with config:\n{}\n{}".format(
+                        user.name, json.dumps(user, indent=4), rsp.content))
 
     def _pdadmin_groups(self, runtime, group):
         pdadminCommands = ["group create {} {} {}".format(group.name, group.dn, group.description)]
@@ -758,9 +753,8 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully created group {}".format(group.name))
         else:
-            _logger.error("Failed to create group {} with config:\n{}\n{}".format(group.name,
-                json.dumps(group, indent=4), rsp.content))
-
+            _logger.error("Failed to create group {} with config:\n{}\n{}".format(
+                        group.name, json.dumps(group, indent=4), rsp.content))
 
     class PD_Admin(typing.TypedDict):
         '''
@@ -771,13 +765,13 @@ class WEB_Configurator(object):
                 pdadmin:
                   users:
                     - username: "testuser"
-                      password: "Passw0rd"
+                      password: !secret default/isva-secrets:test_password
                       dn: "cn=testuser,dc=iswga"
                     - username: "aaascc"
-                      password: "S3cr37"
+                      password: !secret default/isva-secrets:aac_user_password
                       dn: "cn=aaascc,dc=iswga"
                     - username: "ob_client"
-                      password: "abcd1234"
+                      password: !secret default/isva-secrets:ob_client_password
                       dn: "cn=ob_client,dc=iswga"
                   reverse_proxies:
                     - host: "default-proxy"
@@ -991,7 +985,8 @@ class WEB_Configurator(object):
             if rsp.success == True:
                 _logger.info("Successfully configured certificate mapping")
             else:
-                _logger.error("Failed to configure certificate mapping using {} config file".format(cert_mapping_file['name']))
+                _logger.error("Failed to configure certificate mapping using {} config file:\n{}".format(
+                            cert_mapping_file['name'], rsp.content))
 
 
 
@@ -1019,7 +1014,8 @@ class WEB_Configurator(object):
             if rsp.success == True:
                 _logger.info("Successfully configured junction mapping")
             else:
-                _logger.error("Failed to configure junction mapping using {} config file".format(jct_mapping_file['name']))
+                _logger.error("Failed to configure junction mapping using {} config file:\n{}".format(
+                                jct_mapping_file['name'], rsp.content))
 
 
     class Url_Mapping(typing.TypedDict):
@@ -1044,7 +1040,8 @@ class WEB_Configurator(object):
             if rsp.success == True:
                 _logger.info("Successfully configured URL mapping")
             else:
-                _logger.error("Failed to configure URL mapping using {} config file".format(url_mapping_file['name']))
+                _logger.error("Failed to configure URL mapping using {} config file:\n{}".format(
+                                url_mapping_file['name'], rsp.content))
 
 
     class User_Mapping(typing.TypedDict):
@@ -1069,7 +1066,8 @@ class WEB_Configurator(object):
             if rsp.success == True:
                 _logger.info("Successfully configured user mapping")
             else:
-                _logger.error("Failed to configure user mapping using {} config file".format(user_mapping_file['name']))
+                _logger.error("Failed to configure user mapping using {} config file:\n{}".format(
+                                user_mapping_file['name'], rsp.content))
 
 
     class Form_Single_Sign_On(typing.TypedDict):
@@ -1094,7 +1092,8 @@ class WEB_Configurator(object):
             if rsp.success == True:
                 _logger.info("Successfully configured Federated Singe Sign On configuration")
             else:
-                _logger.error("Failed to configure FSSO using {} config file".format(user_mapping_file['name']))
+                _logger.error("Failed to configure FSSO using {} config file:\n{}".format(
+                                user_mapping_file['name'], rsp.content))
 
 
     class Http_Transformations(typing.TypedDict):
@@ -1126,8 +1125,8 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully configured Kerberos property")
         else:
-            _logger.error("Failed to configure Kerberos property:\nsubsection: {} name: {} value:{}\n{}".format(subsection,
-                name, value, rsp.content))
+            _logger.error("Failed to configure Kerberos property:\nsubsection: {} name: {} value:{}\n{}".format(
+                            subsection, name, value, rsp.content))
 
 
     class Kerberos(typing.TypedDict):
@@ -1187,7 +1186,7 @@ class WEB_Configurator(object):
             for capath in config.capaths:
                 self.__create_kerberos_property("capaths", capath.name, None, None)
                 if capath.properties != None:
-                    for prop, value  in capath.properties: elf.__create_kerberos_property("capaths/" + capath.name,
+                    for prop, value in capath.properties: self.__create_kerberos_property("capaths/" + capath.name,
                             None, prop, value)
         if config.keytabs != None:
             for kf in config.keytabs:
@@ -1197,8 +1196,8 @@ class WEB_Configurator(object):
                 if rsp.success == True:
                     _logger.info("Successfully imported Kerberos Keytab file")
                 else:
-                    _logger.error("Failed to import Kerberos Keytab file:\n{}\n{}".format(json.dumps(prop, indent=4),
-                        rsp.content))
+                    _logger.error("Failed to import Kerberos Keytab file:\n{}\n{}".format(
+                                json.dumps(prop, indent=4), rsp.content))
 
 
     class Password_Strength(typing.TypedDict):
@@ -1221,7 +1220,8 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully configured password strength rules")
         else:
-            _logger.error("Failed to configure password strength rules using {}".format(pwd_mapping_file['name']))
+            _logger.error("Failed to configure password strength rules using {}\n{}".format(
+                            pwd_mapping_file['name'], rsp.content))
 
 
     class RSA(typing.TypedDict):
@@ -1239,80 +1239,102 @@ class WEB_Configurator(object):
         'The server configuration options file to upload.'
 
     def rsa(self, rsa_config):
-        rsp = self.web.rsa.create(name=rsa_config.server_config if rsa_config.server_config.startswith("/") else
-              config_base_dir() + rsa_config.server_config)
+        server_config = FILE_LOADER.read_file(rsa_config.server_config)
+        methodArgs = { "server_config_file": server_config['path']}
+        if rsa_config.optional_server_config:
+            opts_config = FILE_LOADER.read_file(rsa_config.optional_server_config)
+            methodArgs.update({"server_options_file": opts_config['path']})
+        rsp = self.web.rsa.create(**methodArgs)
         if rsp.success == True:
             _logger.info("Successfully configured RSA")
         else:
-            _logger.error("Failed to configure RSA using {}".format(rsa_config.server_config))
-        rsa_optional_config_file = None
-        if rsa_config.optional_server_config != None:
-            rsa_optional_config_file = rsa_config.optional_server_config
+            _logger.error("Failed to configure RSA using:\n{}\n{}".format(
+                            json.dumps(rsa_config, indent=4), rsp.content))
 
 
-    def __apiac_resources(self, proxy_id, resources):
-        for resource in resources:
-            methodArgs = {
-                    "server_hostname": resource.server_hostname,
-                    "junction_point": resource.junction_point,
-                    "junction_type": resource.junction_type,
-                    "static_response_headers": resource.static_response_headers,
-                    "description": resource.description,
-                    "junction_hard_limit": resource.junction_hard_limit,
-                    "junction_soft_limit": resource.junction_soft_limit,
-                    "basic_auth_mode": resource.basic_auth_mode,
-                    "tfim_sso": resource.tfim_sso,
-                    "remote_http_header": resource.remote_http_header,
-                    "stateful_junction": resource.stateful_junction,
-                    "http2_junction": resource.http2_junction,
-                    "sni_name": resource.sni_name,
-                    "preserve_cookie": resource.preserve_cookie,
-                    "cookie_include_path": resource.cookie_include_path,
-                    "transparent_path_junction": resource.transparent_path_junction,
-                    "mutual_auth": resource.mutual_auth,
-                    "insert_ltpa_cookies": resource.insert_ltpa_cookies,
-                    "insert_session_cookies": resource.insert_session_cookies,
-                    "request_encoding": resource.request_encoding,
-                    "enable_basic_auth": resource.enable_basic_auth,
-                    "key_labelkey_label": resource.key_label,
-                    "gso_resource_group": resource.gso_resource_group,
-                    "junction_cookie_javascript_block": resource.junction_cookie_javascript_block,
-                    "client_ip_http": resource.client_ip_http,
-                    "version_two_cookies": resource.version_two_cookies,
-                    "ltpa_keyfile": resource.ltpa_keyfile,
-                    "authz_rules": resource.authz_rules,
-                    "fsso_config_file": resource.fsso_config_file,
-                    "username": resource.username,
-                    "password": resource.password,
-                    "server_uuid": resource.server_uuid,
-                    "server_port": resource.server_port,
-                    "virtual_hostname" : resource.virtual_hostname,
-                    "server_dn": resource.server_dn,
-                    "local_ip": resource.local_ip,
-                    "query_contents": resource.query_contents,
-                    "case_sensitive_url": resource.case_sensitive_url,
-                    "windows_style_url": resource.windows_style_url,
-                    "ltpa_keyfile_password": resource.ltpa_keyfile_password,
-                    "https_port": resource.https_port,
-                    "http_port": resource.http_port,
-                    "proxy_hostname": resource.proxy_hostname,
-                    "proxy_port": resource.proxy_port,
-                    "sms_environment": resource.sms_environment,
-                    "vhost_label": resource.vhost_label,
-                    "force": resource.force,
-                    "delegation_support": resource.delegation_support,
-                    "scripting_support": resource.scripting_support
+    def __apiac_authz_server(self, runtime, authz_servers):
+        for authz_server in authz_servers:
+            methodArgs = {"hostname": authz_server.hostname,
+                          "auth_port": authz_server.auth_port,
+                          "admin_port": authz_server.admin_port,
+                          "domain": authz_server.domain,
+                          "admin_id": runtime.admin_id,
+                          "admin_pwd": runtime.admin_password,
+                          "addresses": authz_server.addresses,
+                          "ssl": authz_server.ssl,
+                          "ssl_port": authz_server.ssl_port,
+                          "key_file": authz_server.key_file,
+                          "key_label": authz_server.key_label
                 }
-            if resource.policy:
-                policy = resurce.policy
+            rsp = self.web.apiac.authz_server.create_server(authz_server.name, **methodArgs)
+            if rsp.success == True:
+                _logger.info("Successfully created {} API Access Control Authorization Server".format(authz_server.name))
+            else:
+                _logger.error("Failed to create API Authorization Server:\n{}\n{}".format(
+                                                            json.dumps(authz_server, indent=4), rsp.content))
+
+    def __apiac_resource_server(self, resource_servers):
+        for resource_server in resource_servers:
+            methodArgs = {
+                    "server_hostname": resource_server.server_hostname,
+                    "junction_point": resource_server.junction_point,
+                    "junction_type": resource_server.junction_type,
+                    "static_response_headers": resource_server.static_response_headers,
+                    "description": resource_server.description,
+                    "junction_hard_limit": resource_server.junction_hard_limit,
+                    "junction_soft_limit": resource_server.junction_soft_limit,
+                    "basic_auth_mode": resource_server.basic_auth_mode,
+                    "tfim_sso": resource_server.tfim_sso,
+                    "remote_http_header": resource_server.remote_http_header,
+                    "stateful_junction": resource_server.stateful_junction,
+                    "http2_junction": resource_server.http2_junction,
+                    "sni_name": resource_server.sni_name,
+                    "preserve_cookie": resource_server.preserve_cookie,
+                    "cookie_include_path": resource_server.cookie_include_path,
+                    "transparent_path_junction": resource_server.transparent_path_junction,
+                    "mutual_auth": resource_server.mutual_auth,
+                    "insert_ltpa_cookies": resource_server.insert_ltpa_cookies,
+                    "insert_session_cookies": resource_server.insert_session_cookies,
+                    "request_encoding": resource_server.request_encoding,
+                    "enable_basic_auth": resource_server.enable_basic_auth,
+                    "key_labelkey_label": resource_server.key_label,
+                    "gso_resource_group": resource_server.gso_resource_group,
+                    "junction_cookie_javascript_block": resource_server.junction_cookie_javascript_block,
+                    "client_ip_http": resource_server.client_ip_http,
+                    "version_two_cookies": resource_server.version_two_cookies,
+                    "ltpa_keyfile": resource_server.ltpa_keyfile,
+                    "authz_rules": resource_server.authz_rules,
+                    "fsso_config_file": resource_server.fsso_config_file,
+                    "username": resource_server.username,
+                    "password": resource_server.password,
+                    "server_port": resource_server.server_port,
+                    "virtual_hostname" : resource_server.virtual_hostname,
+                    "server_dn": resource_server.server_dn,
+                    "local_ip": resource_server.local_ip,
+                    "query_contents": resource_server.query_contents,
+                    "case_sensitive_url": resource_server.case_sensitive_url,
+                    "windows_style_url": resource_server.windows_style_url,
+                    "ltpa_keyfile_password": resource_server.ltpa_keyfile_password,
+                    "https_port": resource_server.https_port,
+                    "http_port": resource_server.http_port,
+                    "proxy_hostname": resource_server.proxy_hostname,
+                    "proxy_port": resource_server.proxy_port,
+                    "sms_environment": resource_server.sms_environment,
+                    "vhost_label": resource_server.vhost_label,
+                    "force": resource_server.force,
+                    "delegation_support": resource_server.delegation_support,
+                    "scripting_support": resource_server.scripting_support
+                }
+            if resource_server.policy:
+                policy = resource_server.policy
                 methodArgs.update({
-                        "name": policy.name,
-                        "type": policy.type
+                        "policy_name": policy.name,
+                        "policy_type": policy.type
                     })
-            if resource.authentication:
-                methodArgs.update({"type": resource.authentication.type})
-                if resource.autehntication.oauth_introspection:
-                    oauth_introspection = resource.autehntication.oauth_introspection
+            if resource_server.authentication:
+                methodArgs.update({"authentication_type": resource_server.authentication.type})
+                if resource_server.authentication.oauth_introspection:
+                    oauth_introspection = resource_server.authentication.oauth_introspection
                     methodArgs.update({
                             "oauth_introspection_transport": oauth_introspection.transport,
                             "oauth_introspection_endpoint": oauth_introspection.endpoint,
@@ -1326,49 +1348,47 @@ class WEB_Configurator(object):
                             "oauth_introspection_external_user": oauth_introspection.external_user,
                             "oauth_introspection_response_attributes": oauth_introspection.response_attributes
                         })
-                if resource.authentication.jwt:
-                    jwt = resource.authentication.jwt
+                if resource_server.authentication.jwt:
+                    jwt = resource_server.authentication.jwt
                     methodArgs.update({
                             "jwt_header_name": jwt.header_name,
                             "jwt_certificate": jwt.certificate,
                             "jwt_claims": jwt.claims
                         })
-            rsp = self.web.api_access_control.resources.create_server(proxy_id, **methodArgs)
+            rsp = self.web.api_access_control.resource_server.create_server(resource_server.reverse_proxy, **methodArgs)
             if rsp.success == True:
                 _logger.info("Successfully created {} API AC Resource server".format(resource.server_hostname))
             else:
-                _logger.error("Failed to create {} API AC Resource serveer with config:\n{}\n{}".format(
+                _logger.error("Failed to create {} API AC Resource server with config:\n{}\n{}".format(
                     resource.server_hostname, json.dumps(resource, indent=4), rsp.content))
                 continue
-            if resource.junctions:
-                for junction in resource.junctions:
+            if resource_server.resources:
+                for resource in resource_server.resource:
                     methodArgs = {
-                            "server_type": junction.server_type,
-                            "method": junction.method,
-                            "path": junction.path,
-                            "name": junction.name,
-                            "static_response_headers": junction.static_response_headers,
-                            "rate_limiting_policy": junction.rate_limiting_policy,
-                            "url_aliases": junction.url_aliases
+                            "server_type": resource.server_type,
+                            "method": resource.method,
+                            "path": resource.path,
+                            "name": resource.name,
+                            "static_response_headers": resource.static_response_headers,
+                            "rate_limiting_policy": resource.rate_limiting_policy,
+                            "url_aliases": resource.url_aliases,
+                            "policy_type": resource.policy_type,
+                            "policy_name": resource.policy_name
                         }
-                    if junction.policy:
-                        policy = junction.policy
-                        methodArgs.update({
-                                "policy_type": policy.type,
-                                "policy_name": policy.name
-                            })
-                    if junction.documentation:
-                        doc = junction.documentation
+                    if resource.documentation:
+                        doc = resource.documentation
                         methodArgs.update({
                             "documentation_content_type": doc.content_type,
                             "documentation_file": doc.file
                         })
-                    rsp = self.web.api_access_control.resources.create(proxy_id, resource.junction_point, **methodArgs)
+                    rsp = self.web.api_access_control.resource_server.create_resource(
+                                resource_server.reverse_proxy, resource_server.junction_point, **methodArgs)
                     if rsp.success == True:
                         _logger.info("Successfully created {} junctioned resource".format(junction.name))
                     else:
                         _logger.error("Failed to create {} junctioned resource with config;\n{}\n{}".format(
                             junction.name, json.dumps(junction, indent=4), rsp.content))
+
 
     def __apiac_policies(self, policies):
         for policy in policies:
@@ -1377,8 +1397,8 @@ class WEB_Configurator(object):
             if rsp.success == True:
                 _logger.info("Successfully created {} policy".format(policy.name))
             else:
-                _logger.error("Failed to create API Access Control policy {}:\n{}\n{}".format(policy.name,
-                                                                            json.dumps(policy, indent=4), rsp.content))
+                _logger.error("Failed to create API Access Control policy {}:\n{}\n{}".format(
+                                        policy.name, json.dumps(policy, indent=4), rsp.content))
 
     def __apiac_cors(self, cors_policies):
         for cors in cors_policies:
@@ -1408,27 +1428,71 @@ class WEB_Configurator(object):
         Example::
 
                 api_access_control:
-                  authz_servers:
+                  authorization_servers:
+                  - name: "api_server"
+                    hostname: "localhost"
+                    auth_port: 9443
+                    admin_port: 7138
+                    domain: "Deafult"
+                    addresses:
+                    - "192.168.42.102"
+                    ssl: "yes"
+                    ssl_port: 636
+                    key_file: "pdsrv.kdb"
+                    key_alias: "webseal-cert"
+                  resource_servers:
                   - name: "authz_server"
-                    hostname: "isvaconfig"
+                    hostname: "isvaruntime"
+                    junction_point: "/scim"
+                    junction_type:"SSL"
+                    authentication:
+                      type: "oauth"
+                      oauth_introspection:
+                        transport: "both"
+                        auth_method: "client_secret_basic"
+                        endpoint: "external.com/oauth"
+                        client_id: !secret default/isva-secrets:apiac_authz_client_id
+                        mapped_id: "{iss}/{sub}"
+                        external_user: true
+                        response_attributes:
+                        - pos: 0
+                          action: "put"
+                          attribute: "test_attribute"
+                      jwt:
+                        header_name: "iv-jwt"
+                        certiciate: "cert"
+                        claims:
+                        - type: "attr"
+                          value: "AZN_CRED_PRINCIPAL_NAME"
+                          claim_name: "sub"
                     document_root:
                     - webseal_root.zip
                     resources:
                     - name: "api_ac_instance"
-                      hostname: "TODO"
+                      hostname: "ibmsec.verify.access"
                   cors:
                   - name:
-                    allowed_origins
-                    allowed_credentials
-                    exposed_headers
-                    handle_preflight
-                    allowed_methods
+                    allowed_origins:
+                    - "https://webseal.ibm.com"
+                    - "https://webseal.ibm.com:9443"
+                    - "http://static.webseal.ibm.com"
+                    - "http://static.webseal.ibm.com:9080"
+                    allowed_credentials: true
+                    exposed_headers:
+                    - "X-ISAM-VERSION"
+                    - "X-ISAM-KEY"
+                    handle_preflight: true
+                    allowed_methods:
+                    - "retry"
+                    - "IBMPost"
+                    - "Remove"
                     allowed_headers:
-                    max_age:
-
+                    - "X-ISAM-MODE"
+                    - "Content-type"
+                    max_age: 86400
 
         '''
-        class Authorization_Server(typing.TypedDict):
+        class Resource_Server(typing.TypedDict):
 
             class Resource(typing.TypedDict):
 
@@ -1436,158 +1500,197 @@ class WEB_Configurator(object):
                     name: str
                     'The name of the response header.'
                     value: str
-                    'The value of the response header'
+                    'The value of the response header.'
 
-                class Attribute(typing.TypedDict):
-                    pos: str
-                    'The position of this attribute in the ordered list of all attributes.'
-                    action: str
-                    'The action to perform for this attribute. Valid values are "put" and "remove".'
-                    attribute: str
-                    'The name of the attribute.'
-
-                class Claim(typing.TypedDict):
-                    type: str
-                    'The type of claim to add to the JWT. Valid values are either "text" for a literal text claim or "attr" for a credential attribute claim.'
-                    value: str
-                    'The value for the claim. If the type is "text" this will be the literal text that is added to the JWT. If the type is "attr" this will be the name of the credential attribute to add to the JWT.'
-                    claim_name: str
-                    'The name of the claim that is added to the JWT. For attr type claims this is optional and if not specified the claim name will be set as the name of the credential attribute. If the type is attr and the value contains a wildcard this field is invalid and if specified will result in an error. '
-
-                server_hostname: str
-                'The DNS host name or IP address of the target back-end server.'
-                server_port: int
-                'TCP port of the back-end third-party server. Default is 80 for TCP junctions and 443 for SSL junctions.'
-                virtual_hostname: typing.Optional[str]
-                'Virtual host name that is used for the junctioned Web server.'
-                server_dn: typing.Optional[str]
-                'Specifies the distinguished name of the junctioned Web server.'
-                sever_cn: typing.Optional[str]
-                'Specifies the common name, or subject alternative name, of the junctioned Web server.'
-                description: typing.Optional[str]
-                'An optional description for this junction.'
-                junction_point: str
-                'Name of the location in the Reverse Proxy namespace where the root of the back-end application server namespace is mounted.'
-                junction_type: str
-                'Type of junction. Valid values: "tcp", "ssl", "tcpproxy", "sslproxy",'
-                stateful_junction: typing.Optional[str]
-                'Specifies whether the junction supports stateful applications. By default, junctions are not stateful. Valid value is "yes" or "no".'
+                method: str
+                'The HTTP action for this resource.'
+                path: str
+                'The URI path for this resource. This is a full server relative path including the junction point.'
+                name: typing.Optional[str]
+                'A description for this resource.'
+                policy_name: str
+                'The name of the custom policy if the type is custom.'
                 policy_type: str
                 'The type of Policy. The valid values are "unauthenticated", "anyauthenticated", "none", "default" or "custom".'
-                policy_name: typing.Optional[str]
-                'The name of the custom policy if the type is custom. '
-                authentication_type: str
-                'The type of Oauth authentication. The valid values are "default" or "oauth".'
-                oauth_introspection_transport: typing.Optional[str]
-                'The transport type. The valid values are "none", "http", "https" or "both".'
-                oauth_introspection_proxy: typing.Optional[str]
-                'The proxy, if any, used to reach the introspection endpoint.'
-                oauth_introspection_auth_method: typing.Optional[str]
-                'The method for passing the authentication data to the introspection endpoint. Valid values are "client_secret_basic" or "client_secret_post".'
-                oauth_introspection_endpoint: typing.Optional[str]
-                'This is the introspection endpoint which will be called to handle the token introspection.'
-                oauth_introspection_client_id: typing.Optional[str]
-                'The client identifier which is used for authentication with the external OAuth introspection endpoint.'
-                oauth_introspection_client_secret: typing.Optional[str]
-                'The client secret which is used for authentication with the external OAuth introspection endpoint.'
-                oauth_introspection_client_id_hdr: typing.Optional[str]
-                'The name of the HTTP header which contains the client identifier which is used to authenticate to the introspection endpoint. Only valid if client_id has not been set.'
-                oauth_introspection_token_type_hint: typing.Optional[str]
-                'A hint about the type of the token submitted for introspection.'
-                oauth_introspection_mapped_id: typing.Optional[str]
-                'A formatted string which is used to construct the Verify Access principal name from elements of the introspection response. Claims can be added to the identity string, surrounded by "{}".'
-                oauth_introspection_external_user: typing.Optional[str]
-                'A boolean which is used to indicate whether the mapped identity should correspond to a known Verify Access identity or not.'
-                oauth_introspection_response_attributes: typing.List[Attribute]
-                'A list of rules indicating which parts of the json response should be added to the credential.'
-                static_response_headers: typing.List[Response_Header]
-                'A list of header names and values that should be added to the HTTP response. List of key value pairs eg: ``{"name":"Access-Control-Max-Age", "value":"600"}``'
-                jwt_header_name: typing.Optional[str]
-                'The name of the HTTP header that will contain the JWT.'
-                jwt_certificate: typing.Optional[str]
-                'The label of the personal certificate that will sign the JWT.'
-                jwt_claims: typing.Optional[Claim]
-                'The list of claims to add to the JWT.'
-                junction_hard_limit: str
-                'Defines the hard limit percentage for consumption of worker threads. Valid value is an integer from "0" to "100".'
-                junction_soft_limit: str
-                'Defines the soft limit percentage for consumption of worker threads. Valid value is an integer from "0" to "100".'
-                basic_auth_mode: typing.Optional[str]
-                'Defines how the Reverse Proxy server passes client identity information in HTTP basic authentication (BA) headers to the back-end server. The value is one of: "filter" (default), "ignore", "supply", "gso".'
-                tfim_sso: str
-                'Enables IBM Security Federated Identity Manager single sign-on (SSO) for the junction. Valid value is "yes" or "no".'
-                remote_http_header: typing.Optional[typing.List[str]]
-                'Controls the insertion of Security Verify Access specific client identity information in HTTP headers across the junction. The value is an array containing a combination of: "iv-user", "iv-user-l", "iv-groups", "iv-creds" or "all".'
-                http2_junction: typing.Optional[str]
-                'Specifies whether the junction supports the HTTP/2 protocol. By default, junctions do not support the HTTP/2 protocol. A valid value is "yes" or "no".'
-                http2_proxy: typing.Optional[str]
-                'Specifies whether the junction proxy support the HTTP/2 protocol. By default, junction proxies do not support the HTTP/2 protocol. A valid value is "yes" or "no".'
-                sni_name: typing.Optional[str]
-                'The server name indicator (SNI) to send to TLS junction servers. By default, no SNI is sent.'
-                preserve_cookie: typing.Optional[str]
-                'Specifies whether modifications of the names of non-domain cookies are to be made. Valid value is "yes" or "no".'
-                cookie_include_path: str
-                'Specifies whether script generated server-relative URLs are included in cookies for junction identification. Valid value is "yes" or "no".'
-                transparent_path_junction: str
-                'Specifies whether a transparent path junction is created. Valid value is "yes" or "no".'
-                mutual_auth: str
-                'Specifies whether to enforce mutual authentication between a front-end Reverse Proxy server and a back-end Reverse Proxy server over SSL. Valid value is "yes" or "no".'
-                insert_ltpa_cookies: str
-                'Controls whether LTPA cookies are passed to the junctioned Web server. Valid value is "yes" or "no".'
-                insert_session_cookies: str
-                'Controls whether to send the session cookie to the junctioned Web server. Valid value is "yes" or "no".'
-                request_encoding: str
-                'Specifies the encoding to use when the system generates HTTP headers for junctions. Possible values for encoding are: "utf8_bin", "utf8_uri", "lcp_bin", and "lcp_uri".'
-                enable_basic_auth: str
-                'Specifies whether to use BA header information to authenticate to back-end server. Valid value is "yes" or "no".'
-                key_label: typing.Optional[str]
-                'The key label for the client-side certificate that is used when the system authenticates to the junctioned Web server.'
-                gso_respource_group: typing.Optional[str]
-                'The name of the GSO resource or resource group.'
-                junction_cookie_javascript_block: str
-                'Controls the junction cookie JavaScript block. The value should be one of: "trailer", "inhead", "onfocus", "xhtml10".'
-                client_ip_http: str
-                'Specifies whether to insert the IP address of the incoming request into an HTTP header for transmission to the junctioned Web server. Valid value is "yes" or "no".'
-                version_two_cookies: typing.Optional[str]
-                'Specifies whether LTPA version 2 cookies (LtpaToken2) are used. Valid value is "yes" or "no".'
-                ltpa_keyfile: typing.Optional[str]
-                'Location of the key file that is used to encrypt the LTPA cookie data.'
-                authz_rules: str
-                'Specifies whether to allow denied requests and failure reason information from authorization rules to be sent in the Boolean Rule header (AM_AZN_FAILURE) across the junction. Valid value is "yes" or "no".'
-                fsso_config_file: str
-                'The name of the configuration file that is used for forms based single sign-on.'
-                username: typing.Optional[str]
-                'The Reverse Proxy user name. Used to send BA header information to the back-end server.'
-                password: typing.Optional[str]
-                'The Reverse Proxy password. Used to send BA header information to the back-end server.'
-                local_ip: typing.Optional[str]
-                'Specifies the local IP address that the Reverse Proxy uses when the system communicates with the target back-end server.'
-                query_contents: str
-                'Provides the Reverse Proxy with the correct name of the query_contents program file and where to find the file. By default, the Windows file is called query_contents.exe and the UNIX file is called query_contents.sh.'
-                case_sensitive_url: str
-                'Specifies whether the Reverse Proxy server treats URLs as case sensitive. Valid value is "yes" or "no".'
-                windows_style_url: str
-                'Specifies whether Windows style URLs are supported. Valid value is "yes" or "no".'
-                ltpa_keyfile_password: typing.Optional[str]
-                'Password for the key file that is used to encrypt LTPA cookie data.'
-                https_port: int
-                'HTTPS port of the back-end third-party server. Applicable when the junction type is "ssl".'
-                http_port: int
-                'HTTP port of the back-end third-party server. Applicable when the junction type is "tcp".'
-                proxy_hostname: typing.Optional[str]
-                'The DNS host name or IP address of the proxy server. Applicable when the junction type is "sslproxy".'
-                proxy_port: typing.Optional[int]
-                'The TCP port of the proxy server. Applicable when the junction type is "tcpproxy".'
-                sms_environment: typing.Optional[str]
-                'Only applicable for virtual junctions. Specifies the replica set that sessions on the virtual junction are managed under.'
-                vhost_label: typing.Optional[str]
-                'Only applicable for virtual junctions. Causes a second virtual junction to share the protected object space with the initial virtual junction.'
-                delegation_support: typing.Optional[str]
-                'This option is valid only with junctions that were created with the type of "ssl" or "sslproxy". Indicates single sign-on from a front-end Reverse Proxy server to a back-end Reverse Proxy server.'
-                scripting_support: typing.Optional[str]
-                'Supplies junction identification in a cookie to handle script-generated server-relative URLs. '
-                force: str
-                'Specifies whether to overwrite an existing junction of the same name. Valid value is "yes" or "no".'
+                static_response_headers: typing.Optional[typing.List[Response_Header]]
+                'A list of header names and values that should be added to the HTTP response.'
+                rate_limiting_policy: typing.Optional[str]
+                'The name of the rate limiting policy that has been set for this resource.'
+                url_aliases: typing.Optional[typing.List[str]]
+                'A list of aliases that all map to the path of this resource.'
+                doc_type: str
+                'The value of the accept header that will trigger a documentation response.'
+                doc_file: str
+                'The name and path of the documentation file to respond with, relative to the junction root.'
+
+            class Response_Header(typing.TypedDict):
+                name: str
+                'The name of the response header.'
+                value: str
+                'The value of the response header'
+
+            class Attribute(typing.TypedDict):
+                pos: str
+                'The position of this attribute in the ordered list of all attributes.'
+                action: str
+                'The action to perform for this attribute. Valid values are "put" and "remove".'
+                attribute: str
+                'The name of the attribute.'
+
+            class Policy(typing.TypedDict):
+                type: str
+                'The type of Policy. The valid values are "unauthenticated", "anyauthenticated", "none", "default" or "custom".'
+                name: typing.Optional[str]
+                'The name of the custom policy if the type is custom.'
+
+            class Claim(typing.TypedDict):
+                type: str
+                'The type of claim to add to the JWT. Valid values are either "text" for a literal text claim or "attr" for a credential attribute claim.'
+                value: str
+                'The value for the claim. If the type is "text" this will be the literal text that is added to the JWT. If the type is "attr" this will be the name of the credential attribute to add to the JWT.'
+                claim_name: str
+                'The name of the claim that is added to the JWT. For attr type claims this is optional and if not specified the claim name will be set as the name of the credential attribute. If the type is attr and the value contains a wildcard this field is invalid and if specified will result in an error. '
+
+            reverse_proxy: str
+            'Name of the WebSEAL Reverse Proxy instance this resource server is attached to.'
+            server_hostname: str
+            'The DNS host name or IP address of the target back-end server.'
+            server_port: int
+            'TCP port of the back-end third-party server. Default is 80 for TCP junctions and 443 for SSL junctions.'
+            virtual_hostname: typing.Optional[str]
+            'Virtual host name that is used for the junctioned Web server.'
+            server_dn: typing.Optional[str]
+            'Specifies the distinguished name of the junctioned Web server.'
+            sever_cn: typing.Optional[str]
+            'Specifies the common name, or subject alternative name, of the junctioned Web server.'
+            description: typing.Optional[str]
+            'An optional description for this junction.'
+            junction_point: str
+            'Name of the location in the Reverse Proxy namespace where the root of the back-end application server namespace is mounted.'
+            junction_type: str
+            'Type of junction. Valid values: "tcp", "ssl", "tcpproxy", "sslproxy",'
+            stateful_junction: typing.Optional[str]
+            'Specifies whether the junction supports stateful applications. By default, junctions are not stateful. Valid value is "yes" or "no".'
+            policy: Policy
+            'The Policy that is associated with this Resource Server.'
+            authentication_type: str
+            'The type of Oauth authentication. The valid values are "default" or "oauth".'
+            oauth_introspection_transport: typing.Optional[str]
+            'The transport type. The valid values are "none", "http", "https" or "both".'
+            oauth_introspection_proxy: typing.Optional[str]
+            'The proxy, if any, used to reach the introspection endpoint.'
+            oauth_introspection_auth_method: typing.Optional[str]
+            'The method for passing the authentication data to the introspection endpoint. Valid values are "client_secret_basic" or "client_secret_post".'
+            oauth_introspection_endpoint: typing.Optional[str]
+            'This is the introspection endpoint which will be called to handle the token introspection.'
+            oauth_introspection_client_id: typing.Optional[str]
+            'The client identifier which is used for authentication with the external OAuth introspection endpoint.'
+            oauth_introspection_client_secret: typing.Optional[str]
+            'The client secret which is used for authentication with the external OAuth introspection endpoint.'
+            oauth_introspection_client_id_hdr: typing.Optional[str]
+            'The name of the HTTP header which contains the client identifier which is used to authenticate to the introspection endpoint. Only valid if client_id has not been set.'
+            oauth_introspection_token_type_hint: typing.Optional[str]
+            'A hint about the type of the token submitted for introspection.'
+            oauth_introspection_mapped_id: typing.Optional[str]
+            'A formatted string which is used to construct the Verify Access principal name from elements of the introspection response. Claims can be added to the identity string, surrounded by "{}".'
+            oauth_introspection_external_user: typing.Optional[str]
+            'A boolean which is used to indicate whether the mapped identity should correspond to a known Verify Access identity or not.'
+            oauth_introspection_response_attributes: typing.List[Attribute]
+            'A list of rules indicating which parts of the json response should be added to the credential.'
+            static_response_headers: typing.List[Response_Header]
+            'A list of header names and values that should be added to the HTTP response. List of key value pairs eg: ``{"name":"Access-Control-Max-Age", "value":"600"}``'
+            jwt_header_name: typing.Optional[str]
+            'The name of the HTTP header that will contain the JWT.'
+            jwt_certificate: typing.Optional[str]
+            'The label of the personal certificate that will sign the JWT.'
+            jwt_claims: typing.Optional[Claim]
+            'The list of claims to add to the JWT.'
+            junction_hard_limit: str
+            'Defines the hard limit percentage for consumption of worker threads. Valid value is an integer from "0" to "100".'
+            junction_soft_limit: str
+            'Defines the soft limit percentage for consumption of worker threads. Valid value is an integer from "0" to "100".'
+            basic_auth_mode: typing.Optional[str]
+            'Defines how the Reverse Proxy server passes client identity information in HTTP basic authentication (BA) headers to the back-end server. The value is one of: "filter" (default), "ignore", "supply", "gso".'
+            tfim_sso: str
+            'Enables IBM Security Federated Identity Manager single sign-on (SSO) for the junction. Valid value is "yes" or "no".'
+            remote_http_header: typing.Optional[typing.List[str]]
+            'Controls the insertion of Security Verify Access specific client identity information in HTTP headers across the junction. The value is an array containing a combination of: "iv-user", "iv-user-l", "iv-groups", "iv-creds" or "all".'
+            http2_junction: typing.Optional[str]
+            'Specifies whether the junction supports the HTTP/2 protocol. By default, junctions do not support the HTTP/2 protocol. A valid value is "yes" or "no".'
+            http2_proxy: typing.Optional[str]
+            'Specifies whether the junction proxy support the HTTP/2 protocol. By default, junction proxies do not support the HTTP/2 protocol. A valid value is "yes" or "no".'
+            sni_name: typing.Optional[str]
+            'The server name indicator (SNI) to send to TLS junction servers. By default, no SNI is sent.'
+            preserve_cookie: typing.Optional[str]
+            'Specifies whether modifications of the names of non-domain cookies are to be made. Valid value is "yes" or "no".'
+            cookie_include_path: str
+            'Specifies whether script generated server-relative URLs are included in cookies for junction identification. Valid value is "yes" or "no".'
+            transparent_path_junction: str
+            'Specifies whether a transparent path junction is created. Valid value is "yes" or "no".'
+            mutual_auth: str
+            'Specifies whether to enforce mutual authentication between a front-end Reverse Proxy server and a back-end Reverse Proxy server over SSL. Valid value is "yes" or "no".'
+            insert_ltpa_cookies: str
+            'Controls whether LTPA cookies are passed to the junctioned Web server. Valid value is "yes" or "no".'
+            insert_session_cookies: str
+            'Controls whether to send the session cookie to the junctioned Web server. Valid value is "yes" or "no".'
+            request_encoding: str
+            'Specifies the encoding to use when the system generates HTTP headers for junctions. Possible values for encoding are: "utf8_bin", "utf8_uri", "lcp_bin", and "lcp_uri".'
+            enable_basic_auth: str
+            'Specifies whether to use BA header information to authenticate to back-end server. Valid value is "yes" or "no".'
+            key_label: typing.Optional[str]
+            'The key label for the client-side certificate that is used when the system authenticates to the junctioned Web server.'
+            gso_respource_group: typing.Optional[str]
+            'The name of the GSO resource or resource group.'
+            junction_cookie_javascript_block: str
+            'Controls the junction cookie JavaScript block. The value should be one of: "trailer", "inhead", "onfocus", "xhtml10".'
+            client_ip_http: str
+            'Specifies whether to insert the IP address of the incoming request into an HTTP header for transmission to the junctioned Web server. Valid value is "yes" or "no".'
+            version_two_cookies: typing.Optional[str]
+            'Specifies whether LTPA version 2 cookies (LtpaToken2) are used. Valid value is "yes" or "no".'
+            ltpa_keyfile: typing.Optional[str]
+            'Location of the key file that is used to encrypt the LTPA cookie data.'
+            authz_rules: str
+            'Specifies whether to allow denied requests and failure reason information from authorization rules to be sent in the Boolean Rule header (AM_AZN_FAILURE) across the junction. Valid value is "yes" or "no".'
+            fsso_config_file: str
+            'The name of the configuration file that is used for forms based single sign-on.'
+            username: typing.Optional[str]
+            'The Reverse Proxy user name. Used to send BA header information to the back-end server.'
+            password: typing.Optional[str]
+            'The Reverse Proxy password. Used to send BA header information to the back-end server.'
+            local_ip: typing.Optional[str]
+            'Specifies the local IP address that the Reverse Proxy uses when the system communicates with the target back-end server.'
+            query_contents: str
+            'Provides the Reverse Proxy with the correct name of the query_contents program file and where to find the file. By default, the Windows file is called query_contents.exe and the UNIX file is called query_contents.sh.'
+            case_sensitive_url: str
+            'Specifies whether the Reverse Proxy server treats URLs as case sensitive. Valid value is "yes" or "no".'
+            windows_style_url: str
+            'Specifies whether Windows style URLs are supported. Valid value is "yes" or "no".'
+            ltpa_keyfile_password: typing.Optional[str]
+            'Password for the key file that is used to encrypt LTPA cookie data.'
+            https_port: int
+            'HTTPS port of the back-end third-party server. Applicable when the junction type is "ssl".'
+            http_port: int
+            'HTTP port of the back-end third-party server. Applicable when the junction type is "tcp".'
+            proxy_hostname: typing.Optional[str]
+            'The DNS host name or IP address of the proxy server. Applicable when the junction type is "sslproxy".'
+            proxy_port: typing.Optional[int]
+            'The TCP port of the proxy server. Applicable when the junction type is "tcpproxy".'
+            sms_environment: typing.Optional[str]
+            'Only applicable for virtual junctions. Specifies the replica set that sessions on the virtual junction are managed under.'
+            vhost_label: typing.Optional[str]
+            'Only applicable for virtual junctions. Causes a second virtual junction to share the protected object space with the initial virtual junction.'
+            delegation_support: typing.Optional[str]
+            'This option is valid only with junctions that were created with the type of "ssl" or "sslproxy". Indicates single sign-on from a front-end Reverse Proxy server to a back-end Reverse Proxy server.'
+            scripting_support: typing.Optional[str]
+            'Supplies junction identification in a cookie to handle script-generated server-relative URLs. '
+            force: str
+            'Specifies whether to overwrite an existing junction of the same name. Valid value is "yes" or "no".'
+            resources: typing.Optional[typing.List[Resource]]
+            'List of resources to add to resource server.'
+            document_root: typing.Optional[typing.List[str]]
+            'List of documents to upload to the document root.'
+
+        class Authorization_Server(typing.TypedDict):
 
             name: str
             'This is the new instance name, which is a unique name that identifies the instance.'
@@ -1608,11 +1711,7 @@ class WEB_Configurator(object):
             key_file: str
             'The name of the keyfile that will be used when communicating with the LDAP server over SSL.'
             key_label: str
-            'The label of the certificate within the keyfile to use. '
-            resources: typing.Optional[typing.List[Resource]]
-            'List of resource servers to configure'
-            document_root: typing.Optional[typing.List[str]]
-            'List of documents to upload to the document root.'
+            'The label of the certificate within the keyfile to use.'
 
         class Policy(typing.TypedDict):
             name: str
@@ -1640,10 +1739,12 @@ class WEB_Configurator(object):
             max_age: typing.Optional[int]
             'Controls the Access-Control-Max-Age header added to pre-flight requests. If set to zero, the header will not be added to pre-flight responses. If set to -1, clients will be told not to cache at all. If not present, this value will default to zero.'
 
-        authz_servers: typing.Optional[typing.List[Authorization_Server]]
+        authorization_servers: typing.Optional[typing.List[Authorization_Server]]
         'List of API Authorization servers to create.'
+        resource_servers: typing.Optional[typing.List[Resource_Server]]
+        'List of API Resource servers to create.'
         policies: typing.Optional[typing.List[Policy]]
-        'List of API access control policies to create'
+        'List of API access control policies to create.'
         cors: typing.Optional[typing.List[Cross_Origin_Resource_Sharing]]
         'List of Cross-Origin Resource Sharing policies to create.'
 
@@ -1663,26 +1764,11 @@ class WEB_Configurator(object):
         if config.cors != None:
             self.__apiac_cors(config.cors)
             
-        if config.authz_servers != None:
-            for auth_server in config.authz_servers:
-                rsp = self.web.api_access_control.authz_server.create_server(auth_server.name, hostname=auth_server.hostname,
-                            auth_port=auth_server.auth_port, admin_port=auth_server.admin_port, domain=auth_server.domain,
-                            admin_id="sec_master", admin_pwd=runtime.admin_password, addresses=auth_server.addresses,
-                            ssl=auth_server.ssl, ssl_port=auth_server.ssl_port, keyfile=auth_server.key_file, 
-                            keyfile_label=auth_server.key_label)
-                if rsp.success == True:
-                    _logger.info("Successfully created {} API authorization server".format(auth_server.name))
-                else:
-                    _logger.error("Failed to create the {} API authorization server;\n{}\n{}".format(auth_server.name,
-                                                                            json.dumps(auth_server, indent=4), rsp.content))
-                    continue
+        if config.authorization_servers != None:
+            self.__apiac_authz_server(runtime, config.authorization_servers)
 
-                if auth_server.document_root != None:
-                    self.__apiac_document_root(auth_server.document_root)
-
-                if auth_server.resources != None:
-                    self.__apiac_resources(auth_server.resources)
-
+        if config.resource_servers != None:
+            self.__apiac_resource_server(resourcconfig.resource_serverse_server)
 
 
     def configure(self):
@@ -1724,11 +1810,11 @@ class WEB_Configurator(object):
                 for proxy in websealConfig.reverse_proxy:
                     self.wrp(websealConfig.runtime, proxy)
 
-            if webseal.authroization_servers != None:
-                self.api_access_control(websealConfig.runtime, websealConfig.authroization_server)
-
             if websealConfig.pdadmin != None:
                 self.pdadmin(websealConfig.runtime, websealConfig.pdadmin)
+            
+            if websealConfig.api_access_control != None:
+                        self.api_access_control(websealConfig.runtime, websealConfig.api_access_control)
 
         else:
             _logger.info("No runtime configuration detected, unable to set up any reverse proxy config or run pdadmin commands")

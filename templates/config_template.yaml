@@ -310,7 +310,7 @@ federation:
             include_x509_certificate_data: "true"
             include_x509_subject_name: "false"
             include_x509_subject_key_identifier: "false"
-            include_x509_issuer_detials: "false"
+            include_x509_issuer_details: "false"
             include_public_key: "false"
           signing_key_identifier:
             keystore: "rt_profile_keys"

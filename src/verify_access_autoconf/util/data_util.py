@@ -19,6 +19,8 @@ def remap_keys(data_dict, remap_dict):
     old_dict: dictionary with keys to be remapped
     remap_dict: dictionary with mapping {old_key: new_key}
     '''
+    if not isinstance(data_dict, dict) or not isinstance(remap_dict, dict):
+        raise TypeError("give me dictionaries")
     return {remap_dict.get(k, k): v for k, v in data_dict.items()}
 
 #Method guaranteed to return a list with at least dictionary in it (if its not empty)
