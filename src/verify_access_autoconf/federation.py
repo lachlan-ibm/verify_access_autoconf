@@ -1025,7 +1025,7 @@ class FED_Configurator(object):
                     "artifact_resolution_service": config.artifact_resolution_services,
                     "attribute_mapping": config.attribute_mappings,
                     "company_name": config.company_name,
-                    "manage_name_id_services": config.manage_name_id_services
+                    "manage_name_id_services": config.manage_name_id_services,
                     "msg_valid_time": config.message_valid_time,
                     "msg_issuer_fmt": config.message_issuer_format,
                     "msg_issuer_name_qualifier": config.message_issuer_name_qualifier,
