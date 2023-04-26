@@ -86,6 +86,7 @@ class Federation_Common(typing.TypedDict):
         'Attribute Source ID. '
 
     class Encryption_Settings(typing.TypedDict):
+
         class Key_Identifier(typing.TypedDict):
             store: str
             'The certificate database name.'
@@ -98,8 +99,6 @@ class Federation_Common(typing.TypedDict):
         'Key transport algorithm used to encrypt and decrypt keys. Valid values are "RSA-v1.5" and "RSA-OAEP". If not provided, the default value is "RSA-OAEP". If the supplied encryptionKeyIdentifier corresponds to a network HSM device, the "RSA-OAEP" key transport is not allowed.'
         key_identifier: typing.Optional[Key_Identifier]
         'The certificate for encryption of outgoing SAML messages. If not provided, the default value is null.'
-        options: typing.Optional[Encryption_Options]
-        'The encryption options.'
         decryption_key_identifier: typing.Optional[Key_Identifier]
         'A public/private key pair that the federation partners can use to encrypt certain message content. The default value is null.'
         key_store: str
