@@ -1157,7 +1157,7 @@ class FED_Configurator(object):
             return
         if federation.partners != None:
             for partner in federation.partners:
-                _create_partner(federation, partner)
+                self._create_partner(federation, partner)
 
 
     def _configure_oidc_federation(self, federation):
@@ -1182,8 +1182,8 @@ class FED_Configurator(object):
                         "identity_ba_password": config.identity_mapping.properties.basic_auth_password,
                         "identity_client_keystore": config.identity_mapping.properties.client_key_store,
                         "identity_client_key_alias": config.identity_mapping.properties.client_key_alias,
-                        "identity_issuer_uri": config.identity_mapping.properties.issuer_uri
-                        "identity_message_format": config.identity_mapping.properties.message_format
+                        "identity_issuer_uri": config.identity_mapping.properties.issuer_uri,
+                        "identity_message_format": config.identity_mapping.properties.message_format,
                         "identity_ssl_keystore": config.identity_mapping.properties.ssl_key_store,
                         "identity_uri": config.identity_mapping.properties.uri
                     })
