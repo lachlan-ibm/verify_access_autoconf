@@ -86,6 +86,11 @@ class Federation_Common(typing.TypedDict):
         'Attribute Source ID. '
 
     class Encryption_Settings(typing.TypedDict):
+        class Key_Identifier(typing.TypedDict):
+            store: str
+            'The certificate database name.'
+            label: str
+            'The certificate or key label.'
 
         block_algorithm: typing.Optional[str]
         'Block encryption algorithm used to encrypt and decrypt SAML message. Valid values are "AES-128", "AES-192", "AES-256", and "TRIPLEDES". If not provided, the default value is "AES-128".'
