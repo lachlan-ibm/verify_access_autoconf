@@ -1093,6 +1093,7 @@ class AAC_Configurator(object):
         'List of access control obligations to create.'
 
     def obligation_configuration(self, aac_config):
+        if aac_config.obligations != None:
             existing = self.aac.access_control.list_obligations().json
             if existing == None: existing = []
             for obligation in aac_config.obligations:
