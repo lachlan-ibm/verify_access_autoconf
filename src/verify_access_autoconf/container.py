@@ -6,6 +6,7 @@ import logging
 import requests
 import json
 import typing
+import copy
 
 from .util.constants import HEADERS
 from .util.configure_util import deploy_pending_changes
@@ -70,7 +71,7 @@ class Docker_Configurator(object):
             _logger.info("Cannot find HVDB configuration, in a docker environment this is probably bad")
             return
         self.needsRestart = True
-        database = clusterConfig.runtime_database.copy()
+        database = copy.deepcopy(clusterConfig.runtime_database)
         methodArgs = {'db_type': database.pop('type'), 'host': database.pop('host'), 'port': database.pop('port'),
                       'secure': database.pop('ssl'), 'db_key_store': database.pop('ssl_keystore', None), 
                       'user': database.pop('user'), 'passwd': database.pop('password'), 'db_name': database.pop('db_name'), 
