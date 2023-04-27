@@ -72,7 +72,7 @@ class Docker_Configurator(object):
         self.needsRestart = True
         database = clusterConfig.runtime_database.copy()
         methodArgs = {'db_type': database.pop('type'), 'host': database.pop('host'), 'port': database.pop('port'),
-                      'secure': database.pop('ssl'), 'db_keystore': database.pop('ssl_keystore'), 
+                      'secure': database.pop('ssl'), 'db_key_store': database.pop('ssl_keystore', None), 
                       'user': database.pop('user'), 'passwd': database.pop('password'), 'db_name': database.pop('db_name'), 
                       'extra_config': database
             }
