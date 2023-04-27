@@ -7,6 +7,7 @@ import yaml
 import base64
 import kubernetes
 import pathlib
+import copy.deepcopy
 from . import constants as const
 
 def to_camel_case(snake_case):
