@@ -123,7 +123,7 @@ def _kube_rollout_restart(client, namespace, deployment):
         _logger.error("Exception when calling AppsV1Api->patch_namespaced_deployment: %s" % e)
         sys.exit(1)
 
-    #Now request for the pods to be deleted; when this thows the pods are gone
+    #Now request for the pods to be deleted; when this throws the pods are gone
     for pod in pods:
         count = 1
         while count < 10:
@@ -139,24 +139,20 @@ def _kube_rollout_restart(client, namespace, deployment):
             sys.exit(1)
 
     #Finally wait for the new pod list to be ready
-    #count = 1
-    #while count < 10:
-    #    try:
-    #        rsp = client.AppsV1Api().read_namespaced_deployment_status(name=deployment, namespace=namespace)
-    #        if rsp.spec and rsp.status and rsp.spec.replicas == rsp.status.available_replicas:
-    #            _logger.debug("Deployment {} is reported as available again".format(deployment))
-    #            break
-    #        else:
-    #            _logger.debug("Waiting for deployment {}; status {}".format(deployment, rsp.status))
-    #            time.sleep(count * 10)
-    #            count += 1
-    #    except kubernetes.client.rest.ApiException as e:
-    #        _logger.error("Exception when calling AppsV1Api -> read_namespaced_deployment_status: %s" % e)
-    #        sys.exit(1)
-    #if count == 10:
-    #    _logger.error("Failed to wait for deployment to be ready.")
-    #    sys.exit(1)
-    return
+    watcher = kubernetes.watch.Watch()
+    for event in watcher.stream(func=core_v1.list_namespaced_pod,
+                                namespace=namespace,
+                                label_selector="app=" + deployment,
+                                timeout_seconds=30):
+        if event['object'].status.phase == "Running":
+            watcher.stop()
+            _logger.info("{} deployment is running".format(deployment))
+            return
+        elif event['type'] == "DELETED":
+            watcher.stop()
+            _logger.error("{} deployment was deleted while waiting to be restarted".format(deployment))
+    sys.exit(1) #Pod did not get marked as running :(
+
 
 def _compose_restart_service(service, config):
     if shutil.which("docker-compose") == None:
@@ -168,7 +164,7 @@ def _compose_restart_service(service, config):
     elif config.container.docker_compose_yaml is not None:
         composeYaml = config.container.docker_compose_yaml
     else:
-        _logger.error("Unable to find docekr-compose YAML configuration")
+        _logger.error("Unable to find docker-compose YAML configuration")
         sys.exit(1)
     if not composeYaml.startswith('/'):
         composeYaml = config_base_dir() + '/' + composeYaml
@@ -181,7 +177,7 @@ def _docker_restart_container(container, config):
     if shutil.which("docker") == None:
         _logger.error("docker  not found on $PATH")
         sys.exit(1)
-    ps = subprocess.run(['docker', 'resart', container])
+    ps = subprocess.run(['docker', 'restart', container])
     if ps.returncode != 0:
         _logger.error("Error restarting docker container:\nstdout: {}\nstderr{}".format(ps.stdout, ps.stderr))
         sys.exit(1)
@@ -199,7 +195,7 @@ def deploy_pending_changes(factory=None, isvaConfig=None, restartContainers=True
         if restartContainers == True:
             if isvaConfig.container.k8s_deployments is not None:
                 namespace = isvaConfig.container.k8s_deployments.namespace
-                #Are we restarting the containers or rolling out a restard to the deployment descriptor
+                #Are we restarting the containers or rolling out a restart to the deployment descriptor
                 if isvaConfig.container.k8s_deployments.deployments is not None:
                     for deployment in isvaConfig.container.k8s_deployments.deployments:
                         _kube_rollout_restart(KUBE_CLIENT, namespace, deployment)
