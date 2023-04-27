@@ -28,4 +28,4 @@ jobs:
         - ./.deploy.sh
       python:
         - "3.9"
-      if: branch = stable
+      if: branch = stable and type != pull_request
