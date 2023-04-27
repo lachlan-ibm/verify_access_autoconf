@@ -79,6 +79,9 @@ class Map(dict):
         super(Map, self).__delitem__(k)
         del self.__dict__[k]
 
+    def __deepcopy__(self, memo=None):
+        return DotDict(deepcopy(dict(self), memo=memo)) 
+
 
 class CustomLoader(yaml.SafeLoader):
 
