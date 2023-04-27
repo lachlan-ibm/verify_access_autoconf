@@ -2098,7 +2098,7 @@ class AAC_Configurator(object):
         if self.needsRestart == True:
             deploy_pending_changes()
 
-        self.risk_profile(self.config.access_control)
+        self.risk_profiles(self.config.access_control)
         self.access_control(self.config.access_control)
         self.api_protection_configuration(self.config.access_control)
         if self.needsRestart == True:
