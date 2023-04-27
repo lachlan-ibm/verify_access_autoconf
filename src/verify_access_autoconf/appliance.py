@@ -330,7 +330,7 @@ class Appliance_Configurator(object):
                 _logger.info("Successfully set the configuration database")
             else:
                 _logger.error("Failed to set the configuration database with:{}\n{}".format(
-                    json.dumps(config.config_database, indent=4), rsp.content))
+                    json.dumps(config.config_database, indent=4), rsp.data))
         if config.runtime_database != None:
             hvdbExtraConfig = config.runtime_database.copy()
             methodArgs = {'embedded': False, 'db_type': hvdbExtraConfig.pop('type'), 'host': hvdbExtraConfig.pop('host'),
@@ -344,14 +344,14 @@ class Appliance_Configurator(object):
                 _logger.info("Successfully set the runtime database")
             else:
                 _logger.error("Failed to set the runtime database with: {}\n{}".format(json.dumps(
-                    config.runtime_database, indent=4), rsp.content))
+                    config.runtime_database, indent=4), rsp.data))
         if config.cluster != None:
             rsp = self.appliance.get_system_settings().cluster.update_cluster(**config.cluster)
             if rsp.success == True:
                 _logger.info("Successfully set the cluster configuration")
             else:
                 _logger.error("Failed to set the cluster configuration with:{}\n{}".format(
-                    json.dumps(config.cluster, indent=4), rsp.content))
+                    json.dumps(config.cluster, indent=4), rsp.data))
 
 
     def configure(self):

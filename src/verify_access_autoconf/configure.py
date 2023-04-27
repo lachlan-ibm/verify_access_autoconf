@@ -599,7 +599,7 @@ class ISVA_Configurator(object):
                 deploy_pending_changes(self.factory, self.config)
             else:
                 _logger.error("Failed to apply snapshot [{}]\n{}".format(snapshotConfig.snapshot),
-                        rsp.content)
+                        rsp.data)
 
 
     def configure_base(self, appliance, container):

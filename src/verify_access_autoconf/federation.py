@@ -398,7 +398,7 @@ class FED_Configurator(object):
                     _logger.info("Successfully {} {} Point of Contact".format(verb, poc.name))
                 else:
                     _logger.error("Failed to {} {} point of contact with config:\n{}\n{}".format(
-                                            verb, poc.name, json.dumps(poc, indent=4), rsp.content))
+                                            verb, poc.name, json.dumps(poc, indent=4), rsp.data))
 
             if "active_profile" in federation_config.point_of_contact_profiles:
                 poc_profiles = self.fed.poc.list_profiles().json
@@ -584,7 +584,7 @@ class FED_Configurator(object):
                         _logger.info("Successfully {} {} STS chain template.".format(verb, template.name))
                     else:
                         _logger.error("Failed to {} STS chain template:\n{}\n{}".format(verb, json.dumps(
-                                                                                            template, indent=4), rsp.content))
+                                                                                            template, indent=4), rsp.data))
 
             if sts.chains:
                 old_chains = optional_list(fed.sts.list_chains().json)
@@ -604,7 +604,7 @@ class FED_Configurator(object):
                         _logger.info("Successfully {} {} STS chain.".format(verb, chain.name))
                     else:
                         _logger.error("Failed to {} {} STS chain:\n{}\n{}".format(verb, json.dumps(
-                                                                                        chain, indent=4), rsp.content))
+                                                                                        chain, indent=4), rsp.data))
 
 
         else:
@@ -700,7 +700,7 @@ class FED_Configurator(object):
                 _logger.info("Successfully updated the Federation Alias Service Settings.")
             else:
                 _logger.error("Failed to update the Federation Alias Service Settings:\n{}\n{}".format(
-                                                                json.dumps(methodArgs, indent=4), rsp.content))
+                                                                json.dumps(methodArgs, indent=4), rsp.data))
             if aliases:
                 existing_aliases = optional_list(self.fed.alias_service.list_alias_associations().json)
                 #Map federations and partners to dict by name so we can look up the id if needed
@@ -726,7 +726,7 @@ class FED_Configurator(object):
                         _logger.info("Successfully {} {} alias.".format(verb, alias.name))
                     else:
                         _logger.error("Failed to {} alias:\n{}\n{}".format(
-                            verb, json.dumps(alias, indent=4), rsp.content))
+                            verb, json.dumps(alias, indent=4), rsp.data))
 
 
     class Attribute_Sources(typing.TypedDict):
@@ -789,7 +789,7 @@ class FED_Configurator(object):
                     _logger.info("Successfully {} {} attribute source".format(verb, source.name))
                 else:
                     _logger.error("Failed to {} attribute source:\n{}\n{}".format(
-                                            verb, json.dumps(source, indent=4), rsp.content))
+                                            verb, json.dumps(source, indent=4), rsp.data))
 
 
     def _configure_saml_partner(self, fedId, partner):
@@ -944,7 +944,7 @@ class FED_Configurator(object):
                 partner.name, partner.role))
         else:
             _logger.error("Failed to create {} SAML Partner with config:\n{}\n{}".format(
-                                        partner.name, json.dumps(partner, indent=4), rsp.content))
+                                        partner.name, json.dumps(partner, indent=4), rsp.data))
 
     def _configure_oidc_partner(self, fedId, partner):
         methodArgs = {

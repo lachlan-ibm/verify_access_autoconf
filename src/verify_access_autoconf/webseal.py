@@ -32,7 +32,7 @@ class WEB_Configurator(object):
                     entry.stanza, entry.entry_id, entry.value))
         else:
             _logger.error("Failed to update stanza [{}] with [{}:{}]\n{}".format(
-                    entry.stanza, entry.entry_id, entry.value, rsp.content))
+                    entry.stanza, entry.entry_id, entry.value, rsp.data))
 
     def __add_stanza(self, proxy_id, entry):
         rsp = None
@@ -47,7 +47,7 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully created stanza entry")
         else:
-            _logger.error("Failed to create stanza entry:\n{}\n{}".format(json.dumps(entry, indent=4), rsp.content))
+            _logger.error("Failed to create stanza entry:\n{}\n{}".format(json.dumps(entry, indent=4), rsp.data))
 
     def __delete_stanza(self, proxy_id, entry):
         rsp = None
@@ -62,7 +62,7 @@ class WEB_Configurator(object):
         if rsp.success == True:
             _logger.info("Successfully deleted stanza entry")
         else:
-            _logger.error("Failed to delete stanza entry:\n{}\n{}".format(json.dumps(entry, indent=4), rsp.content))
+            _logger.error("Failed to delete stanza entry:\n{}\n{}".format(json.dumps(entry, indent=4), rsp.data))
 
     def _configure_stanza(self, proxy_id, config):
         for entry in config:
@@ -94,7 +94,7 @@ class WEB_Configurator(object):
             _logger.info("Successfully ran Advanced Access Control configuration wizard on {} proxy instance".format(proxy_id))
         else:
             _logger.error("Failed to run AAC configuration wizard on {} proxy instance with config:\n{}\n{}".format(
-                proxy_id, json.dumps(aac_config, indent=4), rsp.content))
+                proxy_id, json.dumps(aac_config, indent=4), rsp.data))
 
 
     def _configure_mmfa(self, proxy_id, mmfa_config):
@@ -125,7 +125,7 @@ class WEB_Configurator(object):
             _logger.info("Successfully ran MMFA configuration wizard on {} proxy instance".format(proxy_id))
         else:
             _logger.error("Failed to run MMFA configuration wizard on {} proxy instance with config:\n{}\n{}".format(
-                proxy_id, json.dumps(mmfa_config, indent=4), rsp.content))
+                proxy_id, json.dumps(mmfa_config, indent=4), rsp.data))
 
 
     def _configure_federations(self, proxy_id, fed_config):
@@ -134,7 +134,7 @@ class WEB_Configurator(object):
             _logger.info("Successfully ran federation configuration utility with")
         else:
             _logger.error("Federation configuration wizard did not run successfully with config:\n{}\n{}".format(
-                json.dumps(fed_config, indent=4), rsp.content))
+                json.dumps(fed_config, indent=4), rsp.data))
 
 
     def _add_junction(self, proxy_id, junction):
@@ -150,7 +150,7 @@ class WEB_Configurator(object):
             _logger.info("Successfully added junction to {} proxy".format(proxy_id))
         else:
             _logger.error("Failed to add junction to {} with config:\n{}\n{}".format(
-                proxy_id, json.dumps(junction, indent=4), rsp.content))
+                proxy_id, json.dumps(junction, indent=4), rsp.data))
 
     class Reverse_Proxy(typing.TypedDict):
         '''
@@ -452,7 +452,7 @@ class WEB_Configurator(object):
             _logger.info("Successfully configured proxy {}".format(proxy.name))
         else:
             _logger.error("Configuration of {} proxy failed with config:\n{}\n{}".format(
-                proxy.name, json.dumps(proxy, indent=4), rsp.content))
+                proxy.name, json.dumps(proxy, indent=4), rsp.data))
             return
 
         if proxy.junctions != None:
@@ -508,7 +508,7 @@ class WEB_Configurator(object):
                 _logger.info("Successfully modified the {} stanza file".format(entry.stanza))
             else:
                 _logger.error("Failed to modify stanza properties file with config:\n{}\n{}".format(
-                                                                                json.dumps(entry, indent=4), rsp.content))
+                                                                                json.dumps(entry, indent=4), rsp.data))
 
 
 
@@ -640,7 +640,7 @@ class WEB_Configurator(object):
             _logger.info("Successfully configured RTE")
         else:
             _logger.error("Failed to configure RTE with config:\n{}\n{}".format(
-                json.dumps(runtime, indent=4), rsp.content))
+                json.dumps(runtime, indent=4), rsp.data))
 
         if runtime.stanza_configuration != None:
             self._runtime_stanza(runtime.stanza_configuration)
@@ -676,7 +676,7 @@ class WEB_Configurator(object):
             _logger.info("Successfully created acl {}".format(acl.name))
         else:
             _logger.error("Failed to create acl {} with config:\n{}\n{}".format(
-                    acl.name, json.dumps(acl, indent=4), rsp.content))
+                    acl.name, json.dumps(acl, indent=4), rsp.data))
 
     def _pdadmin_pop(self, runtime, pop):
         pdadminCommands = ["pop create {}".format(pop.name)]
@@ -708,7 +708,7 @@ class WEB_Configurator(object):
             _logger.info("Successfully created pop {}".format(pop.name))
         else:
             _logger.error("Failed to create pop {} with config:\n{}\n{}".format(
-                        pop.name, json.dumps(pop, indent=4), rsp.content))
+                        pop.name, json.dumps(pop, indent=4), rsp.data))
 
     def _pdadmin_proxy(self, runtime, proxy_config):
         pdadminCommands = []
@@ -727,7 +727,7 @@ class WEB_Configurator(object):
             _logger.info("Successfully attached acls/pops to {}".format(proxy_config.host))
         else:
             _logger.error("Failed to attach acls/pops to {} with config:\n{}\n{}".format(
-                    proxy_config.host, json.dumps(proxy_config, indent=4), rsp.content))
+                    proxy_config.host, json.dumps(proxy_config, indent=4), rsp.data))
 
     def _pdadmin_user(self, runtime, user):
         firstName = user.first_name if user.first_name else user.name
@@ -742,7 +742,7 @@ class WEB_Configurator(object):
             _logger.info("Successfully created user {}".format(user.name))
         else:
             _logger.error("Failed to create user {} with config:\n{}\n{}".format(
-                        user.name, json.dumps(user, indent=4), rsp.content))
+                        user.name, json.dumps(user, indent=4), rsp.data))
 
     def _pdadmin_groups(self, runtime, group):
         pdadminCommands = ["group create {} {} {}".format(group.name, group.dn, group.description)]
@@ -754,7 +754,7 @@ class WEB_Configurator(object):
             _logger.info("Successfully created group {}".format(group.name))
         else:
             _logger.error("Failed to create group {} with config:\n{}\n{}".format(
-                        group.name, json.dumps(group, indent=4), rsp.content))
+                        group.name, json.dumps(group, indent=4), rsp.data))
 
     class PD_Admin(typing.TypedDict):
         '''
@@ -986,7 +986,7 @@ class WEB_Configurator(object):
                 _logger.info("Successfully configured certificate mapping")
             else:
                 _logger.error("Failed to configure certificate mapping using {} config file:\n{}".format(
-                            cert_mapping_file['name'], rsp.content))
+                            cert_mapping_file['name'], rsp.data))
 
 
 
@@ -1015,7 +1015,7 @@ class WEB_Configurator(object):
                 _logger.info("Successfully configured junction mapping")
             else:
                 _logger.error("Failed to configure junction mapping using {} config file:\n{}".format(
-                                jct_mapping_file['name'], rsp.content))
+                                jct_mapping_file['name'], rsp.data))
 
 
     class Url_Mapping(typing.TypedDict):
@@ -1041,7 +1041,7 @@ class WEB_Configurator(object):
                 _logger.info("Successfully configured URL mapping")
             else:
                 _logger.error("Failed to configure URL mapping using {} config file:\n{}".format(
-                                url_mapping_file['name'], rsp.content))
+                                url_mapping_file['name'], rsp.data))
 
 
     class User_Mapping(typing.TypedDict):
@@ -1067,7 +1067,7 @@ class WEB_Configurator(object):
                 _logger.info("Successfully configured user mapping")
             else:
                 _logger.error("Failed to configure user mapping using {} config file:\n{}".format(
-                                user_mapping_file['name'], rsp.content))
+                                user_mapping_file['name'], rsp.data))
 
 
     class Form_Single_Sign_On(typing.TypedDict):
@@ -1093,7 +1093,7 @@ class WEB_Configurator(object):
                 _logger.info("Successfully configured Federated Singe Sign On configuration")
             else:
                 _logger.error("Failed to configure FSSO using {} config file:\n{}".format(
-                                user_mapping_file['name'], rsp.content))
+                                user_mapping_file['name'], rsp.data))
 
 
     class Http_Transformations(typing.TypedDict):
@@ -1126,7 +1126,7 @@ class WEB_Configurator(object):
             _logger.info("Successfully configured Kerberos property")
         else:
             _logger.error("Failed to configure Kerberos property:\nsubsection: {} name: {} value:{}\n{}".format(
-                            subsection, name, value, rsp.content))
+                            subsection, name, value, rsp.data))
 
 
     class Kerberos(typing.TypedDict):
@@ -1197,7 +1197,7 @@ class WEB_Configurator(object):
                     _logger.info("Successfully imported Kerberos Keytab file")
                 else:
                     _logger.error("Failed to import Kerberos Keytab file:\n{}\n{}".format(
-                                json.dumps(prop, indent=4), rsp.content))
+                                json.dumps(prop, indent=4), rsp.data))
 
 
     class Password_Strength(typing.TypedDict):
@@ -1221,7 +1221,7 @@ class WEB_Configurator(object):
             _logger.info("Successfully configured password strength rules")
         else:
             _logger.error("Failed to configure password strength rules using {}\n{}".format(
-                            pwd_mapping_file['name'], rsp.content))
+                            pwd_mapping_file['name'], rsp.data))
 
 
     class RSA(typing.TypedDict):
@@ -1249,7 +1249,7 @@ class WEB_Configurator(object):
             _logger.info("Successfully configured RSA")
         else:
             _logger.error("Failed to configure RSA using:\n{}\n{}".format(
-                            json.dumps(rsa_config, indent=4), rsp.content))
+                            json.dumps(rsa_config, indent=4), rsp.data))
 
 
     def __apiac_authz_server(self, runtime, authz_servers):
@@ -1271,7 +1271,7 @@ class WEB_Configurator(object):
                 _logger.info("Successfully created {} API Access Control Authorization Server".format(authz_server.name))
             else:
                 _logger.error("Failed to create API Authorization Server:\n{}\n{}".format(
-                                                            json.dumps(authz_server, indent=4), rsp.content))
+                                                            json.dumps(authz_server, indent=4), rsp.data))
 
     def __apiac_resource_server(self, resource_servers):
         for resource_server in resource_servers:
@@ -1360,7 +1360,7 @@ class WEB_Configurator(object):
                 _logger.info("Successfully created {} API AC Resource server".format(resource.server_hostname))
             else:
                 _logger.error("Failed to create {} API AC Resource server with config:\n{}\n{}".format(
-                    resource.server_hostname, json.dumps(resource, indent=4), rsp.content))
+                    resource.server_hostname, json.dumps(resource, indent=4), rsp.data))
                 continue
             if resource_server.resources:
                 for resource in resource_server.resource:
@@ -1387,7 +1387,7 @@ class WEB_Configurator(object):
                         _logger.info("Successfully created {} junctioned resource".format(junction.name))
                     else:
                         _logger.error("Failed to create {} junctioned resource with config;\n{}\n{}".format(
-                            junction.name, json.dumps(junction, indent=4), rsp.content))
+                            junction.name, json.dumps(junction, indent=4), rsp.data))
 
 
     def __apiac_policies(self, policies):
@@ -1398,7 +1398,7 @@ class WEB_Configurator(object):
                 _logger.info("Successfully created {} policy".format(policy.name))
             else:
                 _logger.error("Failed to create API Access Control policy {}:\n{}\n{}".format(
-                                        policy.name, json.dumps(policy, indent=4), rsp.content))
+                                        policy.name, json.dumps(policy, indent=4), rsp.data))
 
     def __apiac_cors(self, cors_policies):
         for cors in cors_policies:
@@ -1407,7 +1407,7 @@ class WEB_Configurator(object):
                 _logger.info("Successfully created {} CORS policy".format(cors.name))
             else:
                 _logger.error("Failed to create {} CORS policy using config:\n{}\n{}".format(cors.name,
-                    json.dumps(cors, indent=4), rsp.content))
+                    json.dumps(cors, indent=4), rsp.data))
 
     def __apiac_document_root(self, proxy_id, doc_roots):
         for doc_root in doc_roots:
@@ -1418,7 +1418,7 @@ class WEB_Configurator(object):
                 if rsp.success == True:
                     _logger.info("Successfully uploaded {} {}".format(_file['name'], _file['type']))
                 else:
-                    _logger.error("Failed to upload {} {}\n{}".format(_file["name"], _file["type"], rsp.content))
+                    _logger.error("Failed to upload {} {}\n{}".format(_file["name"], _file["type"], rsp.data))
 
 
     class Api_Access_Control(typing.TypedDict):

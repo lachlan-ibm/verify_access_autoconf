@@ -88,7 +88,7 @@ class AAC_Configurator(object):
                     _logger.info("Successfully {} {} push notification provider".format(verb, provider.app_id))
                 else:
                     _logger.error("Failed to {} push notification provider:\n{}\n{}".format(verb, 
-                                                                json.dumps(provider, indent=4), rsp.content))
+                                                                json.dumps(provider, indent=4), rsp.data))
 
 
     class Risk_Profiles(typing.TypedDict):
@@ -594,7 +594,7 @@ class AAC_Configurator(object):
                     _logger.info("Successfully updated the SCIM general configuration")
                 else:
                     _logger.error("Failed to update SCIM general configuration:\n{}\n{}".format(
-                                                        json.dumps(generalConfig, indent=4), rsp.content))
+                                                        json.dumps(generalConfig, indent=4), rsp.data))
             for schema in aac_config.scim:
                 rsp = self.aac.scim_config.get_schema(schema.uri)
                 if rsp.success == False:
@@ -1115,7 +1115,7 @@ class AAC_Configurator(object):
                     _logger.info("Successfully {} {} obligation.".format(verb, obligation.name))
                 else:
                     _logger.error("Failed to {} obligation:\n{}\n{}".format(verb, 
-                                                                json.dumps(obligation, indent=4), rsp.content))
+                                                                json.dumps(obligation, indent=4), rsp.data))
                 return
 
 
@@ -1198,7 +1198,7 @@ class AAC_Configurator(object):
                     _logger.info("Successfully {} {} attribute.".format(verb, attribute.name))
                 else:
                     _logger.error("Failed to {} attribute:\n{}\n{}".format(verb, json.dumps(
-                                                                                    attribute, indent=4), rsp.content))
+                                                                                    attribute, indent=4), rsp.data))
 
 
     def _configure_api_protection_definition(self, definition):
@@ -1799,7 +1799,7 @@ class AAC_Configurator(object):
             _logger.info("Successfully created {} FIDO2 Relying Party".format(rp.name))
         else:
             _logger.error("Failed to create {} FIDO2 Relying Party with configuration:\n{}\n{}".format(rp.name,
-                json.dumps(rp, indent=4), rsp.content))
+                json.dumps(rp, indent=4), rsp.data))
 
 
     class Fast_Identity_Online2(typing.TypedDict):
