@@ -80,7 +80,7 @@ class Map(dict):
         del self.__dict__[k]
 
     def __deepcopy__(self, memo=None):
-        return DotDict(deepcopy(dict(self), memo=memo)) 
+        return Map(deepcopy(dict(self), memo=memo)) 
 
 
 class CustomLoader(yaml.SafeLoader):
