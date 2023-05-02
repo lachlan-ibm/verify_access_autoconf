@@ -405,7 +405,7 @@ class AAC_Configurator(object):
             old_config = optional_list(self.aac.advanced_config.list_properties().json)
             for advConf in aac_config.advanced_configuration:
                 old = None; id=None; sensitive=None
-                if advConfig.name:
+                if advConf.name:
                     old = filter_list('key', advConf.name, old_config)
                 else:
                     old = filter_list('id', advConf.id, old_config)
