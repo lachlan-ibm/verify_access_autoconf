@@ -1,43 +1,52 @@
-mgmt_base_url: 'https://168.1.30.85:30543'
-mgmt_password: "R4nd0mP455w0rd"
-mgmt_old_password: "admin"
-docker:
-  orchestration: "kubernetes"
-  containers:
+container:
+  k8s_deployments:
     namespace: "default"
-    configuration: "isamconfig"
-    webseal: "isamwebseal"
-    runtime: "isamruntime"
-    dsc: "isamdsc"
+    deployments:
+    - "isamwebseal"
+    - "isamruntime"
   lmi: #Local Management Interface settings
     timeout: 720
-    timezone: "Australia/Brisbane"
-    admin_password: "examplePassw0rd"
   activation: #Activation codes
-    wga: "&BASE_CODE"
-    mga: "&ACCESS_CONTROL_CODE"
-    federation: "&FEDERATION_CODE"
-  database:
-    type: "postgresql"
-    host: "postgresql"
-    port: 5432
-    ssl: True
-    username: "postgres"
-    password: "Passw0rd"
-    db_name: "isam"
-  configuration_publishing:
-    user: "cfgsvc"
-    password: "Passw0rd"
+    webseal: !environment VERIFY_ACCESS_BASE_CODE
+    access_control: !environment VERIFY_ACCESS_AAC_CODE
+    federation: !environment VERIFY_ACCESS_FED_CODE
+  cluster:
+    runtime_database:
+      type: "postgresql"
+      host: "postgresql"
+      port: 5432
+      ssl: True
+      ssl_keystore: "rt_profile_keys"
+      user: "postgres"
+      password: !environment VERIFY_ACCESS_POSTGRES_PASSWORD
+      db_name: "isam"
+  account_management:
+    users:
+    - name: "cfgsvc"
+      operation: "update"
+      password: !environment VERIFY_ACCESS_CFGSVC_PASSWORD
+  management_authorization:
+    authorization_enforcement: True
+    roles:
+    - operation: "update"
+      name: "Configuration Service"
+      users:
+      - name: "cfgsvc"
+        type: "local"
+      features:
+      - name: "shared_volume"
+        access: "w"
   ssl_certificates:
-    - name: "lmi_trust_store"
-      signer_certificates:
-        - "ssl_certificates/lmi_trust_store"
-    - name: "rt_profile_keys"
-      signer_certificates:
-        - "ssl_certificates/rt_profile_keys"
+  - name: "lmi_trust_store"
+    signer_certificates:
+    - ".secrets/postgresql.pem"
+    - ".secrets/openldap.pem"
+  - name: "rt_profile_keys"
+    signer_certificates:
+    - ".secrets/postgresql.pem"
 webseal:
   runtime:
-    policy_server: "local"
+    policy_server: "ldap"
     user_registry: "ldap"
     domain: "Default"
     ldap:
@@ -45,60 +54,66 @@ webseal:
       port: 636
       key_file: "lmi_trust_store"
       dn: "cn=root,secAuthority=Default"
-      dn_password: "Passw0rd"
+      dn_password: !environment VERIFY_ACCESS_LDAP_PASSWORD
     clean_ldap: True
     admin_user: "sec_master"
-    admin_password: "Passw0rd"
+    admin_password: !environment VERIFY_ACCESS_SEC_PASSWORD
     admin_cert_lifetime: 1460
   reverse_proxy:
     - name: "default"
       domain: "Default"
+      host: "isvawebseal"
       http: 
         enabled: "no"
       https:
         enabled: "yes"
-        port: 443
+        port: 9443
       ldap:
         ssl: "yes"
         port: 636
         key_file: "lmi_trust_store"
       aac_configuration:
-        hostname: "isamruntime"
-        port: 443
-        user: "easuser"
-        password: "passw0rd"
+        runtime:
+          hostname: "isamruntime"
+          port: 9443
+          user: "easuser"
+          password: !environment VERIFY_ACCESS_RUNTIME_PASSWORD
         junction: "/mga"
         reuse_acls: True
         reuse_certs: True
-      stanza_config:
+      stanza_configuration:
         - stanza: "local-apps"
           key: "cred-viewer"
           value: "cred"
+          operation: "add"
         - stanza: "server"
           key: "auth-challenge-type"
           value: "[+*]ba"
+          operation: "update"
         - stanza: "rsp-header-names"
           key: "content-security-policy"
           value: "default-src self; upgrade-insecure-requests; script-src unsafe-inline; img-src self https://168.1.30.85:30443 data:; frame-ancestors none; style-src self https://168.1.30.85:30443"
+          operation: "update"
         - stanza: "ba"
           key: "ba-auth"
           value: "both"
+          operation: "update"
         - stanza: "rsp-header-names"
           key: "X-XSS-Protection"
           value: "0"
+          operation: "update"
         - stanza: "rsp-header-names"
           key: "X-Content-Type-Options"
           value: "nosniff"
-  users:
-    - name: "testuser"
-      first_name: "Test"
-      last_name: "user"
-      password: "passw0rd"
-      cn: "testuser"
-      dc:
-        - "ibm"
-        - "com"
-aac:
+          operation: "update"
+  pdadmin:
+    users:
+      - name: "testuser"
+        first_name: "Test"
+        last_name: "User"
+        password: !environment VERIFY_ACCESS_TEST_PASSWORD
+        dn: "cn=testuser,dc=ibm,dc=com"
+access_control:
   authentication:
     mechanisms:
       - name: "Username Password"
@@ -108,7 +123,7 @@ aac:
         type: "Username Password"
         properties:
           - usernamePasswordAuthentication.ldapBindDN: "cn=root,secAuthority=Default"
-          - usernamePasswordAuthentication.ldapBindPwd: "Passw0rd"
+          - usernamePasswordAuthentication.ldapBindPwd: !environment VERIFY_ACCESS_LDAP_PASSWORD
           - usernamePasswordAuthentication.ldapHostName: "openldap"
           - usernamePasswordAuthentication.ldapPort: "636"
           - usernamePasswordAuthentication.sslEnabled: "true"
@@ -118,6 +133,6 @@ aac:
           - usernamePasswordAuthentication.userSearchFilter: "(|(objectclass=ePerson)(objectclass=Person))"
           - usernamePasswordAuthentication.loginFailuresPersistent: "false"
   advanced_configuration:
-    - id: 12503
+    - id: "12503"
       sensitive: False
       value: "both"

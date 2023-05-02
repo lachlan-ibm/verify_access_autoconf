@@ -959,7 +959,7 @@ class WEB_Configurator(object):
         if config.reverse_proxies != None:
             for proxy in config.reverse_proxies:
                 self._pdadmin_proxy(proxy)
-        deploy_pending_changes(self.factory, self.config)
+        #deploy_pending_changes(self.factory, self.config)
 
 
     class Client_Certificate_Mapping(typing.TypedDict):
@@ -1814,7 +1814,7 @@ class WEB_Configurator(object):
                 self.pdadmin(websealConfig.runtime, websealConfig.pdadmin)
             
             if websealConfig.api_access_control != None:
-                        self.api_access_control(websealConfig.runtime, websealConfig.api_access_control)
+                self.api_access_control(websealConfig.runtime, websealConfig.api_access_control)
 
         else:
             _logger.info("No runtime configuration detected, unable to set up any reverse proxy config or run pdadmin commands")
