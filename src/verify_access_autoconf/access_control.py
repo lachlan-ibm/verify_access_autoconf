@@ -85,6 +85,7 @@ class AAC_Configurator(object):
                     rsp = self.aac.push_notification.create_provider(**provider)
                     verb = 'created' if rsp.success == True else 'create'
                 if rsp.success == True:
+                    self.needsRestart = True
                     _logger.info("Successfully {} {} push notification provider".format(verb, provider.app_id))
                 else:
                     _logger.error("Failed to {} push notification provider:\n{}\n{}".format(verb, 
@@ -157,6 +158,7 @@ class AAC_Configurator(object):
                     rsp = self.aac.risk_profiles.create(**methodArgs)
                     verb = "created" if rsp.success == True else "create"
                 if rsp.success == True:
+                    self.needsRestart = True
                     _logger.info("Successfully {} {} risk profile".format(verb, profile.name))
                 else:
                     _logger.error("Failed to {} risk profile:\n{}\n{}".format(
@@ -245,6 +247,7 @@ class AAC_Configurator(object):
                     rsp = self.aac.pip.create_pip(**pip)
                     verb = "created" if rsp.success == True else "create"
                 if rsp.success == True:
+                    self.needsRestart = True
                     _logger.info("Successfully {} {} PIP".format(verb, pip.name))
                 else:
                     _logger.error("Failed to {} PIP:\n{}\n{}".format(verb, json.dumps(pip, indent=4), rsp.data))
@@ -272,6 +275,7 @@ class AAC_Configurator(object):
             methodArgs['policies'] = policyArg
         rsp = self.aac.access_control.configure_resource(**methodArgs)
         if rsp.success == True:
+            self.needsRestart = True
             _logger.info("Successfully configured {} resource for {}".format(resource.uri, resource.server))
         else:
             _logger.error("Failed to create resource with configuration:\n{}\n{}".format(
@@ -299,6 +303,7 @@ class AAC_Configurator(object):
             rsp = self.aac.access_control.create_policy(**methodArgs)
             verb = "created" if rsp.success == True else "create"
         if rsp.success == True:
+            self.needsRestart = True
             _logger.info("Successfully {} {} Access Control Policy".format(verb, policy.name))
         else:
             _logger.error("Failed to {} Access Control Policy with config:\n{}\n{}".format(verb,
@@ -414,6 +419,7 @@ class AAC_Configurator(object):
                     continue
                 rsp = self.aac.advanced_config.update_property(old['id'], value=advConf.value, sensitive=old.get('sensitive', None))
                 if rsp.success == True:
+                    self.needsRestart = True
                     _logger.info("Successfully updated advanced configuration {}".format(old['key']))
                 else:
                     _logger.error("Failed to update advanced configuration with:\n{}\n{}".format(
@@ -587,6 +593,7 @@ class AAC_Configurator(object):
             if needToUpdate == True:
                 rsp = self.aac.scim_config.update_config(**generalConfig)
                 if rsp.success == True:
+                    self.needsRestart = True
                     _logger.info("Successfully updated the SCIM general configuration")
                 else:
                     _logger.error("Failed to update SCIM general configuration:\n{}\n{}".format(
@@ -599,6 +606,7 @@ class AAC_Configurator(object):
                 config = {**rsp.json, **schema.properties} # I wonder how this resolves conflicts
                 rsp = self.aac.scim_config.update_schema(schema.uri, config)
                 if rsp.success == True:
+                    self.needsRestart = True
                     _logger.info("Successfully updated schema [{}]".format(schema.uri))
                 else:
                     _logger.error("Failed to update schema [{}] with configuration:\n{}".format(
@@ -980,6 +988,7 @@ class AAC_Configurator(object):
             else:
                 rsp = self.aac.template_files.create_directory(file_pointer['directory'], dir_name=file_pointer['name'])
             if rsp.success == True:
+                self.needsRestart = True
                 _logger.info("Successfully created template file {}".format(file_pointer['path']))
             else:
                 _logger.error("Failed to create template file {}".format(file_pointer['path']))
@@ -1018,6 +1027,7 @@ class AAC_Configurator(object):
         for mapping_rule in mapping_rules:
             rsp = self.aac.mapping_rule.create_rule(rule_name=mapping_rule['name'], category=_type, content=mapping_rule['contents'])
             if rsp.success == True:
+                self.needsRestart = True
                 _logger.info("Successfully uploaded {} mapping rule".format(mapping_rule['name']))
             else:
                 _logger.error("Failed to upload {} mapping rule from [{}]".format(mapping_rule['name'], mapping_rule['path']))
@@ -1109,6 +1119,7 @@ class AAC_Configurator(object):
                             parameters=obligation.parameters, properties=obligation.properties)
                     verb = "updated" if rsp.success == True else "update"
                 if rsp.success == True:
+                    self.needsRestart = True
                     _logger.info("Successfully {} {} obligation.".format(verb, obligation.name))
                 else:
                     _logger.error("Failed to {} obligation:\n{}\n{}".format(verb, 
@@ -1192,6 +1203,7 @@ class AAC_Configurator(object):
                     rsp = self.aac.attribute.create_attribute(**methodArgs)
                     verb = "created" if rsp.success == True else "create"
                 if rsp.success == True:
+                    self.needsRestart = True
                     _logger.info("Successfully {} {} attribute.".format(verb, attribute.name))
                 else:
                     _logger.error("Failed to {} attribute:\n{}\n{}".format(verb, json.dumps(
@@ -1219,6 +1231,7 @@ class AAC_Configurator(object):
                 })
         rsp = self.aac.api_protection.create_definition(**methodArgs)
         if rsp.success == True:
+            self.needsRestart = True
             _logger.info("Successfully created {} API Protection definition".format(definition.name))
         else:
             _logger.error("Failed to create {} API Protection definition with config:\n{}\n{}".format(
@@ -1258,6 +1271,7 @@ class AAC_Configurator(object):
                 contact_type=client.contact_type, email=client.email, phone=client.phone, other_info=client.other_info,
                 definition=client.api_definition, client_id=client.client_id, client_secret=client.client_secret)
         if rsp.success == True:
+            self.needsRestart = True
             _logger.info("Successfully created {} API Protection client.".format(client.name))
         else:
             _logger.error("Failed to create {} API Protection client with config:\n{}\n{}".format(
@@ -1643,7 +1657,7 @@ class AAC_Configurator(object):
                 for mechanism in aac_config.authentication.mechanisms:
                     self._configure_mechanism(mech_types, existing_mechanisms, mechanism)
             if self.needsRestart == True:
-                deploy_pending_changes() # Mechanisms must be deployed before they are usable in policies
+                deploy_pending_changes(self.factory, self.config) # Mechanisms must be deployed before they are usable in policies
                 self.needsRestart = False
             if aac_config.authentication.policies != None:
                 existing_policies = self.aac.authentication.list_policies().json
@@ -1728,6 +1742,7 @@ class AAC_Configurator(object):
         for metadata_file in metadata_list:
             rsp = self.aac.fido2_config.create_metadata(filename=metadata_list['path'])
             if rsp.success == True:
+                self.needsRestart = True
                 _logger.info("Successfully created {} FIDO metadata".foramt(metadata_file['name']))
             else:
                 _logger.error("Failed to create {} FIDO metadata".format(metadata_file["name"]))
@@ -1736,6 +1751,7 @@ class AAC_Configurator(object):
     def _create_mds(self, mds):
         rsp = self.aac.fido2_config.create_metadata_service(**mds)
         if rsp.success == True:
+            self.needsRestart = True
             _logger.info("Successfully created {} FIDO metadata service".foramt(mds.url))
         else:
             _logger.error("Failed to create FIDO metadata service:\n{}\n{}".format(
@@ -1747,6 +1763,7 @@ class AAC_Configurator(object):
         for mediator_rule in mediator_list:
             rsp = self.aac.fido2_config.create_mediator(name=mediator_rule['name'], filename=mediator_rule['path'])
             if rsp.success == True:
+                self.needsRestart = True
                 _logger.info("Successfully created {} FIDO2 Mediator".format(mediator_rule['name']))
             else:
                 _logger.error("Failed to create {} FIDO2 Mediator".format(mediator_rule['name']))
@@ -1793,6 +1810,7 @@ class AAC_Configurator(object):
                     })
         rsp = self.aac.fido2_config.create_relying_party(**methodArgs)
         if rsp.success == True:
+            self.needsRestart = True
             _logger.info("Successfully created {} FIDO2 Relying Party".format(rp.name))
         else:
             _logger.error("Failed to create {} FIDO2 Relying Party with configuration:\n{}\n{}".format(rp.name,
@@ -2015,6 +2033,7 @@ class AAC_Configurator(object):
                 rsp = self.aac.runtime_parameters.update_parameter(
                         parameter=parameter.name, value=parameter.value)
                 if rsp.success == True:
+                    self.needsRestart = True
                     _logger.info("Successfully updated {} runtime tuning parameter.".format(
                                                                                     parameter.name))
                 else:
@@ -2039,6 +2058,7 @@ class AAC_Configurator(object):
                     rsp = self.aac.runtime_parameters.add_listening_interface(
                                                 iface_address_uuids, port=endpoint.port, secure=endpoint.ssl)
                     if rsp.success == True:
+                        self.needsRestart = True
                         _logger.info("Successfully added runtime endpoint at {}:{}".format(address, port))
                     else:
                         _logger.error("Failed to create endpoint:\n:{}\n{}".format(
@@ -2050,6 +2070,7 @@ class AAC_Configurator(object):
                     if old_user:
                         rsp = self.aac.user_registry.delete_user(old_user['id'])
                         if rsp.success == True:
+                            self.needsRestart = True
                             _logger.info("Successfully removed old user from user registry.")
                         else:
                             _logger.error("Failed to remove old user from registry, skipping create {} user.".format(
@@ -2057,6 +2078,7 @@ class AAC_Configurator(object):
                             continue
                     rsp = self.aac.user_registry.create_user(user.name, passowrd=user.password, groups=user.groups)
                     if rsp.success == True:
+                        self.needsRestart = True
                         _logger.info("Successfully added {} to the runtime user registry".format(user.name))
                     else:
                         _logger.error("Failed to create user:\n{}\n{}".format(json.dumps(user, indent=4), rsp.data))
@@ -2074,6 +2096,7 @@ class AAC_Configurator(object):
                             continue
                     rsp = self.aac.user_registry.create_group(group.name, users=groups.users)
                     if rsp.success == True:
+                        self.needsRestart = True
                         _logger.info("Successfully added {} to the runtime user registry".format(group.name))
                     else:
                         _logger.error("Failed to create group:\n{}\n{}".format(json.dumps(user, indent=4), rsp.data))
@@ -2092,17 +2115,20 @@ class AAC_Configurator(object):
         self.server_connections(self.config.access_control)
         self.fido2_configuration(self.config.access_control)
         if self.needsRestart == True:
-            deploy_pending_changes()
+            deploy_pending_changes(self.factory, self.config)
+            self.needsRestart = False
 
         self.risk_profiles(self.config.access_control)
         self.access_control(self.config.access_control)
         self.api_protection_configuration(self.config.access_control)
         if self.needsRestart == True:
-            deploy_pending_changes()
+            deploy_pending_changes(self.factory, self.config)
+            self.needsRestart = False
 
         self.authentication_configuration(self.config.access_control)
         self.scim_configuration(self.config.access_control)
         self.mmfa_configuration(self.config.access_control)
         self.advanced_config(self.config.access_control)
         if self.needsRestart == True:
-           deploy_pending_changes()
+           deploy_pending_changes(self.factory, self.config)
+           self.needsRestart = False

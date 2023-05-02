@@ -213,7 +213,7 @@ def deploy_pending_changes(factory=None, isvaConfig=None, restartContainers=True
 
             else:
                 _logger.error("Unable to perform container restart, this may lead to errors")
-            _logger.info("Pausing for {}s to allow orchestration to recover and Verify Access components to initialize.".format(KUBE_CLIENT_SLEEP))
+            _logger.info("Idle for {}s to allow orchestration to recover and Verify Access components to initialize.".format(KUBE_CLIENT_SLEEP))
             time.sleep(KUBE_CLIENT_SLEEP)
         else:
             _logger.debug("Not asked to restart containers")

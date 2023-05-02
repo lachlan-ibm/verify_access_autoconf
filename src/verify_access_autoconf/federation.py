@@ -298,6 +298,7 @@ class FED_Configurator(object):
         self.fed = factory.get_federation()
         self.factory = factory
         self.config = config
+        self.needsRestart = False
 
 
     class Point_Of_Contact_Profiles(typing.TypedDict):
@@ -1576,6 +1577,8 @@ class FED_Configurator(object):
         self.configure_alias_service(self.config.federation)
         self.configure_attribute_sources(self.config.federation)
         self.configure_federations(self.config.federation)
+        if self.needsRestart == True:
+            deploy_pending_changes(self.factory, self.config)
 
 if __name__ == "__main__":
     configure()
