@@ -406,17 +406,13 @@ class AAC_Configurator(object):
             for advConf in aac_config.advanced_configuration:
                 old = None; id=None; sensitive=None
                 if advConf.name:
-                    old = filter_list('key', advConf.name, old_config)
+                    old = optional_list(filter_list('key', advConf.name, old_config))[0]
                 else:
-                    old = filter_list('id', advConf.id, old_config)
-                if old.length != 1:
+                    old = optional_list(filter_list('id', advConf.id, old_config))[0]
+                if not old:
                     _logger.error("Could not find {} in list of advanced configuration parameters".format(advConf.name))
                     continue
-                else:
-                    old = old[0]
-                    id = old['id']
-                    sensitive = old['sensitive']
-                rsp = self.aac.advanced_config.update(id, value=advConf.value, sensitive=sensitive)
+                rsp = self.aac.advanced_config.update(old['id'], value=advConf.value, sensitive=old.get('sensitive', None))
                 if rsp.success == True:
                     _logger.info("Successfully updated advanced configuration {}".format(old['key']))
                 else:
