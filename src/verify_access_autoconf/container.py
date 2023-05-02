@@ -92,7 +92,7 @@ class Docker_Configurator(object):
             return
         self.configure_database(containerConfig.cluster)
         if self.needsRestart == True:
-            deploy_pending_changes(self.factory, self.config)
+            deploy_pending_changes(self.factory, self.config, restartContainers=False)
 
 if __name__ == "__main__":
     configure()

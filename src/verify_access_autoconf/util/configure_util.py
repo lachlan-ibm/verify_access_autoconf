@@ -4,7 +4,7 @@
 """
 import os, kubernetes, logging, sys, yaml, pyisva, datetime, subprocess, shutil, time, json
 from . import constants as const
-from .data_util import Map, FileLoader, CustomLoader, KUBE_CLIENT
+from .data_util import Map, FileLoader, CustomLoader, KUBE_CLIENT, KUBE_CLIENT_SLEEP
 from kubernetes.stream import stream
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
@@ -213,5 +213,7 @@ def deploy_pending_changes(factory=None, isvaConfig=None, restartContainers=True
 
             else:
                 _logger.error("Unable to perform container restart, this may lead to errors")
+            _logger.info("Pausing for {}s to allow orchestration to recover and Verify Access components to initialize.".format(KUBE_CLIENT_SLEEP))
+            time.sleep(KUBE_CLIENT_SLEEP)
         else:
             _logger.debug("Not asked to restart containers")

@@ -14,7 +14,6 @@ def to_camel_case(snake_case):
     parts = snake_case.split('_')
     return parts[0] + ''.join(x.title() for x in parts[1:])
 
-
 def remap_keys(data_dict, remap_dict):
     '''
     old_dict: dictionary with keys to be remapped
@@ -170,3 +169,8 @@ class ISVA_Kube_Client:
         return cls._client
 
 KUBE_CLIENT = ISVA_Kube_Client.get_client()
+KUBE_CLIENT_SLEEP = 15
+try:
+    KUBE_CLIENT_SLEEP = int(os.environ.get("ISVA_KUBERNETES_RESTART_SLEEP", 15))
+except ValueError:
+    KUBE_CLIENT_SLEEP = 15
