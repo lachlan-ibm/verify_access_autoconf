@@ -402,7 +402,7 @@ class AAC_Configurator(object):
 
     def advanced_config(self, aac_config):
         if aac_config.advanced_configuration != None:
-            old_config = optional_list(self.aac.advanced_config.list().json)
+            old_config = optional_list(self.aac.advanced_config.list_properties().json)
             for advConf in aac_config.advanced_configuration:
                 old = None; id=None; sensitive=None
                 if advConfig.name:
