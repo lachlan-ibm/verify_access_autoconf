@@ -1579,6 +1579,3 @@ class FED_Configurator(object):
         self.configure_federations(self.config.federation)
         if self.needsRestart == True:
             deploy_pending_changes(self.factory, self.config)
-
-if __name__ == "__main__":
-    configure()

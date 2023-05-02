@@ -155,7 +155,7 @@ class ISVA_Configurator(object):
         if not any(module.get('id', None) == 'federation' and module.get('enabled', "False") == "True" for module in activations):
             self._activateFederation(config)
         if self.needsRestart == True:
-            deploy_pending_changes(self.factory, self.config, restartContainers=False)
+            deploy_pending_changes(self.factory, self.config)
             self.needsRestart = False
         _logger.info("appliance activated")
 
