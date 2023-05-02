@@ -412,7 +412,7 @@ class AAC_Configurator(object):
                 if not old:
                     _logger.error("Could not find {} in list of advanced configuration parameters".format(advConf.name))
                     continue
-                rsp = self.aac.advanced_config.update(old['id'], value=advConf.value, sensitive=old.get('sensitive', None))
+                rsp = self.aac.advanced_config.update_property(old['id'], value=advConf.value, sensitive=old.get('sensitive', None))
                 if rsp.success == True:
                     _logger.info("Successfully updated advanced configuration {}".format(old['key']))
                 else:
