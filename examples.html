@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Example Verify Access Configurations (Getting Started) &mdash; verify-access-autoconf  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Appliance Configuration" href="appliance.html" />
+    <link rel="prev" title="Welcome to verify-access-autoconf documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            verify-access-autoconf
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Example Verify Access Configurations (Getting Started)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#first-steps">First Steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#webseal-reverse-proxy-using-advanced-access-control-authentication">WebSEAL Reverse Proxy using Advanced Access Control authentication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mobile-multi-factor-authentication">Mobile Multi-Factor Authentication</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#federation">Federation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="appliance.html">Appliance Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="container.html">Container Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="access-control.html">Advanced Access Control Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="federations.html">Federations Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webseal.html">WebSEAL Reverse Proxy Configuration</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">verify-access-autoconf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Example Verify Access Configurations (Getting Started)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/examples.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="example-verify-access-configurations-getting-started">
+<h1>Example Verify Access Configurations (Getting Started)<a class="headerlink" href="#example-verify-access-configurations-getting-started" title="Permalink to this heading"></a></h1>
+<section id="first-steps">
+<h2>First Steps<a class="headerlink" href="#first-steps" title="Permalink to this heading"></a></h2>
+<p>The first steps configuration file defines some initial configuration that is required for all Verify Access deployments.
+These steps include:</p>
+<ul class="simple">
+<li><p>Accepting the software licence aggreement and initial management configuration.</p></li>
+<li><p>Configuring service accounts for publishing snapshots to Runtime Containers.</p></li>
+<li><p>Importing PKI for the LDAP Runtime Server and High-Volume Runtime Database.</p></li>
+<li><p>Applying module licences for the WebSEAL, Advanced Access Control and Federation modules.</p></li>
+<li><p>Configuring the WebSEAL Runtime Policy Server / User Registry.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Config intended for use with micro-k8s cluster and PKI generated by Jenkins.
+# Certificate file locations are hard-coded accordingly.
+container:
+  compose_services:
+    - &quot;isvawrprp1&quot;
+    - &quot;isvaruntime&quot;
+  docker_compose_yaml: &quot;iamlab/docker-compose.yaml&quot;
+  admin_cfg:
+    session_timeout: 720
+  account_management:
+    users:
+    - name: &quot;cfgsvc&quot;
+      operation: &quot;update&quot;
+      password: &quot;Passw0rd&quot;
+  management_authorization:
+    authorization_enforcement: True
+    roles:
+    - operation: &quot;update&quot;
+      name: &quot;Configuration Service&quot;
+      users:
+      - name: &quot;cfgsvc&quot;
+        type: &quot;local&quot;
+      features:
+      - name: &quot;shared_volume&quot;
+        access: &quot;w&quot;
+  ssl_certificates:
+  - name: &quot;lmi_trust_store&quot;
+    signer_certificates:
+    - &quot;pki/postgresql/postgres.crt&quot;
+    - &quot;pki/openldap/ca.crt&quot;
+  - name: &quot;rt_profile_keys&quot;
+    signer_certificates:
+    - &quot;pki/postgresql/postgres.crt&quot;
+  cluster:
+    runtime_database:
+      host: &quot;postgresql&quot;
+      port: 5432
+      type: &quot;postgresql&quot;
+      user: &quot;postgres&quot;
+      password: &quot;Passw0rd&quot;
+      ssl: True
+      db_name: &quot;isva&quot;
+  activation: #Activation codes
+    webseal: !environment ISVA_BASE_CODE
+    access_control: !environment ISVA_AAC_CODE
+    federation: !environment ISVA_FED_CODE
+webseal:
+  runtime:
+    policy_server: &quot;ldap&quot;
+    user_registry: &quot;ldap&quot;
+    ldap:
+      host: &quot;openldap&quot;
+      port: 636
+      dn: &quot;cn=root,secAuthority=Default&quot;
+      dn_password: &quot;Passw0rd&quot;
+      key_file: &quot;lmi_trust_store&quot;
+    clean_ldap: True
+    domain: &quot;Default&quot;
+    admin_user: &quot;sec_master&quot;
+    admin_password: &quot;Passw0rd&quot;
+    admin_cert_lifetime: 1460
+    ssl_compliance: &quot;fips&quot;
+</pre></div>
+</div>
+</section>
+<section id="webseal-reverse-proxy-using-advanced-access-control-authentication">
+<h2>WebSEAL Reverse Proxy using Advanced Access Control authentication<a class="headerlink" href="#webseal-reverse-proxy-using-advanced-access-control-authentication" title="Permalink to this heading"></a></h2>
+<p>The WebSEAL / AAC deployment defines a Verify Access deployment with a single WebSEAL reverse proxy. This proxy is
+configured to perform authentication using the AAC authetnication capabilities.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">container</span><span class="p">:</span>
+  <span class="n">docker_compose_yaml</span><span class="p">:</span> <span class="s2">&quot;iamlab/docker-compose.yaml&quot;</span>
+  <span class="n">compose_services</span><span class="p">:</span>
+  <span class="o">-</span> <span class="s2">&quot;isvaruntime&quot;</span>
+  <span class="o">-</span> <span class="s2">&quot;isvawrprp1&quot;</span>
+<span class="n">webseal</span><span class="p">:</span>
+  <span class="n">runtime</span><span class="p">:</span>
+    <span class="n">policy_server</span><span class="p">:</span> <span class="s2">&quot;ldap&quot;</span>
+    <span class="n">user_registry</span><span class="p">:</span> <span class="s2">&quot;ldap&quot;</span>
+    <span class="n">ldap</span><span class="p">:</span>
+      <span class="n">host</span><span class="p">:</span> <span class="s2">&quot;openldap&quot;</span>
+      <span class="n">port</span><span class="p">:</span> <span class="mi">636</span>
+      <span class="n">dn</span><span class="p">:</span> <span class="s2">&quot;cn=root,secAuthority=Default&quot;</span>
+      <span class="n">dn_password</span><span class="p">:</span> <span class="s2">&quot;Passw0rd&quot;</span>
+      <span class="n">key_file</span><span class="p">:</span> <span class="s2">&quot;lmi_trust_store&quot;</span>
+    <span class="n">clean_ldap</span><span class="p">:</span> <span class="kc">True</span>
+    <span class="n">domain</span><span class="p">:</span> <span class="s2">&quot;Default&quot;</span>
+    <span class="n">admin_user</span><span class="p">:</span> <span class="s2">&quot;sec_master&quot;</span>
+    <span class="n">admin_password</span><span class="p">:</span> <span class="s2">&quot;Passw0rd&quot;</span>
+    <span class="n">admin_cert_lifetime</span><span class="p">:</span> <span class="mi">1460</span>
+    <span class="n">ssl_compliance</span><span class="p">:</span> <span class="s2">&quot;fips&quot;</span>
+  <span class="n">reverse_proxy</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;default&quot;</span>
+    <span class="n">host</span><span class="p">:</span> <span class="s2">&quot;isvaruntime&quot;</span>
+    <span class="n">http</span><span class="p">:</span>
+      <span class="n">enabled</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span>
+    <span class="n">https</span><span class="p">:</span>
+      <span class="n">enabled</span><span class="p">:</span> <span class="s2">&quot;yes&quot;</span>
+    <span class="n">domain</span><span class="p">:</span> <span class="s2">&quot;Default&quot;</span>
+    <span class="n">ldap</span><span class="p">:</span>
+      <span class="n">ssl_yn</span><span class="p">:</span> <span class="s2">&quot;yes&quot;</span>
+      <span class="n">port</span><span class="p">:</span> <span class="mi">636</span>
+      <span class="n">key_file</span><span class="p">:</span> <span class="s2">&quot;lmi_trust_store&quot;</span>
+    <span class="n">aac_configuration</span><span class="p">:</span>
+      <span class="n">junction</span><span class="p">:</span> <span class="s2">&quot;/mga&quot;</span>
+      <span class="n">runtime</span><span class="p">:</span>
+        <span class="n">hostname</span><span class="p">:</span> <span class="s2">&quot;isvaruntime&quot;</span>
+        <span class="n">port</span><span class="p">:</span> <span class="mi">9443</span>
+        <span class="n">user</span><span class="p">:</span> <span class="s2">&quot;easuser&quot;</span>
+        <span class="n">password</span><span class="p">:</span> <span class="s2">&quot;passw0rd&quot;</span>
+      <span class="n">reuse_certs</span><span class="p">:</span> <span class="kc">True</span>
+      <span class="n">reuse_acls</span><span class="p">:</span> <span class="kc">True</span>
+    <span class="n">stanza_configuration</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">stanza</span><span class="p">:</span> <span class="s2">&quot;acnt-mgt&quot;</span>
+      <span class="n">entry_id</span><span class="p">:</span> <span class="s2">&quot;enable-local-response-redirect&quot;</span>
+      <span class="n">value</span><span class="p">:</span> <span class="s2">&quot;yes&quot;</span>
+      <span class="n">operation</span><span class="p">:</span> <span class="s2">&quot;update&quot;</span>
+    <span class="o">-</span> <span class="n">stanza</span><span class="p">:</span> <span class="s2">&quot;local-response-redirect&quot;</span>
+      <span class="n">entry_id</span><span class="p">:</span> <span class="s2">&quot;local-response-redirect-uri&quot;</span>
+      <span class="n">value</span><span class="p">:</span> <span class="s2">&quot;/mga/sps/authsvc?PolicyId=urn:ibm:security:authentication:asf:password&quot;</span>
+      <span class="n">operation</span><span class="p">:</span> <span class="s2">&quot;update&quot;</span>
+  <span class="n">pdadmin</span><span class="p">:</span>
+    <span class="n">users</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;testuser&quot;</span>
+      <span class="n">dn</span><span class="p">:</span> <span class="s2">&quot;cn=testuser,dc=ibm,dc=com&quot;</span>
+      <span class="n">password</span><span class="p">:</span> <span class="s2">&quot;passw0rd&quot;</span>
+<span class="n">access_control</span><span class="p">:</span>
+  <span class="n">authentication</span><span class="p">:</span>
+    <span class="n">policies</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;Username Passwword&quot;</span>
+      <span class="n">description</span><span class="p">:</span> <span class="s2">&quot;Username and password authentication policy.&quot;</span>
+      <span class="n">enabled</span><span class="p">:</span> <span class="n">true</span>
+      <span class="n">uri</span><span class="p">:</span> <span class="s2">&quot;urn:ibm:security:authentication:asf:password&quot;</span>
+      <span class="n">policy</span><span class="p">:</span> <span class="s2">&quot;&lt;Policy xmlns=</span><span class="se">\&quot;</span><span class="s2">urn:ibm:security:authentication:policy:1.0:schema</span><span class="se">\&quot;</span><span class="s2"> PolicyId=</span><span class="se">\&quot;</span><span class="s2">urn:ibm:security:authentication:asf:password</span><span class="se">\&quot;</span><span class="s2">&gt;&lt;Description&gt;Username and password authentication policy.&lt;/Description&gt;&lt;Step type=</span><span class="se">\&quot;</span><span class="s2">Authenticator</span><span class="se">\&quot;</span><span class="s2">&gt;&lt;Authenticator AuthenticatorId=</span><span class="se">\&quot;</span><span class="s2">urn:ibm:security:authentication:asf:mechanism:password</span><span class="se">\&quot;</span><span class="s2">/&gt;&lt;/Step&gt;&lt;Actions&gt;&lt;Action On=</span><span class="se">\&quot;</span><span class="s2">null</span><span class="se">\&quot;</span><span class="s2"> type=</span><span class="se">\&quot;</span><span class="s2">null</span><span class="se">\&quot;</span><span class="s2">&gt;&lt;AttributeAssignments/&gt;&lt;/Action&gt;&lt;/Actions&gt;&lt;/Policy&gt;&quot;</span>
+    <span class="n">mechanisms</span><span class="p">:</span>
+    <span class="o">-</span> <span class="nb">id</span><span class="p">:</span> <span class="s2">&quot;7&quot;</span>
+      <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;Username Passowrd&quot;</span>
+      <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;Username Password&quot;</span>
+      <span class="n">description</span><span class="p">:</span> <span class="s2">&quot;Username password authentication&quot;</span>
+      <span class="n">uri</span><span class="p">:</span> <span class="s2">&quot;urn:ibm:security:authentication:asf:mechanism:password&quot;</span>
+      <span class="n">properties</span><span class="p">:</span>
+      <span class="o">-</span> <span class="n">usernamePasswordAuthentication</span><span class="o">.</span><span class="n">enableLastLogin</span><span class="p">:</span> <span class="s2">&quot;false&quot;</span>
+      <span class="o">-</span> <span class="n">usernamePasswordAuthentication</span><span class="o">.</span><span class="n">loginFailuresPersistent</span><span class="p">:</span> <span class="s2">&quot;false&quot;</span>
+      <span class="o">-</span> <span class="n">usernamePasswordAuthentication</span><span class="o">.</span><span class="n">maxServerConnections</span><span class="p">:</span> <span class="s2">&quot;16&quot;</span>
+      <span class="o">-</span> <span class="n">usernamePasswordAuthentication</span><span class="o">.</span><span class="n">mgmtDomain</span><span class="p">:</span> <span class="s2">&quot;Default&quot;</span>
+      <span class="o">-</span> <span class="n">usernamePasswordAuthentication</span><span class="o">.</span><span class="n">sslServerStartTLS</span><span class="p">:</span> <span class="s2">&quot;false&quot;</span>
+      <span class="o">-</span> <span class="n">usernamePasswordAuthentication</span><span class="o">.</span><span class="n">useFederatedDirectoriesConfig</span><span class="p">:</span> <span class="s2">&quot;false&quot;</span>
+      <span class="o">-</span> <span class="n">usernamePasswordAuthentication</span><span class="o">.</span><span class="n">userSearchFilter</span><span class="p">:</span> <span class="s2">&quot;(|(objectclass=ePerson)(objectclass=Person))&quot;</span>
+      <span class="o">-</span> <span class="n">usernamePasswordAuthentication</span><span class="o">.</span><span class="n">ldapBindDN</span><span class="p">:</span> <span class="s2">&quot;cn=root,secAuthority=Default&quot;</span>
+      <span class="o">-</span> <span class="n">usernamePasswordAuthentication</span><span class="o">.</span><span class="n">ldapHostName</span><span class="p">:</span> <span class="s2">&quot;openldap&quot;</span>
+      <span class="o">-</span> <span class="n">usernamePasswordAuthentication</span><span class="o">.</span><span class="n">ldapBindPwd</span><span class="p">:</span> <span class="s2">&quot;Passw0rd&quot;</span>
+      <span class="o">-</span> <span class="n">usernamePasswordAuthentication</span><span class="o">.</span><span class="n">ldapPort</span><span class="p">:</span> <span class="s2">&quot;636&quot;</span>
+      <span class="o">-</span> <span class="n">usernamePasswordAuthentication</span><span class="o">.</span><span class="n">sslEnabled</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span>
+      <span class="o">-</span> <span class="n">usernamePasswordAuthentication</span><span class="o">.</span><span class="n">sslTrustStore</span><span class="p">:</span> <span class="s2">&quot;lmi_trust_store&quot;</span>
+      <span class="n">attributes</span><span class="p">:</span>
+      <span class="o">-</span> <span class="n">selector</span><span class="p">:</span> <span class="s2">&quot;mobile&quot;</span>
+        <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;mobileNumber&quot;</span>
+        <span class="n">namespace</span><span class="p">:</span> <span class="s2">&quot;urn:ibm:security:authentication:asf:mechanism:password&quot;</span>
+      <span class="o">-</span> <span class="n">selector</span><span class="p">:</span> <span class="s2">&quot;mail&quot;</span>
+        <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;emailAddress&quot;</span>
+        <span class="n">namespace</span><span class="p">:</span> <span class="s2">&quot;urn:ibm:security:authentication:asf:mechanism:password&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="mobile-multi-factor-authentication">
+<h2>Mobile Multi-Factor Authentication<a class="headerlink" href="#mobile-multi-factor-authentication" title="Permalink to this heading"></a></h2>
+<p>The MMFA example follows the legacy cookbook deployment guide.</p>
+<p><em>TODO</em></p>
+<section id="federation">
+<h3>Federation<a class="headerlink" href="#federation" title="Permalink to this heading"></a></h3>
+<p>The Federation example follows the legacy cookbook deployment guide</p>
+<p><em>TODO</em></p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to verify-access-autoconf documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="appliance.html" class="btn btn-neutral float-right" title="Appliance Configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Lachlan Gleeson.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
