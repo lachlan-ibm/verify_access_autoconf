@@ -1,7 +1,11 @@
 #!/bin/python
+"""
+@copyright: IBM
+"""
 import logging
 import requests
 import json
+import typing
 
 from .util.constants import HEADERS
 from .util.configure_util import creds, config_base_dir, deploy_pending_changes
@@ -63,7 +67,7 @@ class Appliance_Configurator(object):
                             "name": iface.name,
                             "comment": iface.comment,
                             "enabled": iface.enabled,
-                            "vlan_id": iface.vlanId,
+                            "vlan_id": iface.vlan_id,
                             "bonding_mode": iface.bonding_mode,
                             "bonded_to": iface.bonded_to,
                         }
@@ -71,7 +75,7 @@ class Appliance_Configurator(object):
                     if iface.ipv4.dhcp != None:
                         methodArgs.update({
                                 "ipv4_dhcp_enabled": iface.ipv4.dhcp.enabled,
-                                "ipv4_dhcp_allow_management": iface.ipv4.dhcp.management,
+                                "ipv4_dhcp_allow_management": iface.ipv4.dhcp.allow_mgmt,
                                 "ipv4_dhcp_default_route": iface.ipv4.dhcp.provides_default_route,
                                 "ipv4_dhcp_route_metric": iface.ipv4.dhcp.route_metric
                             })
@@ -81,12 +85,12 @@ class Appliance_Configurator(object):
                                 "ipv4_address": address.address,
                                 "ipv4_mask_or_prefix": address.mask_or_prefix,
                                 "ipv4_broadcast_address": address.broadcast_address,
-                                "ipv4_allow_management": address.allow_management,
+                                "ipv4_allow_management": address.allow_mgmt,
                                 "ipv4_enabled": address.enabled
                             })
                 rsp = system.interfaces.update_interface(oldIface['uuid'], **methodArgs)
                 if rsp.success != True:
-                    break
+                    break # Log error in outer if block
                 if iface.ipv4.addresses != None:
                     for address in iface.ipv4.addresses[1:]:
                         methodArgs = {
@@ -97,30 +101,144 @@ class Appliance_Configurator(object):
                             }
                         rsp = system.interfaces.create_address(iface.label, **methodArgs)
                         if rsp.success != True:
-                            break
+                            break # Log error in outer if block
 
         if rsp != None and rsp.success == True:
-            _logger.info("Successfuly set address for interface {}".format(iface.label))
+            _logger.info("Successfully set address for interface {}".format(iface.label))
         else:
             _logger.error("Failed to update address for interface {} with config:\n{}\n{}".format(
                 iface.label, json.dumps(iface, indent=4), rsp.data))
 
 
+    class Networking(typing.TypedDict):
+        '''
+        Example::
+
+                networking:
+                  routes:
+                  - enabled: true
+                    address: "default"
+                    gateway: "192.168.42.1"
+                    interface: "1.1"
+                    metric: 0
+                    table: "main"
+                    comment: "Example route"
+                  interfaces:
+                    ipv4:
+                      dhcp:
+                        enabled: false
+                    addresses:
+                    - address": "192.168.42.101"
+                      mask_or_prefix: "255.255.255.0"
+                      broadcast_address: "192.168.42.10"
+                      allow_mgmt: true
+                      enabled: true
+                    - address: "192.168.42.102"
+                      mask_or_prefix: "/24"
+                      broadcast_address: "192.168.42.10"
+                      allow_mgmt: false
+                      enabled: true
+
+        '''
+        class Route(typing.TypedDict):
+            enabled: bool
+            'Enable this route.'
+            interface: str
+            'Interface this route is attached to.'
+            comment: typing.Optional[str]
+            'Optional comment to add to route.'
+            address: str
+            'Network address to use for route.'
+            gateway: str
+            'Network gateway to use for route.'
+            maks_or_prefix: str
+            'Network bitmask or prefix to use for route.'
+            metric: int
+            'Route metric.'
+            table: int
+            'Route table.'
+
+        class Interface(typing.TypedDict):
+            class IPv4(typing.TypedDict):
+                class IPv4Address(typing.TypedDict):
+                    address: str
+                    'IPv4 address to assign to interface.'
+                    mask_or_prefix: str
+                    'IPv4 netmask or prefix to assign to address.'
+                    broadcast_address: str
+                    'IPv4 address to use for broadcasting.'
+                    allow_mgmt: bool
+                    'Use this address for the Local Management Interface.'
+                    enabled: bool
+                    'Enable this address.'
+
+                class IPv4DHCP(typing.TypedDict):
+                    enabled: bool
+                    'Enable DHCP on this interface.'
+                    allow_mgmt: bool
+                    'Use a DHCP address for the Local Management Interface.'
+                    default_route: bool
+                    'Use DHCP to determine the default network route.'
+                    route_metric: int
+                    'Route metric.'
+
+                dhcp: typing.Optional[IPv4DHCP]
+                'DHCP configuration for an interface.'
+                addresses: typing.Optional[typing.List[IPv4Address]]
+                'Static IPv4 addresses assigned to an interface.'
+
+            name: str
+            'Name of interface.'
+            comment: str
+            'Comment to add to interface.'
+            enabled: str
+            'Enable this interface.'
+            vlan_id: typing.Optional[str]
+            'System assigned vlan ID.'
+            ipv4: IPv4
+            'IPv4 settings.'
+
+        routes: typing.Optional[typing.List[Route]]
+        'Optional list of routes to add to an interface.'
+
+        interfaces: typing.List[Interface]
+        'List of properties for attached interfaces.'
+
     def update_network(self, config):
         if config.network != None:
             if config.network.routes != None:
                 for route in config.network.routes:
-                    _update_routes(route)
+                    self._update_routes(route)
             if config.network.interfaces != None:
                 for iface in config.network.interfaces:
-                    _update_interface(iface)
-        administrator_settings(config)
-        deploy_pending_changes()
+                    self._update_interface(iface)
+        deploy_pending_changes(self.factory, self.config)
+
+
+    class Date_Time(typing.TypedDict):
+        '''
+        Example::
+
+                    date_time:
+                      enable_ntp: true
+                      ntp_servers: "time.ibm.com,192.168.0.1"
+                      time_zone: "Australia/Brisbane"
+
+        '''
+        enable_ntp: bool
+        'Enable Network Time Protocol synchronization.'
+        ntp_servers: typing.Optional[typing.List[str]]
+        'List of hostnames or addresses to use as NTP servers.'
+        time_zone: str
+        'The id of the timezone the appliance is operating in.'
+        date_time: typing.Optional[str]
+        'The current date and time, in the format "YYYY-MM-DD HH:mm:ss"'
 
     def date_time(self, config):
         if config.date_time != None:
             rsp = self.appliance.get_system_settings().date_time.update(enable_ntp=config.date_time.enable_ntp,
-                    ntp_servers=config.date_time.ntp_servers, time_zone=config.date_time.time_zone)
+                    ntp_servers=config.date_time.ntp_servers, time_zone=config.date_time.time_zone,
+                    date_time=date_time.date_time)
             if rsp.success == True:
                 _logger.info("Successfully updated Date/Time settings on appliance")
             else:
@@ -128,34 +246,118 @@ class Appliance_Configurator(object):
                     json.dumps(config.date_time, indent=4), rsp.data))
 
 
+    class Cluster_Configuration(typing.TypedDict):
+        '''
+        Example::
+
+                 cluster:
+                   config_db:
+                     address: "127.0.10.1"
+                     port: 1234
+                     username: "database_user"
+                     password: "database_password"
+                     ssl: True
+                     ssl_keystore: "lmi_trust_store.kdb"
+                     db_name: "isva_config"
+                   runtime_db:
+                     address: "postgresql"
+                     port: 5432
+                     type: "Postgresql"
+                     user: "postgres"
+                     password: !secret verify-access/isva-secrets:postgres-passwd
+                     ssl: False
+                     db_name: "isva_hvdb"
+                   cluster:
+                     sig_file: "cluster/signature_file"
+                     primary_master: "isva.primary.master"
+                     secondary_master: "isva.secondary.master"
+                     nodes:
+                     - "isva.node"
+                     restricted_nodes:
+                     - "isva.restricted.node"
+
+        '''
+        class Database(typing.TypedDict):
+            type: str
+            'Database type. "postgresql" | "db2" | "oracle".'
+            host: str
+            'Hostname or address of database.'
+            port: str
+            'Port database is listening on.'
+            ssl: bool
+            'Enable SSL encryption of connections.'
+            ssl_keystore: typing.Optional[str]
+            'SSL database to use to verify connections. Only valid if ``ssl == true``.'
+            user: str
+            'Username to authenticate to database as.'
+            password: str
+            'Password to authenticate as ``username``.'
+            db_name: str
+            'Name of the database instance to use.'
+            extra_config: typing.Optional[dict]
+            'Database type specific configuration.'
+
+        class Cluster(typing.TypedDict):
+            sig_file: str
+            'Signature file generated by the primary master; used to add nodes to the cluster.'
+            primary_master: str
+            'Verify Access appliance designated as the primary master node.'
+            secondary_master: typing.Optional[str]
+            'Verify Access appliance designated as the secondary master node.'
+            nodes: typing.Optional[typing.List[str]]
+            'Verify Access appliance designated as nodes.'
+            restricted_nodes: typing.Optional[typing.List[str]]
+            'Verify Access appliance designated as the restricted nodes.'
+
+        config_database: typing.Optional[Database]
+        'Configuration for the config database.'
+        runtime_database: typing.Optional[Database]
+        'Configuration for the runtime (HVDB) database.'
+        cluster: typing.Optional[Cluster]
+        'Configuration for Verify Access High Availability cluster nodes.'
+
     def cluster(self, config):
-        if config.config_db != None:
-            rsp = self.appliance.get_system_settings().cluster.set_config_db(**config.config_db)
+        if config.config_database != None:
+            confDbExtraConfig = config.config_database.copy()
+            methodArgs = {"embedded": False, "db_type": confDbExtraConfig.pop('type'), 'host': confDbExtraConfig.pop('host'),
+                          'port': confDbExtraConfig.pop('port'), 'secure': confDbExtraConfig.pop('ssl'), 
+                          'db_keystore': confDbExtraConfig.pop('ssl_keystore'), 'user': confDbExtraConfig.pop('user'), 
+                          'passwd': confDbExtraConfig.pop('password'), 'db_name': confDbExtraConfig.pop('db_name'), 
+                          'extra_config': confDbExtraConfig
+                }
+            rsp = self.appliance.get_system_settings().cluster.set_config_db(**methodArgs)
             if rsp.success == True:
-                _logger.info("Successfully set the configuration databaase")
+                _logger.info("Successfully set the configuration database")
             else:
                 _logger.error("Failed to set the configuration database with:{}\n{}".format(
-                    json.dumps(config.config_db, indent=4), rsp.content))
-        if config.runtime_db != None:
-            rsp = self.appliance.get_system_settings().cluster.set_runtime_db(**config.runtime_db)
+                    json.dumps(config.config_database, indent=4), rsp.data))
+        if config.runtime_database != None:
+            hvdbExtraConfig = config.runtime_database.copy()
+            methodArgs = {'embedded': False, 'db_type': hvdbExtraConfig.pop('type'), 'host': hvdbExtraConfig.pop('host'),
+                          'port': hvdbExtraConfig.po('port'), 'secure': hvdbExtraConfig.pop('ssl'),
+                          'db_keystore': hvdbExtraConfig.pop('ssl_keystore'), 'user': hvdbExtraConfig.pop('user'),
+                          'passwd': hvdbExtraConfig.pop('password'), 'db_name': hvdbExtraConfig.pop('db_name'),
+                          'extra_config': hvdbExtraConfig
+                }
+            rsp = self.appliance.get_system_settings().cluster.set_runtime_db(**methodArgs)
             if rsp.success == True:
                 _logger.info("Successfully set the runtime database")
             else:
                 _logger.error("Failed to set the runtime database with: {}\n{}".format(json.dumps(
-                    config.runtime_db, indent=4), rsp.content))
+                    config.runtime_database, indent=4), rsp.data))
         if config.cluster != None:
             rsp = self.appliance.get_system_settings().cluster.update_cluster(**config.cluster)
             if rsp.success == True:
                 _logger.info("Successfully set the cluster configuration")
             else:
                 _logger.error("Failed to set the cluster configuration with:{}\n{}".format(
-                    json.dumps(config.cluster, indent=4), rsp.content))
+                    json.dumps(config.cluster, indent=4), rsp.data))
 
 
     def configure(self):
-        update_network(self.config.appliance)
-        date_time(self.config.appliance)
-        cluster(self.config.appliance)
+        self.update_network(self.config.appliance)
+        self.date_time(self.config.appliance)
+        self.cluster(self.config.appliance)
 
 if __name__ == "__main__":
     configure()

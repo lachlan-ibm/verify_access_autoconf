@@ -1,0 +1,134 @@
+container:
+  k8s_deployments:
+    namespace: "default"
+    deployments:
+    - "isamwebseal"
+    - "isamruntime"
+  lmi: #Local Management Interface settings
+    timeout: 720
+  activation: #Activation codes
+    webseal: !environment VERIFY_ACCESS_BASE_CODE
+    access_control: !environment VERIFY_ACCESS_AAC_CODE
+    federation: !environment VERIFY_ACCESS_FED_CODE
+  cluster:
+    runtime_database:
+      type: "postgresql"
+      host: "postgresql"
+      port: 5432
+      ssl: True
+      ssl_keystore: "rt_profile_keys"
+      user: "postgres"
+      password: !environment VERIFY_ACCESS_POSTGRES_PASSWORD
+      db_name: "isam"
+  account_management:
+    users:
+    - name: "cfgsvc"
+      operation: "update"
+      password: !environment VERIFY_ACCESS_CFGSVC_PASSWORD
+  management_authorization:
+    authorization_enforcement: True
+    roles:
+    - operation: "update"
+      name: "Configuration Service"
+      users:
+      - name: "cfgsvc"
+        type: "local"
+      features:
+      - name: "shared_volume"
+        access: "w"
+  ssl_certificates:
+  - name: "lmi_trust_store"
+    signer_certificates:
+    - ".secrets/postgresql.pem"
+    - ".secrets/openldap.pem"
+  - name: "rt_profile_keys"
+    signer_certificates:
+    - ".secrets/postgresql.pem"
+webseal:
+  runtime:
+    policy_server: "ldap"
+    user_registry: "ldap"
+    domain: "Default"
+    ldap:
+      host: "openldap"
+      port: 636
+      key_file: "lmi_trust_store"
+      dn: !environment VERIFY_ACCESS_LDAP_USER
+      dn_password: !environment VERIFY_ACCESS_LDAP_PASSWORD
+    clean_ldap: True
+    admin_user: !environment VERIFY_ACCESS_SEC_USER
+    admin_password: !environment VERIFY_ACCESS_SEC_PASSWORD
+    admin_cert_lifetime: 1460
+  reverse_proxy:
+    - name: "default"
+      domain: "Default"
+      host: "isvawebseal"
+      http: 
+        enabled: "no"
+      https:
+        enabled: "yes"
+        port: 9443
+      ldap:
+        ssl: "yes"
+        port: 636
+        key_file: "lmi_trust_store"
+      aac_configuration:
+        runtime:
+          hostname: "isamruntime"
+          port: 9443
+          user: !environment VERIFY_ACCESS_RUNTIME_USER
+          password: !environment VERIFY_ACCESS_RUNTIME_PASSWORD
+        junction: "/mga"
+        reuse_acls: True
+        reuse_certs: True
+      stanza_configuration:
+        - stanza: "local-apps"
+          entry_id: "cred-viewer"
+          value: "cred"
+          operation: "add"
+        - stanza: "server"
+          entry_id: "auth-challenge-type"
+          value: "[+*]ba"
+          operation: "update"
+        - stanza: "ba"
+          entry_id: "ba-auth"
+          value: "both"
+          operation: "update"
+        - stanza: "rsp-header-names"
+          entry_id: "X-XSS-Protection"
+          value: "0"
+          operation: "add"
+        - stanza: "rsp-header-names"
+          entry_id: "X-Content-Type-Options"
+          value: "nosniff"
+          operation: "add"
+  pdadmin:
+    users:
+      - name: "testuser"
+        first_name: "Test"
+        last_name: "User"
+        password: !environment VERIFY_ACCESS_TEST_PASSWORD
+        dn: "cn=testuser,dc=ibm,dc=com"
+access_control:
+  authentication:
+    mechanisms:
+      - name: "Username Password"
+        description: "username Password mechanism"
+        uri: "urn:ibm:security:authentication:asf:mechanism:password"
+        predefined: False
+        type: "Username Password"
+        properties:
+          - usernamePasswordAuthentication.ldapBindDN: !environment VERIFY_ACCESS_LDAP_USER
+          - usernamePasswordAuthentication.ldapBindPwd: !environment VERIFY_ACCESS_LDAP_PASSWORD
+          - usernamePasswordAuthentication.ldapHostName: "openldap"
+          - usernamePasswordAuthentication.ldapPort: "636"
+          - usernamePasswordAuthentication.sslEnabled: "true"
+          - usernamePasswordAuthentication.sslTrustStore: "lmi_trust_store.kdb"
+          - usernamePasswordAuthentication.mgmtDomain: "Default"
+          - usernamePasswordAuthentication.maxServerConnections: "16"
+          - usernamePasswordAuthentication.userSearchFilter: "(|(objectclass=ePerson)(objectclass=Person))"
+          - usernamePasswordAuthentication.loginFailuresPersistent: "false"
+  advanced_configuration:
+    - id: "12503"
+      sensitive: False
+      value: "both"

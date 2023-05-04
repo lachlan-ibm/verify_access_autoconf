@@ -1,4 +1,4 @@
-dist: xenial
+dist: jammy
 language: python
 
 stages:
@@ -18,13 +18,14 @@ jobs:
         - sh ./.tests/import_test.sh
         - sh ./.tests/unit_test.sh
       python:
-        - "3.7"
         - "3.8"
         - "3.9"
-        - "3.10-dev"
+        - "3.10"
+        - "3.11"
+        - "3.12"
     - stage: deploy
       script: 
         - ./.deploy.sh
       python:
         - "3.9"
-      if: branch = stable
+      if: branch = stable and type != pull_request

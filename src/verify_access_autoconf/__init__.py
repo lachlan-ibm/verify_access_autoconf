@@ -1,3 +1,6 @@
+"""
+@copyright: IBM
+"""
 from .configure import ISVA_Configurator as Configurator
 from .appliance import Appliance_Configurator
 from .container import Docker_Configurator

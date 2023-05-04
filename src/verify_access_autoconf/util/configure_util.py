@@ -1,7 +1,11 @@
 #!/bin/python
-import os, kubernetes, logging, sys
+"""
+@copyright: IBM
+"""
+import os, kubernetes, logging, sys, yaml, pyisva, datetime, subprocess, shutil, time, json
 from . import constants as const
-from .data_util import Map, FileLoader
+from .data_util import Map, FileLoader, CustomLoader, KUBE_CLIENT, KUBE_CLIENT_SLEEP
+from kubernetes.stream import stream
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 _logger = logging.getLogger(__name__)
@@ -14,16 +18,18 @@ def config_base_dir():
 
 def config_yaml(config_file=None):
     if config_file:
-        _logger.info("Reading file from arg {}".format(config_file))
-        config = data_util.Map( yaml.load( open(config_file, 'r'), data_util.CustomLoader) )
+        _logger.info("Reading file from provided path {}".format(config_file))
+        config = data_util.Map(yaml.load(open(config_file, 'r'), Loader=CustomLoader))
     elif const.CONFIG_YAML_ENV_VAR in os.environ.keys():
-        _logger.info("Reading file from env var ISVA_YAML_CONFIGURATION = {}".format(
-            os.environ.get(const.CONFIG_YAML_ENV_VAR)))
-        return Map(yaml.load(
-            os.environ.get(const.CONFIG_YAML_ENV_VAR), 'r'), data_util.CustomLoader)
-    elif config_base_dir() and const.CONFIG_YAML in os.lsdir(config_base_dir()):
-        return Map(yaml.load(
-            os.path.join(config_base_dir(), const.CONFIG_YAML), 'r'), data_util.CustomLoader)
+        _logger.info("Reading file from env var {} = {}".format(
+            const.CONFIG_YAML_ENV_VAR, os.environ.get(const.CONFIG_YAML_ENV_VAR)))
+        return Map(yaml.load(open(
+            os.environ.get(const.CONFIG_YAML_ENV_VAR), 'r'), Loader=CustomLoader))
+    elif config_base_dir() and const.CONFIG_YAML in os.listdir(config_base_dir()):
+        _logger.info("Reading config file from {} env var: {}/config.yaml".format(
+            const.CONFIG_BASE_DIR, os.environ.get(const.CONFIG_BASE_DIR)))
+        return Map(yaml.load(open(
+            os.path.join(config_base_dir(), const.CONFIG_YAML), 'r'), Loader=CustomLoader))
     else:
         raise RuntimeError("Failed to find a YAML configuration file, help!")
 
@@ -46,70 +52,46 @@ def read_file(fp):
     return contents
 
 
-def mgmt_base_url():
-    return os.environ.get(const.MGMT_BASE_URL_ENV_VAR, config_yaml().mgmt_base_url)
-
-def creds():
-    if const.MGMT_USER_ENV_VAR in os.environ.keys():
-        return (os.environ.get(const.MGMT_USER_ENV_VAR, "admin"), 
-                    os.environ.get(const.MGMT_PWD_ENV_VAR, "admin"))
-    else:
+def mgmt_base_url(cfg=None):
+    if cfg == None:
         cfg = config_yaml()
-        return (cfg.mgmt_user, cfg.mgmt_pwd)
+    return os.environ.get(const.MGMT_URL_ENV_VAR, cfg.mgmt_base_url)
+
+def creds(cfg=None):
+    user = None
+    secret = None
+    if const.MGMT_USER_ENV_VAR in os.environ.keys():
+        user = os.environ.get(const.MGMT_USER_ENV_VAR)
+    if const.MGMT_PWD_ENV_VAR in os.environ.keys():
+        secret = os.environ.get(const.MGMT_PWD_ENV_VAR)
+    if user == None or secret == None:
+        if cfg == None:
+            cfg = config_yaml()
+        if user == None:
+            user = cfg.get('mgmt_user', "admin")
+        if secret == None:
+            secret = cfg.get('mgmt_pwd', "admin")
+    return (user, secret)
 
 
-def old_creds():
+def old_creds(cfg=None):
+    user = None
+    secret = None
     if const.MGMT_OLD_PASSWORD_ENV_VAR in os.environ.keys():
-        return (os.environ.get(const.MGMT_USER_ENV_VAR, "admin"), 
-                    os.environ.get(const.MGMT_OLD_PASSWORD_ENV_VAR, "admin"))
-    else:
-        mgmtUser = creds()(0)
-        oldPwd = config_yaml().mgmt_old_pwd
-        return (mgmtUser, oldPwd)
-
-
-def update_container_names(isvaConfig):
-    #Try update kubernetes containers with generated names
-    if isvaConfig.docker != None and isvaConfig.docker.orchestration == 'kubernetes':
-        kubernetes_config = os.environ.get(const.KUBERNETES_CONFIG) #If none config will be loaded from default location
-        kubernetes.config.load_kube_config(config_file=kubernetes_config)
-        kubeClient = kubernetes.client.CoreV1Api()
-        pods = []
-        ret = kubeClient.list_pod_for_all_namespaces(watch=False)
-        for e in ret.items:
-            if e.metadata.namespace == isvaConfig.docker.containers.namespace:
-                pods += [e.metadata.name]
-        config_pods = []
-        webseal_pods = []
-        runtime_pods = []
-        dsc_pods = []
-        for pod in pods:
-            if isvaConfig.docker.containers.webseal != None and isinstance( isvaConfig.docker.containers.webseal, str):
-                if isvaConfig.docker.containers.webseal in pod:
-                    webseal_pods += [pod]
-            if isvaConfig.docker.containers.runtime != None and isinstance( isvaConfig.docker.containers.runtime, str):
-                if isvaConfig.docker.containers.runtime in pod:
-                    runtime_pods += [pod]
-            if isvaConfig.docker.containers.configuration != None and isinstance( isvaConfig.docker.containers.configuration, str):
-                if isvaConfig.docker.containers.configuration in pod:
-                    config_pods += [pod]
-            if isvaConfig.docker.containers.dsc != None and isinstance( isvaConfig.docker.containers.dsc, str):
-                if isvaConfig.docker.containers.dsc in pod:
-                    dsc_pods += [pod]
-        if config_pods:
-            isvaConfig.docker.containers.configuration = config_pods
-        if webseal_pods:
-            isvaConfig.docker.containers.webseal = webseal_pods
-        if runtime_pods:
-            isvaConfig.docker.containers.runtime = runtime_pods
-        if dsc_pods:
-            isvaConfig.docker.containers.dsc = dsc_pods
+        user = os.environ.get(const.MGMT_USER_ENV_VAR)
+    if const.MGMT_OLD_PASSWORD_ENV_VAR in os.environ.keys():
+        secret = os.environ.get(const.MGMT_OLD_PASSWORD_ENV_VAR)
+    if user == None or secret == None:
+        if user == None:
+            user = cfg.get('mgmt_user', "admin")
+        if secret == None:
+            secret = cfg.get('mgmt_old_pwd', None)
+    return (user, secret)
 
 
 def _kube_reload_container(client, namespace, container):
-    from kubernetes.stream import stream
     exec_commands = ['isam_cli', '-c', 'reload', 'all']
-    response = stream(client.connect_get_namespaced_pod_exec,
+    response = stream(client.CoreV1Api().connect_get_namespaced_pod_exec,
             container,
             namespace,
             command=exec_commands,
@@ -124,24 +106,114 @@ def _kube_reload_container(client, namespace, container):
 
 
 def _kube_rollout_restart(client, namespace, deployment):
-    #TODO
-    return
+    #Get a list of the current pods
+    pods = [ pod.metadata.name for pod in 
+                client.CoreV1Api().list_namespaced_pod(namespace, label_selector="app=" + deployment).items ]
+    _logger.debug("Found {} pods for deployment {}\n{}".format(len(pods), deployment, pods))
 
-def _get_kube_client():
-    #TODO
-    return
+    #Request a restart from the controller
+    body = {'spec': {
+                'template':{ 'metadata': { 'annotations': { 
+                        'kubectl.kubernetes.io/restartedAt': str(datetime.datetime.utcnow().isoformat("T") + "Z") 
+                } } }
+        } }
+    try:
+        client.AppsV1Api().patch_namespaced_deployment(deployment, namespace, body, pretty='true')
+    except kubernetes.client.rest.ApiException as e:
+        _logger.error("Exception when calling AppsV1Api->patch_namespaced_deployment: %s" % e)
+        sys.exit(1)
 
-def deploy_pending_changes(factory=None, isvaConfig=None):
+    #Now request for the pods to be deleted; when this throws the pods are gone
+    for pod in pods:
+        count = 1
+        while count < 10:
+            try:
+                client.CoreV1Api().delete_namespaced_pod(name=pod, namespace=namespace)
+            except kubernetes.client.rest.ApiException as e:
+                if json.loads(e.body).get('code', -1) == 404:
+                    break
+            time.sleep(count * 10)
+            count += 1
+        if count == 10:
+            _logger.error("Failed to delete pod {} for deployment {}".format(pod, deployment))
+            sys.exit(1)
+
+    #Finally wait for the new pod list to be ready
+    watcher = kubernetes.watch.Watch()
+    for event in watcher.stream(func=client.CoreV1Api().list_namespaced_pod,
+                                namespace=namespace,
+                                label_selector="app=" + deployment,
+                                timeout_seconds=30):
+        if event['object'].status.phase == "Running":
+            watcher.stop()
+            _logger.info("{} deployment is running".format(deployment))
+            return
+        elif event['type'] == "DELETED":
+            watcher.stop()
+            _logger.error("{} deployment was deleted while waiting to be restarted".format(deployment))
+    sys.exit(1) #Pod did not get marked as running :(
+
+
+def _compose_restart_service(service, config):
+    if shutil.which("docker-compose") == None:
+        _logger.error("docker-compose not found on $PATH")
+        sys.exit(1)
+    composeYaml = None
+    if const.DOCKER_COMPOSE_CONFIG in os.environ.keys():
+        composeYaml = os.environ.get(const.DOCKER_COMPOSE_CONFIG)
+    elif config.container.docker_compose_yaml is not None:
+        composeYaml = config.container.docker_compose_yaml
+    else:
+        _logger.error("Unable to find docker-compose YAML configuration")
+        sys.exit(1)
+    if not composeYaml.startswith('/'):
+        composeYaml = config_base_dir() + '/' + composeYaml
+    ps = subprocess.run(['docker-compose', '-f' , composeYaml, 'restart', service])
+    if ps.returncode != 0:
+        _logger.error("Error restarting docker-compose container:\nstdout: {}\nstderr{}".format(ps.stdout, ps.stderr))
+        sys.exit(1)
+
+def _docker_restart_container(container, config):
+    if shutil.which("docker") == None:
+        _logger.error("docker  not found on $PATH")
+        sys.exit(1)
+    ps = subprocess.run(['docker', 'restart', container])
+    if ps.returncode != 0:
+        _logger.error("Error restarting docker container:\nstdout: {}\nstderr{}".format(ps.stdout, ps.stderr))
+        sys.exit(1)
+
+
+def deploy_pending_changes(factory=None, isvaConfig=None, restartContainers=True):
+    if not isvaConfig:
+        isvaConfig = config_yaml()
     if not factory:
-        factory = pyisva.Factory(mgmt_base_url(), *creds())
+        factory = pyisva.Factory(mgmt_base_url(isvaConfig), *creds(isvaConfig))
+
     factory.get_system_settings().configuration.deploy_pending_changes()
-    kube_client = _get_kube_client()
-    if factory.is_docker() == True and kube_client is not None:
-        namespace = isvaConfig.docker.containers.namespace
+    if factory.is_docker() == True and isvaConfig.container is not None:
         factory.get_system_settings().docker.publish()
-        for container in isvaConfig.docker.containers.webseal:
-            _kube_reload_container(kube_client, namespace, container)
-        for container in isvaConfig.docker.containers.runtime:
-            _kube_reload_container(kube_client, namespace, container)
-        for container in isvaConfig.docker.containers.dsc:
-            _kube_reload_container(kube_client, namespace, container)
+        if restartContainers == True:
+            if isvaConfig.container.k8s_deployments is not None:
+                namespace = isvaConfig.container.k8s_deployments.namespace
+                #Are we restarting the containers or rolling out a restart to the deployment descriptor
+                if isvaConfig.container.k8s_deployments.deployments is not None:
+                    for deployment in isvaConfig.container.k8s_deployments.deployments:
+                        _kube_rollout_restart(KUBE_CLIENT, namespace, deployment)
+
+                elif isvaConfig.container.k8s_deployments.pods is not None:
+                    for pod in isvaConfig.container.pods:
+                        _kube_restart_container(KUBE_CLIENT, namespace, pod)
+
+            elif isvaConfig.container.compose_services:
+                for service in isvaConfig.container.compose_services:
+                    _compose_restart_service(service, isvaConfig)
+
+            elif isvaConfig.container.containers is not None:
+                _docker_restart_container(container, isvaConfig)
+
+            else:
+                _logger.error("Unable to perform container restart, this may lead to errors")
+            _logger.info("Idle for {}s to allow orchestration to recover and Verify Access components to initialize.".format(KUBE_CLIENT_SLEEP))
+            time.sleep(KUBE_CLIENT_SLEEP)
+        else:
+            _logger.debug("Not asked to restart containers")
