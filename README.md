@@ -10,7 +10,7 @@ To get started several example deployments are available in the [Examples](examp
 ## Environment
 - `ISVA_CONFIG_BASE` = directory which contains the YAML configuration file as well as any http template pages, PKI, mapping rules, ect.
 - `ISVA_CONFIG_YAML` = path to ISVA configuration yaml file. Path should be relative to `ISVA_CONFIG_BASE`
-- `ISVA_MGMT_BASE_URL` = address to access ISVA LMI, eg. https://\<isva appliance\>:\<isva port\>. This property can also be specified in the configuration yaml file. If present, this proprty will take precedence.
+- `ISVA_MGMT_BASE_URL` = address to access ISVA LMI, eg. https://\<isva appliance\>:\<isva port\>. This property can also be specified in the configuration yaml file. If present, this property will take precedence.
 - `ISVA_MGMT_USER` = The user to perform configuration as. If not supplied the `admin` user is used.
 - `ISVA_MGMT_PWD` = administrator password for the administrator account performing configuration. This property can also be specified in the configuration yaml file. If present, this property will take precedence.
 - `ISVA_MGMT_OLD_PWD` = if a password change for the administrator account (eg. from the default) is required, the old password can be specified with this environment variable. If present the administrator's password will be changed from `MGMT_OLD_PASSWORD` to `MGMT_PASSWORD`
