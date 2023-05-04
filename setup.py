@@ -20,6 +20,11 @@ class CleanCommand(Command):
                     #os.rmdir(os.path.join(root, name))
                     os.system('rm -vrf {}'.format(os.path.join(root, name)))
 
+#Use the README.md file as the pypi description
+from pathlib import Path
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
+
 setup(
     name='verify_access_autoconf',
     version='0.2.%s' % os.environ.get('TRAVIS_BUILD_NUMBER', 0),
@@ -36,9 +41,11 @@ setup(
                       'docker-compose',
                       'typing'
     ],
-    url='https://github.ibm.com/lgleeson/ISVAConfigurationAutomation',
+    url='https://github.ibm.com/lachlan-ibm/verify_access_autoconf',
     zip_safe=False,
     cmdclass={
         'clean': CleanCommand,
     }
+    long_description=long_description,
+    long_description_content_type='text/markdown'
 )
