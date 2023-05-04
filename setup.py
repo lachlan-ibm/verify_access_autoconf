@@ -45,7 +45,7 @@ setup(
     zip_safe=False,
     cmdclass={
         'clean': CleanCommand,
-    }
+    },
     long_description=long_description,
     long_description_content_type='text/markdown'
 )
