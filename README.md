@@ -84,4 +84,4 @@ spec:
 ```
 
 ## Documentation
-Documentation for using this library can be found on [Verify Access Automated Configurator's GitHub pages](https://lachlan-ibm.github.io/verify-access-autoconf/index.html).
+Documentation for using this library can be found on [Verify Access Automated Configurator's GitHub pages](https://lachlan-ibm.github.io/verify_access_autoconf/index.html).

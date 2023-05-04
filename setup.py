@@ -27,7 +27,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='verify_access_autoconf',
-    version='0.2.%s' % os.environ.get('TRAVIS_BUILD_NUMBER', 0),
+    version='0.3.%s' % os.environ.get('TRAVIS_BUILD_NUMBER', 0),
     description='YAML based configuration automation for IBM Security Verify Access',
     author='Lachlan Gleeson',
     author_email='lgleeson@au1.ibm.com',
