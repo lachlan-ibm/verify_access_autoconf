@@ -5,5 +5,6 @@ pyisva
 wheel
 setuptools
 twine
+sphinx
 sphinx-rtd-theme
 typing
