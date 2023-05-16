@@ -1,0 +1,162 @@
+container:
+  compose_services:
+    - "isvawrprp1"
+    - "isvaruntime"
+  docker_compose_yaml: "iamlab/docker-compose.yaml"
+  admin_cfg:
+    session_timeout: 720
+  account_management:
+    users:
+    - name: "cfgsvc"
+      operation: "update"
+      password: "Passw0rd"
+  management_authorization:
+    authorization_enforcement: True
+    roles:
+    - operation: "update"
+      name: "Configuration Service"
+      users:
+      - name: "cfgsvc"
+        type: "local"
+      features:
+      - name: "shared_volume"
+        access: "w"
+  ssl_certificates:
+  - name: "lmi_trust_store"
+    signer_certificates:
+    - "pki/postgresql/postgres.crt"
+    - "pki/openldap/ca.crt"
+  - name: "rt_profile_keys"
+    signer_certificates:
+    - "pki/postgresql/postgres.crt"
+  - database_file: "pki/myidpkeys.p12"
+    stash_file: "pki/myidpkeys.sth"
+  cluster:
+    runtime_database:
+      host: "postgresql"
+      port: 5432
+      type: "postgresql"
+      user: "postgres"
+      password: "Passw0rd"
+      ssl: True
+      db_name: "isva"
+  activation: #Activation codes
+    webseal: !environment ISVA_BASE_CODE
+    access_control: !environment ISVA_AAC_CODE
+    federation: !environment ISVA_FED_CODE
+webseal:
+  runtime:
+    policy_server: "ldap"
+    user_registry: "ldap"
+    ldap:
+      host: "openldap"
+      port: 636
+      dn: "cn=root,secAuthority=Default"
+      dn_password: "Passw0rd"
+      key_file: "lmi_trust_store"
+    clean_ldap: True
+    domain: "Default"
+    admin_user: "sec_master"
+    admin_password: "Passw0rd"
+    admin_cert_lifetime: 1460
+    ssl_compliance: "fips"
+  reverse_proxy:
+  - name: "default"
+    host: "isvawebseal"
+    http:
+      enabled: "no"
+    https:
+      enabled: "yes"
+    domain: "Default"
+    ldap:
+      ssl_yn: "yes"
+      port: 636
+      key_file: "lmi_trust_store"
+    stanza_configuration:
+    - stanza: "server"
+      entry_id: "web-host-name"
+      value: "www.myidp.ibm.com"
+      operation: "update"
+    - stanza: "step-up"
+      entry_id: "verify-step-up-user"
+      value: "no"
+      operation: "update"
+    - stanza: "session"
+      entry_id: "user-session-ids"
+      value: "yes"
+      operation: "update"
+    - stanza: "session"
+      entry_id: "inactive-timeout"
+      value: "1800"
+      operation: "update"
+    - stanza: "session"
+      entry_id: "create-unauth-sessions"
+      value: "yes"
+      operation: "update"
+access_control:
+  mapping_rules:
+  type: "saml2"
+  files:
+  - "mapping_rules/idp/ip_saml20.js"
+  - "mapping_rules/idp/accesspolicy_prompt.js"
+  - "mapping_rules/idp/ip_post_ldap.js"
+  - "mapping_rules/idp/ip_pre_ldap.js"
+  - "mapping_rules/idp/ip_saml20_httpclient.js"
+  - "mapping_rules/idp/ip_saml20_httpclient_wstrust.js"
+  - "mapping_rules/idp/ip_saml20.js"
+  - "mapping_rules/idp/ivc_to_ltpa.js"
+  - "mapping_rules/idp/ivc_to_passticket.js"
+  - "mapping_rules/idp/ivc_to_saml20.js"
+  - "mapping_rules/idp/saml20_ivc_to_saml20.js"
+  - "mapping_rules/idp/saml20_to_saml20.js"
+  - "mapping_rules/idp/stsuutostsuu.js"
+  - "mapping_rules/idp/ut_to_saml20.js"
+federation:
+  federations:
+  - name: "saml20idp"
+    protocol: "saml20"
+    role: "ip"
+    configuration:
+      company_name: "IdP Company"
+      point_of_contact_url: "https://www.myidp.ibm.com/isam"
+      assertion_settings:
+        valid_before: 300
+        valid_after: 300
+      need_consent_to_federate: false
+      signature_settings:
+        validation_options:
+          validate_authn_request: true
+        signing_options:
+          sign_authn_response: true
+          sign_logout_request: true
+          sign_logout_response: true
+        signing_key_identifier:
+          store: "myidpkeys"
+          label: "myidpkey"
+        key_info_elements:
+          include_x509_certificate_data: true
+          include_x509_subject_name: false
+          include_x509_subject_key_identifier: false
+          include_x509_issuer_details: false
+          include_public_key: false
+      identity_mapping:
+        active_delegate_id: "default-map"
+        properties:
+          mapping_rule: "ip_saml20"
+      extension_mapping:
+        active_delegate_id: "skip-extension-map"
+      name_id_format:
+        default: "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
+      single_sign_on_service:
+      - binding: "post"
+      - binding: "redirect"
+      exclude_session_index_in_single_logout_request: false
+      single_logout_service:
+      - binding: "post"
+      - binding: "redirect"
+      encryption_settings:
+        decryption_key_identifier:
+          store: "myidpkeys"
+          label: "myidpkey"
+      message_valid_time: 300
+      session_timeout: 7200

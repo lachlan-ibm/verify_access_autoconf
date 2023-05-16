@@ -2,7 +2,7 @@ container:
   docker_compose_yaml: "iamlab/docker-compose.yaml"
   compose_services:
   - "isvaruntime"
-  - "isvawrprp1"
+  - "isvawrp-rp1"
 webseal:
   runtime:
     policy_server: "ldap"
@@ -10,18 +10,18 @@ webseal:
     ldap:
       host: "openldap"
       port: 636
-      dn: "cn=root,secAuthority=Default"
-      dn_password: "Passw0rd"
+      dn: !environment LDAP_BIND_DN
+      dn_password: !environment LDAP_BIND_PW
       key_file: "lmi_trust_store"
     clean_ldap: True
     domain: "Default"
-    admin_user: "sec_master"
-    admin_password: "Passw0rd"
+    admin_user: !environment LDAP_SEC_USER
+    admin_password: !environment LDAP_SEC_PW
     admin_cert_lifetime: 1460
     ssl_compliance: "fips"
   reverse_proxy:
   - name: "default"
-    host: "isvaruntime"
+    host: "isvawebseal"
     http:
       enabled: "no"
     https:
@@ -36,8 +36,8 @@ webseal:
       runtime:
         hostname: "isvaruntime"
         port: 9443
-        user: "easuser"
-        password: "passw0rd"
+        user: !environment AAC_RUNTIME_USER
+        password: !environment AAC_RUNTIME_PW
       reuse_certs: True
       reuse_acls: True
     stanza_configuration:
@@ -52,19 +52,19 @@ webseal:
   pdadmin:
     users:
     - name: "testuser"
-      dn: "cn=testuser,dc=ibm,dc=com"
-      password: "passw0rd"
+      dn: !environment TEST_BIND_DN
+      password: !environment TEST_PW
 access_control:
   authentication:
     policies:
-    - name: "Username Passwword"
+    - name: "Username Password"
       description: "Username and password authentication policy."
       enabled: true
       uri: "urn:ibm:security:authentication:asf:password"
       policy: "<Policy xmlns=\"urn:ibm:security:authentication:policy:1.0:schema\" PolicyId=\"urn:ibm:security:authentication:asf:password\"><Description>Username and password authentication policy.</Description><Step type=\"Authenticator\"><Authenticator AuthenticatorId=\"urn:ibm:security:authentication:asf:mechanism:password\"/></Step><Actions><Action On=\"null\" type=\"null\"><AttributeAssignments/></Action></Actions></Policy>"
     mechanisms:
     - id: "7"
-      name: "Username Passowrd"
+      name: "Username Password"
       type: "Username Password"
       description: "Username password authentication"
       uri: "urn:ibm:security:authentication:asf:mechanism:password"
@@ -76,9 +76,9 @@ access_control:
       - usernamePasswordAuthentication.sslServerStartTLS: "false"
       - usernamePasswordAuthentication.useFederatedDirectoriesConfig: "false"
       - usernamePasswordAuthentication.userSearchFilter: "(|(objectclass=ePerson)(objectclass=Person))"
-      - usernamePasswordAuthentication.ldapBindDN: "cn=root,secAuthority=Default"
+      - usernamePasswordAuthentication.ldapBindDN: !environment LDAP_BIND_DN
       - usernamePasswordAuthentication.ldapHostName: "openldap"
-      - usernamePasswordAuthentication.ldapBindPwd: "Passw0rd"
+      - usernamePasswordAuthentication.ldapBindPwd: !environment LDAP_BIND_PW
       - usernamePasswordAuthentication.ldapPort: "636"
       - usernamePasswordAuthentication.sslEnabled: "true"
       - usernamePasswordAuthentication.sslTrustStore: "lmi_trust_store"

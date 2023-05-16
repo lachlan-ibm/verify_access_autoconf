@@ -59,8 +59,8 @@ defintions and clients.
 
 .. _authentication:
 
-Authenticaton
-=============
+Authentication
+==============
 This section describes how to create authentication policies and mechanisms. Authentication policies can be used in 
 risk-based access or context-based access policies to conditionally enforce additional authentication/authorization 
 requirements.
