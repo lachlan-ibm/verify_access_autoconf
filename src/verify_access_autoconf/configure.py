@@ -618,6 +618,7 @@ class ISVA_Configurator(object):
                     mvnRepositoryUrl: "https://artifact-public.instana.io"
                     mvnRepositoryFeaturesPath: "artifactory/features-public@id=features@snapshots@snapshotsUpdate=never"
                     mvnRepositorySharedPath: "artifactory/shared@id=shared@snapshots@snapshotsUpdate=never"
+
         '''
 
         extension: str
