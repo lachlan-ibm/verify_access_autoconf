@@ -116,7 +116,7 @@ class Appliance_Configurator(object):
             _logger.info("Successfully set the DNS properties")
         else:
             _logger.error("Failed to set the DNS properties:\n{}\n{}".format(
-                                                json.dumps(dns_config, indent=4, rsp.data)))
+                                                json.dumps(dns_config, indent=4,) rsp.data))
 
     class Networking(typing.TypedDict):
         '''
