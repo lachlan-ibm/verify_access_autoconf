@@ -25,7 +25,7 @@ class Appliance_Configurator(object):
 
     def _update_routes(self, route):
         system = self.appliance.get_system_settings()
-        interfaces = optional_list(system.interfaces.list_interfaces().json).get("interfaces", {})
+        interfaces = system.interfaces.list_interfaces().json.get("interfaces", [])
         ifaceUuid = optional_list(filter_list('label', route.interface, interfaces))[0].get("uuid", None)
         if not ifaceUuid:
             _logger.error("Unable to find interface {} in : {}".format(
