@@ -25,34 +25,32 @@ class Appliance_Configurator(object):
 
     def _update_routes(self, route):
         system = self.appliance.get_system_settings()
-        interfaces = system.interfaces.list_interfaces().json["interfaces"]
-        ifaceUuid = None
-        for iface in interfaces:
-            if iface.get('label', None) == route.interface:
-                ifaceUuid = iface.get('uuid', '-1')
-                break
-        if ifaceUuid == None:
+        interfaces = optional_list(system.interfaces.list_interfaces().json).get("interfaces", {})
+        ifaceUuid = optional_list(filter_list('label', route.interface, interfaces))[0].get("uuid", None)
+        if not ifaceUuid:
             _logger.error("Unable to find interface {} in : {}".format(
                 route.interface, json.dumps(interfaces, indent=4)))
             return
-        existingRoutes = system.static_routes.list_routes().json['staticRoutes']
-        rsp = None
-        for oldRoute in existingRoutes:
-            if oldRoute['interfaceUUID'] == ifaceUuid:
-                rsp = system.static_routes.update_route(oldRoute['uuid'], enabled=route.enabled,
-                        address=route.address, mask_or_prefix=route.mask_or_prefix, gateway=route.gateway,
-                        interface_uuid=ifaceUuid, metric=route.metric, comment=route.comment,
-                        table=route.table)
-                break
-        if rsp == None:
+        existingRoutes = optional_list(system.static_routes.list_routes().json).get('staticRoutes', {})
+        rsp = None; verb = "NONE"
+        oldRoute = optional_list(filter_list('interfaceUUID', ifaceUuid, existingRoutes))[0]
+        if oldRoute:
+            rsp = system.static_routes.update_route(oldRoute['uuid'], enabled=route.enabled,
+                    address=route.address, mask_or_prefix=route.mask_or_prefix, gateway=route.gateway,
+                    interface_uuid=ifaceUuid, metric=route.metric, comment=route.comment,
+                    table=route.table)
+            verb = "updated" if rsp.success == True else "update"
+        else:
             rsp = system.static_routes.create_route(enabled=route.enabled, address=route.address, mask_or_prefix=proxy.mask_or_prefix,
                     gateway=route.gateway, interface_uuid=ifaceUuid, metric=route.metric, comment=route.comment,
                     table=route.table)
+            verb = "created" if rsp.success == True else "create"
         if rsp.success == True:
-            _logger.info("Successfully set route info for {} interface".format(route.interface))
+            _logger.info("Successfully {} route info for {} interface".format(
+                                        verb, route.interface))
         else:
-            _logger.error("Failed to set route info for {} interface:\n{}\n{}".format(
-                route.info, json.dumps(route, indent=4), rsp.data))
+            _logger.error("Failed to {} route info for {} interface:\n{}\n{}".format(
+                                verb, route.info, json.dumps(route, indent=4), rsp.data))
 
     def _update_interface(self, iface):
         system = self.appliance.get_system_settings()
@@ -89,9 +87,7 @@ class Appliance_Configurator(object):
                             "ipv4_enabled": address.enabled
                         })
             rsp = system.interfaces.update_interface(oldIface['uuid'], **methodArgs)
-            if rsp.success != True:
-                break # Log error in outer if block
-            if iface.ipv4.addresses != None:
+            if rsp.success == True and iface.ipv4.addresses != None: # Log error in outer if block
                 for address in iface.ipv4.addresses[1:]:
                     methodArgs = {
                             "address": address.address,
@@ -100,8 +96,6 @@ class Appliance_Configurator(object):
                             "allow_management": address.allow_management
                         }
                     rsp = system.interfaces.create_address(iface.label, **methodArgs)
-                    if rsp.success != True:
-                        break # Log error in outer if block
 
         if rsp != None and rsp.success == True:
             _logger.info("Successfully set address for interface {}".format(iface.label))
