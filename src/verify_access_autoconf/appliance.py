@@ -18,9 +18,9 @@ class Appliance_Configurator(object):
     config = Map()
     appliance = None
 
-    def __init__(self, config, appFctry):
+    def __init__(self, config, factory):
         self.config = config
-        self.appliance = appFctry
+        self.appliance = factory
 
 
     def _update_routes(self, route):
@@ -240,7 +240,7 @@ class Appliance_Configurator(object):
                     self._update_interface(iface)
             if config.dns != None:
                 self._update_dns(config.dns)
-        deploy_pending_changes(self.factory, self.config)
+        deploy_pending_changes(self.appliance, self.config)
 
 
     class Date_Time(typing.TypedDict):
