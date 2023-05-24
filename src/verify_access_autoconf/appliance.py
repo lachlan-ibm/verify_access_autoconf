@@ -18,7 +18,7 @@ class Appliance_Configurator(object):
     config = Map()
     appliance = None
 
-    def __init__(self, appFctry, config):
+    def __init__(self, config, appFctry):
         self.config = config
         self.appliance = appFctry
 
