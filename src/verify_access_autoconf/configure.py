@@ -602,11 +602,54 @@ class ISVA_Configurator(object):
                         rsp.data)
 
 
+    class Extensions(typing.TypedDict):
+        '''
+        Example::
+
+                extensions:
+                - extension: "Instana/instana.ext"
+                  third_party_packages:
+                  - "Instana/agent.rpm"
+                  properties:
+                    extId: "instanaAgent"
+                    instanaAgentKey: !environment INSTANA_AGENT_KEY
+                    instanaHost: !environment INSTANA_HOST
+                    instanaPort: 443
+                    mvnRepositoryUrl: "https://artifact-public.instana.io"
+                    mvnRepositoryFeaturesPath: "artifactory/features-public@id=features@snapshots@snapshotsUpdate=never"
+                    mvnRepositorySharedPath: "artifactory/shared@id=shared@snapshots@snapshotsUpdate=never"
+        '''
+
+        extension: str
+        'The signed extension file to be installed on Verify Access.'
+        third_party_packages: typing.Optional[str]
+        'An optional list of third party packages to be uploaded to Verify Access as part of the installation process.'
+        properties: typing.Optional[dict]
+        'Key-Value properties to give the extension during the installation process. This list of properties will vary with the type of extension being installed.'
+
+    def install_extensions(self, config):
+        if config != None and config.extensions != None:
+            for extension in config.extensions:
+                third_party_files = []
+                if extension.third_party_packages != None:
+                    for tpp in extension.third_party_packages:
+                        third_party_files += FILE_LOADER.read_file(tpp)
+                third_party_files = [e.get("path", "INVALID") for e in third_party_files]
+                ext_file = optional_list(FILE_LOADER.read_file(extension.extension))[0].get('path', "INVALID")
+                rsp = self.factory.get_system_settings().extensions.create_extension(
+                                        ext_file=ext_file, properties=properties, third_party_packages=third_party_files)
+                if rsp.success == True:
+                    _logger.info("Successfully installed {} extension".format(extension.extension))
+                else:
+                    _logger.error("Failed to install extension:\n{}\n{}".format(
+                                            json.dumps(extension, ident=4), rsp.data))
+
+
     def configure_base(self, appliance, container):
         base_config = None
         model = None
         if self.config.appliance is not None:
-            base_config = self.config.applianc
+            base_config = self.config.appliance
             model = appliance
         elif self.config.container is not None:
             base_config = self.config.container
@@ -623,6 +666,7 @@ class ISVA_Configurator(object):
         model.configure()
 
         self.activate_appliance(base_config)
+        self.install_extensions(base_config)
 
 
     def get_modules(self):

@@ -1,0 +1,29 @@
+webseal:
+  runtime:
+    ldap:
+      dn: "cn=root,secAuthority=Default"
+      dn_password: "Passw0rd"
+  pdadmin:
+    users:
+    - username: "testuser"
+      dn: "cn=testuser,dc=ibm,dc=com"
+      password: !environment TEST_PASSWORD
+    reverse_proxies:
+      - host: "spwebseal"
+        acls:
+        - name: "default-webseal"
+          junctions:
+          - "/isam/mobile-demo"
+access_control:
+  advanced_configuration:
+  - name: "live.demos.enabled"
+    value: "true"
+  - name: "live.demos.settings"
+    value: "lmiHostAndPort=https://isvaconfig:9443,lmiAdminId=demoUser,lmiAdminPwd=Passw0rd,acHostAndPort=https://isvaruntime:9443,websealHostNameAndPort=https://www.myidp.ibm.com,acUuidCookieName=ac.uuid"
+federation:
+  federations:
+  - name: "saml20sp"
+    protocol: "saml20"
+    import_metadata:
+    - name: "idp_partner"
+      metadata: "idpmetadata.xml"

@@ -1,0 +1,17 @@
+webseal:
+  runtime:
+    ldap:
+      dn: "cn=root,secAuthority=Default"
+      dn_password: "Passw0rd"
+  pdadmin:
+    users:
+    - username: "testuser"
+      dn: "cn=testuser,dc=ibm,dc=com"
+      password: !environment TEST_PASSWORD
+federation:
+  federations:
+  - name: "saml20idp"
+    protocol: "saml20"
+    import_metadata:
+    - name: "sp_partner"
+      metadata: "spmetadata.xml"

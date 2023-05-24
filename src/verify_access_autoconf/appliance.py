@@ -110,6 +110,14 @@ class Appliance_Configurator(object):
                 iface.label, json.dumps(iface, indent=4), rsp.data))
 
 
+    def _update_dns(self, dns_config):
+        rsp = self.appliance.get_system_settings().dns.update(**dns_config)
+        if rsp.success == True:
+            _logger.info("Successfully set the DNS properties")
+        else:
+            _logger.error("Failed to set the DNS properties:\n{}\n{}".format(
+                                                json.dumps(dns_config, indent=4, rsp.data)))
+
     class Networking(typing.TypedDict):
         '''
         Example::
@@ -198,11 +206,29 @@ class Appliance_Configurator(object):
             ipv4: IPv4
             'IPv4 settings.'
 
+        class DNS(typing.TypedDict):
+            auto: bool
+            'true if DNS should be auto configured via dhcp.'
+            auto_from_interface: typing.Optional[str]
+            'Name or ID of interface whose dhcp will defined the dns settings.'
+            primary_server: typing.Optional[str]
+            'Primary DNS Server address.'
+            secondary_server: typing.Optional[str]
+            'Secondary DNS Server address.'
+            tertiary_server: typing.Optional[str]
+            'Tertiary DNS Server address.'
+            search_domains: typing.Optional[str]
+            'Comma-separated list of DNS search domains.'
+
+
         routes: typing.Optional[typing.List[Route]]
         'Optional list of routes to add to an interface.'
 
         interfaces: typing.List[Interface]
         'List of properties for attached interfaces.'
+
+        dns: typing.Optional[DNS]
+        'Domain Name Server settings for appliance'
 
     def update_network(self, config):
         if config.network != None:
@@ -212,6 +238,8 @@ class Appliance_Configurator(object):
             if config.network.interfaces != None:
                 for iface in config.network.interfaces:
                     self._update_interface(iface)
+            if config.dns != None:
+                self._update_dns(config.dns)
         deploy_pending_changes(self.factory, self.config)
 
 

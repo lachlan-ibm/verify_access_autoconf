@@ -1,7 +1,7 @@
 container:
   compose_services:
-    - "isvawrprp1"
-    - "isvaruntime1"
+    - "isvawrprp2"
+    - "isvaruntime2"
   docker_compose_yaml: "iamlab/federations-docker-compose.yaml"
   admin_cfg:
     session_timeout: 720
@@ -29,8 +29,8 @@ container:
   - name: "rt_profile_keys"
     signer_certificates:
     - "pki/postgresql/postgres.crt"
-  - database_file: "pki/myidpkeys.p12"
-    stash_file: "pki/myidpkeys.sth"
+  - database_file: "pki/myspkeys.p12"
+    stash_file: "pki/myspkeys.sth"
   cluster:
     runtime_database:
       host: "postgresql"
@@ -62,7 +62,7 @@ webseal:
     ssl_compliance: "fips"
   reverse_proxy:
   - name: "default"
-    host: "idpwebseal"
+    host: "spwebseal"
     http:
       enabled: "no"
     https:
@@ -75,7 +75,7 @@ webseal:
     stanza_configuration:
     - stanza: "server"
       entry_id: "web-host-name"
-      value: "www.myidp.ibm.com"
+      value: "www.mysp.ibm.com"
       operation: "update"
     - stanza: "step-up"
       entry_id: "verify-step-up-user"
@@ -98,61 +98,38 @@ webseal:
     - stanza: "junction:/isam"
       entry_id: "reset-cookies-list"
       value: "*ac.uuid,*JSESSIONID"
-      operation: "add"
-    - stanza: "TAM_CRED_ATTRS_SVC"
-      operation: "add"
-    - stanza: "TAM_CRED_ATTRS_SVC"
-      entry_id: "eperson"
-      value: "azn_cred_registry_id"
-    - stanza: "TAM_CRED_ATTRS_SVC:eperson"   
-      operation: "add"
-    - stanza: "TAM_CRED_ATTRS_SVC:eperson" 
-      entry_id: "emailAddress"
-      value: "mail"
-      operation: "add"
-    - stanza: "TAM_CRED_ATTRS_SVC:eperson" 
-      entry_id: "firstName"
-      value: "cn"
-      operation: "add"
-    - stanza: "TAM_CRED_ATTRS_SVC:eperson" 
-      entry_id: "lastName"
-      value: "sn"
-      operation: "add"
+  pdadmin:
+    users:
+    - username: "anonymous"
+      dn: "cn=anonymous,dc=ibm,dc=com"
+      password: !environment FED_ANON_PASSWORD
 access_control:
   mapping_rules:
   type: "saml2"
   files:
-  - "mapping_rules/idp/ip_saml20.js"
-  - "mapping_rules/idp/accesspolicy_prompt.js"
-  - "mapping_rules/idp/ip_post_ldap.js"
-  - "mapping_rules/idp/ip_pre_ldap.js"
-  - "mapping_rules/idp/ip_saml20_httpclient.js"
-  - "mapping_rules/idp/ip_saml20_httpclient_wstrust.js"
-  - "mapping_rules/idp/ip_saml20.js"
-  - "mapping_rules/idp/ivc_to_ltpa.js"
-  - "mapping_rules/idp/ivc_to_passticket.js"
-  - "mapping_rules/idp/ivc_to_saml20.js"
-  - "mapping_rules/idp/saml20_ivc_to_saml20.js"
-  - "mapping_rules/idp/saml20_to_saml20.js"
-  - "mapping_rules/idp/stsuutostsuu.js"
-  - "mapping_rules/idp/ut_to_saml20.js"
+  - "mapping_rules/sp/oidc_adv_claims.js"
+  - "mapping_rules/sp/oidc_adv.js"
+  - "mapping_rules/sp/sp_saml20_dynamic_group.js"
+  - "mapping_rules/sp/sp_saml20.js"
 federation:
   federations:
-  - name: "saml20idp"
+  - name: "saml20sp"
     protocol: "saml20"
-    role: "ip"
-    export_metadata: "idpmetadata.xml"
+    role: "sp"
+    import_partners:
+    - "idpmetadata.xml"
+    export_metadata: "spmetadata.xml"
     webseal:
       runtime:
         username: !environment RUNTIME_USER
         password: !environment RUNTIME_PASSWORD
-        hostname: isvaruntime1
+        hostname: isvaruntime2
         port: 9443
       reuse_acls: true
       reuse_certs: true
     configuration:
-      company_name: "IdP Company"
-      point_of_contact_url: "https://www.myidp.ibm.com/isam"
+      company_name: "SP Company"
+      point_of_contact_url: "https://www.mysp.ibm.com/isam"
       assertion_settings:
         valid_before: 300
         valid_after: 300
@@ -165,8 +142,8 @@ federation:
           sign_logout_request: true
           sign_logout_response: true
         signing_key_identifier:
-          store: "myidpkeys"
-          label: "myidpkey"
+          store: "myspkeys"
+          label: "myspkey"
         key_info_elements:
           include_x509_certificate_data: true
           include_x509_subject_name: false
@@ -176,7 +153,7 @@ federation:
       identity_mapping:
         active_delegate_id: "default-map"
         properties:
-          mapping_rule: "ip_saml20"
+          mapping_rule: "sp_saml20"
       extension_mapping:
         active_delegate_id: "skip-extension-map"
       name_id_format:
@@ -190,7 +167,7 @@ federation:
       - binding: "redirect"
       encryption_settings:
         decryption_key_identifier:
-          store: "myidpkeys"
-          label: "myidpkey"
+          store: "myspkeys"
+          label: "myspkey"
       message_valid_time: 300
       session_timeout: 7200
