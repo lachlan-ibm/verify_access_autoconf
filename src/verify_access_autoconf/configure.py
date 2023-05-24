@@ -638,7 +638,7 @@ class ISVA_Configurator(object):
                 third_party_files = [e.get("path", "INVALID") for e in third_party_files]
                 ext_file = optional_list(FILE_LOADER.read_file(extension.extension))[0].get('path', "INVALID")
                 rsp = self.factory.get_system_settings().extensions.create_extension(
-                                        ext_file=ext_file, properties=properties, third_party_packages=third_party_files)
+                                        ext_file=ext_file, properties=extension.properties, third_party_packages=third_party_files)
                 if rsp.success == True:
                     _logger.info("Successfully installed {} extension".format(extension.extension))
                 else:
