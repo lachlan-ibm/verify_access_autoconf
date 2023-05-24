@@ -73,7 +73,7 @@ class Appliance_Configurator(object):
                 if iface.ipv4.dhcp != None:
                     methodArgs.update({
                             "ipv4_dhcp_enabled": iface.ipv4.dhcp.enabled,
-                            "ipv4_dhcp_allow_management": iface.ipv4.dhcp.allow_mgmt,
+                            "ipv4_dhcp_allow_management": iface.ipv4.dhcp.allow_management,
                             "ipv4_dhcp_default_route": iface.ipv4.dhcp.provides_default_route,
                             "ipv4_dhcp_route_metric": iface.ipv4.dhcp.route_metric
                         })
@@ -83,7 +83,7 @@ class Appliance_Configurator(object):
                             "ipv4_address": address.address,
                             "ipv4_mask_or_prefix": address.mask_or_prefix,
                             "ipv4_broadcast_address": address.broadcast_address,
-                            "ipv4_allow_management": address.allow_mgmt,
+                            "ipv4_allow_management": address.allow_management,
                             "ipv4_enabled": address.enabled
                         })
             rsp = system.interfaces.update_interface(oldIface['uuid'], **methodArgs)

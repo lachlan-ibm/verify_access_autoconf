@@ -643,7 +643,7 @@ class ISVA_Configurator(object):
                     _logger.info("Successfully installed {} extension".format(extension.extension))
                 else:
                     _logger.error("Failed to install extension:\n{}\n{}".format(
-                                            json.dumps(extension, ident=4), rsp.data))
+                                            json.dumps(extension, indent=4), rsp.data))
 
 
     def configure_base(self, appliance, container):
