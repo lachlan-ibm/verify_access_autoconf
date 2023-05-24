@@ -9,7 +9,7 @@ import typing
 
 from .util.constants import HEADERS
 from .util.configure_util import creds, config_base_dir, deploy_pending_changes
-from .util.data_util import Map
+from .util.data_util import Map, optional_list, filter_list
 
 _logger = logging.getLogger(__name__)
 
@@ -56,52 +56,52 @@ class Appliance_Configurator(object):
 
     def _update_interface(self, iface):
         system = self.appliance.get_system_settings()
-        interfaces = system.interfaces.list_interfaces().json["interfaces"]
+        interfaces = optional_list(system.interfaces.list_interfaces().json).get("interfaces", {})
         rsp = None
         if iface.ipv4 == None:
             _logger.error("Config tool only tested with IPv4 addresses, sorry")
             return
-        for oldIface in interfaces:
-            if iface.label == oldIface['label']:
-                methodArgs = {
-                            "name": iface.name,
-                            "comment": iface.comment,
-                            "enabled": iface.enabled,
-                            "vlan_id": iface.vlan_id,
-                            "bonding_mode": iface.bonding_mode,
-                            "bonded_to": iface.bonded_to,
+        oldIface = optional_list(filter_list('label', iface.label, interfaces))[0]
+        if oldIface:
+            methodArgs = {
+                        "name": iface.name,
+                        "comment": iface.comment,
+                        "enabled": iface.enabled,
+                        "vlan_id": iface.vlan_id,
+                        "bonding_mode": iface.bonding_mode,
+                        "bonded_to": iface.bonded_to,
+                    }
+            if iface.ipv4 != None:
+                if iface.ipv4.dhcp != None:
+                    methodArgs.update({
+                            "ipv4_dhcp_enabled": iface.ipv4.dhcp.enabled,
+                            "ipv4_dhcp_allow_management": iface.ipv4.dhcp.allow_mgmt,
+                            "ipv4_dhcp_default_route": iface.ipv4.dhcp.provides_default_route,
+                            "ipv4_dhcp_route_metric": iface.ipv4.dhcp.route_metric
+                        })
+                if iface.ipv4.addresses != None and isinstance(iface.ipv4.addresses, list):
+                    address = iface.ipv4.addresses[0]
+                    methodArgs.update({
+                            "ipv4_address": address.address,
+                            "ipv4_mask_or_prefix": address.mask_or_prefix,
+                            "ipv4_broadcast_address": address.broadcast_address,
+                            "ipv4_allow_management": address.allow_mgmt,
+                            "ipv4_enabled": address.enabled
+                        })
+            rsp = system.interfaces.update_interface(oldIface['uuid'], **methodArgs)
+            if rsp.success != True:
+                break # Log error in outer if block
+            if iface.ipv4.addresses != None:
+                for address in iface.ipv4.addresses[1:]:
+                    methodArgs = {
+                            "address": address.address,
+                            "mask_or_prefix": address.mask_or_prefix,
+                            "enabled": address.enabled,
+                            "allow_management": address.allow_management
                         }
-                if iface.ipv4 != None:
-                    if iface.ipv4.dhcp != None:
-                        methodArgs.update({
-                                "ipv4_dhcp_enabled": iface.ipv4.dhcp.enabled,
-                                "ipv4_dhcp_allow_management": iface.ipv4.dhcp.allow_mgmt,
-                                "ipv4_dhcp_default_route": iface.ipv4.dhcp.provides_default_route,
-                                "ipv4_dhcp_route_metric": iface.ipv4.dhcp.route_metric
-                            })
-                    if iface.ipv4.addresses != None and isinstance(iface.ipv4.addresses, list):
-                        address = iface.ipv4.addresses[0]
-                        methodArgs.update({
-                                "ipv4_address": address.address,
-                                "ipv4_mask_or_prefix": address.mask_or_prefix,
-                                "ipv4_broadcast_address": address.broadcast_address,
-                                "ipv4_allow_management": address.allow_mgmt,
-                                "ipv4_enabled": address.enabled
-                            })
-                rsp = system.interfaces.update_interface(oldIface['uuid'], **methodArgs)
-                if rsp.success != True:
-                    break # Log error in outer if block
-                if iface.ipv4.addresses != None:
-                    for address in iface.ipv4.addresses[1:]:
-                        methodArgs = {
-                                "address": address.address,
-                                "mask_or_prefix": address.mask_or_prefix,
-                                "enabled": address.enabled,
-                                "allow_management": address.allow_management
-                            }
-                        rsp = system.interfaces.create_address(iface.label, **methodArgs)
-                        if rsp.success != True:
-                            break # Log error in outer if block
+                    rsp = system.interfaces.create_address(iface.label, **methodArgs)
+                    if rsp.success != True:
+                        break # Log error in outer if block
 
         if rsp != None and rsp.success == True:
             _logger.info("Successfully set address for interface {}".format(iface.label))
@@ -195,8 +195,8 @@ class Appliance_Configurator(object):
                 addresses: typing.Optional[typing.List[IPv4Address]]
                 'Static IPv4 addresses assigned to an interface.'
 
-            name: str
-            'Name of interface.'
+            label: str
+            'System assigned label of interface.'
             comment: str
             'Comment to add to interface.'
             enabled: str
