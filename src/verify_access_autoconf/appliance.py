@@ -54,7 +54,7 @@ class Appliance_Configurator(object):
 
     def _update_interface(self, iface):
         system = self.appliance.get_system_settings()
-        interfaces = optional_list(system.interfaces.list_interfaces().json).get("interfaces", {})
+        interfaces = system.interfaces.list_interfaces().json.get("interfaces", [])
         rsp = None
         if iface.ipv4 == None:
             _logger.error("Config tool only tested with IPv4 addresses, sorry")
