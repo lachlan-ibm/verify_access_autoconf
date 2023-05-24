@@ -31,7 +31,7 @@ class Appliance_Configurator(object):
             _logger.error("Unable to find interface {} in : {}".format(
                 route.interface, json.dumps(interfaces, indent=4)))
             return
-        existingRoutes = optional_list(system.static_routes.list_routes().json).get('staticRoutes', {})
+        existingRoutes = system.static_routes.list_routes().json.get('staticRoutes', [])
         rsp = None; verb = "NONE"
         oldRoute = optional_list(filter_list('interfaceUUID', ifaceUuid, existingRoutes))[0]
         if oldRoute:
