@@ -636,7 +636,6 @@ class ISVA_Configurator(object):
                     for tpp in extension.third_party_packages:
                         third_party_files += FILE_LOADER.read_file(tpp)
                 third_party_files = [tpf.get("path", "INVALID") for tpf in third_party_files]
-                _logger.error("Third party files: {}".format(third_party_files))
                 ext_file = optional_list(FILE_LOADER.read_file(extension.extension))[0].get('path', "INVALID")
                 rsp = self.factory.get_system_settings().extensions.create_extension(
                                         ext_file=ext_file, properties=extension.properties, third_party_packages=third_party_files)

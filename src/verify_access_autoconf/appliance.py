@@ -232,8 +232,8 @@ class Appliance_Configurator(object):
             if config.network.interfaces != None:
                 for iface in config.network.interfaces:
                     self._update_interface(iface)
-            if config.dns != None:
-                self._update_dns(config.dns)
+            if config.network.dns != None:
+                self._update_dns(config.network.dns)
         deploy_pending_changes(self.appliance, self.config)
 
 
