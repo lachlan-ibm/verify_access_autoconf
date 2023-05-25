@@ -5,7 +5,7 @@ appliance:
     webseal: !environment ISVA_BASE_CODE
     access_control: !environment ISVA_AAC_CODE
     federation: !environment ISVA_FED_CODE
-  networking:
+  network:
     routes:
       - enabled: True
         comment: "Default route"
