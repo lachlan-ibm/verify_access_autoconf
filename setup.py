@@ -41,11 +41,12 @@ setup(
                       'docker-compose',
                       'typing'
     ],
-    url='https://github.ibm.com/lachlan-ibm/verify_access_autoconf',
+    url='https://github.com/lachlan-ibm/verify_access_autoconf',
     zip_safe=False,
     cmdclass={
         'clean': CleanCommand,
     },
     long_description=long_description,
-    long_description_content_type='text/markdown'
+    long_description_content_type='text/markdown',
+    keywords=["isva", "isam", "ibm security access manager", "ibm security verify access"]
 )
