@@ -90,6 +90,33 @@ class ISVA_Configurator(object):
             _logger.error("Failed to accept SLA:\n{}".format(rsp.data))
 
 
+    class FIPS(typing.TypedDict):
+        '''
+
+        Example::
+
+                fips:
+                  fips_enabled: True
+                  tls_v10_enabled: False
+                  tls_v11_enabled: False
+
+        '''
+
+        fips_enabled: bool
+        'Enable FIPS 140-2 Mode.'
+        tls_v10_enabled: bool
+        'Allow TLS v1.0 for LMI sessions.'
+        tls_v11_enabled: bool
+        'Allow TLS v1.1 for LMI sessions'
+
+    def fips(self, config):
+        if config != None and config.appliance and config.appliance.fips and \
+                config.appliance.fips.fips_enabled == True:
+            fips_settings = self.factory.get_system_settings().fips.get_settings().json
+            if fips_settings.get("fipsEnabled", False) == False:
+                response = self.factory.get_system_settings().fips.update_settigns(**config.appliance.fips)
+
+
     def complete_setup(self):
         if self.factory.get_system_settings().first_steps.get_setup_status().json.get("configured", True) == False:
             rsp = self.factory.get_system_settings().first_steps.set_setup_complete()
@@ -200,24 +227,19 @@ class ISVA_Configurator(object):
         Example::
 
                   ssl_certificates:
-                  - database: "lmi_trust_store"
+                  - name: "lmi_trust_store"
                     personal_certificates:
-                    - path: "ssl/lmi_trust_store/personal"
+                    - path: "ssl/lmi_trust_store/personal.p12"
                       secret: "S3cr37"
                     signer_certificates:
-                    - "ssl/lmi_trust_store/signer"
-                  - database: "rt_profile_keys"
+                    - "ssl/lmi_trust_store/signer.pem"
+                  - name: "rt_profile_keys"
                     signer_certificates:
-                    - "ssl/rt_profile_keys/signer"
+                    - "ssl/rt_profile_keys/signer.pem"
+                  - kdb_file: "my_keystore.kdb"
+                    stash_file: "my_keystore.sth"
 
         '''
-
-        database: str
-        'Name of SSL database to configure. If database does not exist it will be created.'
-
-        signer_certificates: typing.Optional[typing.List[str]]
-        'List of file paths for signer certificates (PEM or DER) to import.'
-
 
         class Personal_Certificate(typing.TypedDict):
             path: str
@@ -226,6 +248,14 @@ class ISVA_Configurator(object):
             secret: typing.Optional[str]
             'Optional secret to decrypt personal certificate'
 
+        name: typing.Optional[str]
+        'Name of SSL database to configure. If database does not exist it will be created. Either `name` or `kdb_file` must be defined.'
+        kdb_file: typing.Optional[str]
+        'Path to the .kdb file to import as a SSL database. Required if importing a SSL KDB.'
+        stash_file: typing.Optional[str]
+        'Path to the .sth file for the specified `kdb_file`. Required if `kdb_file` is set.'
+        signer_certificates: typing.Optional[typing.List[str]]
+        'List of file paths for signer certificates (PEM or DER) to import.'
         personal_certificates: typing.Optional[typing.List[Personal_Certificate]]
         'List of file paths for personal certificates (PKCS#12) to import.'
 
@@ -235,15 +265,28 @@ class ISVA_Configurator(object):
         if ssl_config:
             old_databases = [d['id'] for d in ssl.list_databases().json]
             for database in ssl_config:
-                if database.name not in old_databases:
-                    rsp = ssl.create_database(database.name, type='kdb')
+                if database.name != None: # Create the database
+                    if database.name not in old_databases:
+                        rsp = ssl.create_database(database.name, type='kdb')
+                        if rsp.success == True:
+                            _logger.info("Successfully created {} SSL Certificate database".format(
+                                database.name))
+                        else:
+                            _logger.error("Failed to create {} SSL Certificate database".format(
+                                database.name))
+                            continue
+                elif database.kdb_file != None: #Import the database
+                    kdb_f = FILE_LOADER.read_file(database.kdb_file)
+                    sth_f = FILE_LOADER.read_file(database.sth_file)
+                    rsp = ssl.import_database(kdb_file=kdb_f.get("path"), sth_file=sth_f.get("path"))
                     if rsp.success == True:
-                        _logger.info("Successfully created {} SSL Certificate database".format(
-                            database.name))
+                        _logger.info("Successfully imported a SSL KDB file")
                     else:
-                        _logger.error("Failed to create {} SSL Certificate database".format(
-                            database.name))
-                        continue
+                        _logger.error("Failed to import SSL KDB file:\n{}\n{}".format(
+                                        json.dumps(database, indent=4), rsp.data))
+                else:
+                    _logger.error("SSL Database config provided but cannot be identified: {}".format(
+                                                                                json.dumps(database, indent=4)))
                 if database.signer_certificates:
                     for fp in database.signer_certificates:
                         signer_parsed_files = FILE_LOADER.read_files(fp)
@@ -690,12 +733,14 @@ class ISVA_Configurator(object):
         if self.old_password(self.config):
             self.factory = pyisva.Factory(mgmt_base_url(self.config), *old_creds(self.config))
             self.accept_eula()
+            self.fips(self.config)
             self.complete_setup()
             self.set_admin_password(old_creds(self.config), creds(self.config))
             self.factory = pyisva.Factory(mgmt_base_url(self.config), *creds(self.config))
         else:
             self.factory = pyisva.Factory(mgmt_base_url(self.config), *creds(self.config))
             self.accept_eula()
+            self.fips(self.config)
             self.complete_setup()
         appliance, container, web, aac, fed = self.get_modules()
         self.configure_base(appliance, container)

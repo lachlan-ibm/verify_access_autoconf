@@ -13,8 +13,55 @@ These steps include:
 - Applying module licenses for the WebSEAL, Advanced Access Control and Federation modules.
 - Configuring the WebSEAL Runtime Policy Server / User Registry.
 
+To run this configuration you should define the following properties, where the "current directory" contains the PKI for the LDAP and HVDB services:
+
+.. code-block:: bash
+
+   export ISVA_CONFIG_BASE="current directory"
+   export ISVA_CONFIG_YAML=first_steps.yaml
+   export ISVA_MGMT_BASE_URL="https://192.168.42.101"
+   export ISVA_MGMT_USER=admin
+   export ISVA_MGMT_PWD=betterThanPassw0rd
+   export ISVA_MGMT_OLD_PWD=admin
+   export ISVA_BASE_CODE="webseal activation code"
+   export ISVA_AAC_CODE="access control activation code"
+   export ISVA_FED_CODE="federations activation code"
+   export LDAP_BIND_PASSWORD=betterThanPassw0rd
+   export LDAP_SEC_PASSWORD=betterThanPassw0rd
+
 
 .. include:: ../examples/first_steps.yaml
+   :literal:
+
+
+First Steps (appliance deployment)
+==================================
+
+The first steps configuration file defines some initial configuration that is required for all Verify Access deployments.
+These steps include:
+
+- Accepting the software license agreement and initial management configuration.
+- Setting network configuration (routes, ip addresses, dns).
+- Applying module licenses for the WebSEAL, Advanced Access Control and Federation modules.
+- Configuring the WebSEAL Runtime Policy Server / User Registry.
+
+To run this configuration you should define the following properties:
+
+.. code-block:: bash
+
+   export ISVA_CONFIG_YAML=appliance_first_steps.yaml
+   export ISVA_MGMT_BASE_URL="https://192.168.42.101"
+   export ISVA_MGMT_USER=admin
+   export ISVA_MGMT_PWD=betterThanPassw0rd
+   export ISVA_MGMT_OLD_PWD=admin
+   export ISVA_BASE_CODE="webseal activation code"
+   export ISVA_AAC_CODE="access control activation code"
+   export ISVA_FED_CODE="federations activation code"
+   export LDAP_BIND_PASSWORD=betterThanPassw0rd
+   export LDAP_SEC_PASSWORD=betterThanPassw0rd
+
+
+.. include:: ../examples/appliance_first_steps.yaml
    :literal:
 
 
@@ -40,9 +87,9 @@ Installation of the Instana monitoring Agent
 ============================================
 
 The Instana monitoring example defines a Verify Access deployment where a third party infrastructure monitoring tool (Instana)
-is installed onto a Verify Access appliance using a `Verify Access Extension<https://exchange.xforce.ibmcloud.com/hub>`_. This 
+is installed onto a Verify Access appliance using a `Verify Access Extension <https://exchange.xforce.ibmcloud.com/hub>`_. This 
 extension allows administrators to collect detailed system information (CPU, RAM, Disk, Networking) during runtime. This example 
-assumes that you have a valid Instana tenant and have downloaded the latest `Agent RPM<https://packages.instana.io/agent/download>`_ 
+assumes that you have a valid Instana tenant and have downloaded the latest `Agent RPM <https://packages.instana.io/agent/download>`_ 
 for JDK 11. The configuration steps performed include:
 
 - Applying the module licenses
@@ -79,26 +126,38 @@ There are a few steps which are required for running this configuration. You mus
 - Run the :ref:`IdP partner<example_idp_partner_yaml>` and :ref:`SP partner<example_sp_partner_yaml>` configurations to create the Federation Partners
 - Create a test user using the demo User Self Care enrollment policy on the IdP deployment
 - Test the Federated authentication:
-  - IdP initiated SSO
-  - SP initiated SSO
+    - IdP initiated SSO
+    - SP initiated SSO
 
 
 .. _example_idp_yaml:
+
+IdP Configuration:
+__________________
 
 .. include:: ../examples/federation_idp.yaml
    :literal:
 
 .. _example_sp_yaml:
 
+SP Configuration:
+_________________
+
 .. include:: ../examples/federation_sp.yaml
    :literal:
 
 .. _example_idp_partner_yaml:
 
+IdP Partner Configuration:
+__________________________
+
 .. include:: ../examples/federation_idp_partner.yaml
    :literal:
 
 .. _example_sp_partner_yaml:
+
+SP Partner Configuration:
+_________________________
 
 .. include:: ../examples/federation_sp_partner.yaml
    :literal:

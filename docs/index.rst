@@ -28,10 +28,10 @@ Architecture
 
 Users should take care to ensure the configuration of these separate features are compatible (eg. conflicting ALC's
 in a WebSEAL reverse proxy). Administrators will also have to define the ``webseal.runtime`` entry for many configuration
-options even if the :ref:`WebSEAL Runtime Component<webseal.rst#Runtime Component>` is already configured.
+options even if the :ref:`WebSEAL Runtime Component<webseal_runtime_server>` is already configured.
 
 Example configurations can be found in the ``examples`` directory with additional documentation in the 
-:ref:`Examples / Getting Started <examples.rst>` page.
+`Examples / Getting Started <examples.html>`_ page.
 
 
 .. _verify_access_autoconf_modules:

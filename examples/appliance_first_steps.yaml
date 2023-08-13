@@ -39,18 +39,6 @@ appliance:
     dns:
       auto: False
       primary_server: "9.9.9.9"
-  extensions:
-  - extension: "Instana/instana.ext"
-    third_party_packages:
-    - "Instana/agent.rpm"
-    properties:
-      extId: "instanaAgent"
-      instanaAgentKey: !environment INSTANA_AGENT_KEY 
-      instanaHost: !environment INSTANA_HOST
-      instanaPort: "443"
-      mvnRepositoryUrl: "https://artifact-public.instana.io"
-      mvnRepositoryFeaturesPath: "artifactory/features-public@id=features@snapshots@snapshotsUpdate=never"
-      mvnRepositorySharedPath: "artifactory/shared@id=shared@snapshots@snapshotsUpdate=never"
 webseal:
   runtime:
     policy_server: "local"
