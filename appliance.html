@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Appliance Configuration &mdash; verify-access-autoconf  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Container Configuration" href="container.html" />
+    <link rel="prev" title="Example Verify Access Configurations (Getting Started)" href="examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            verify-access-autoconf
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Example Verify Access Configurations (Getting Started)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Appliance Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#example">Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#appliance-specific-configuration">Appliance specific configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sla-first-steps">SLA / First steps</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.accept_eula"><code class="docutils literal notranslate"><span class="pre">accept_eula()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.complete_setup"><code class="docutils literal notranslate"><span class="pre">complete_setup()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#password-update">Password update</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Password"><code class="docutils literal notranslate"><span class="pre">Admin_Password</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Password.mgmt_old_pwd"><code class="docutils literal notranslate"><span class="pre">Admin_Password.mgmt_old_pwd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Password.mgmt_pwd"><code class="docutils literal notranslate"><span class="pre">Admin_Password.mgmt_pwd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Password.mgmt_user"><code class="docutils literal notranslate"><span class="pre">Admin_Password.mgmt_user</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#administrator-configuration">Administrator Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config"><code class="docutils literal notranslate"><span class="pre">Admin_Config</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.accept_client_certs"><code class="docutils literal notranslate"><span class="pre">Admin_Config.accept_client_certs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.console_log_level"><code class="docutils literal notranslate"><span class="pre">Admin_Config.console_log_level</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.enabled_tls"><code class="docutils literal notranslate"><span class="pre">Admin_Config.enabled_tls</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.http_proxy"><code class="docutils literal notranslate"><span class="pre">Admin_Config.http_proxy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.https_proxy"><code class="docutils literal notranslate"><span class="pre">Admin_Config.https_proxy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.log_max_files"><code class="docutils literal notranslate"><span class="pre">Admin_Config.log_max_files</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.log_max_size"><code class="docutils literal notranslate"><span class="pre">Admin_Config.log_max_size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.session_timeout"><code class="docutils literal notranslate"><span class="pre">Admin_Config.session_timeout</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.sshd_client_alive"><code class="docutils literal notranslate"><span class="pre">Admin_Config.sshd_client_alive</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ssl-certificate-database">SSL Certificate database</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates"><code class="docutils literal notranslate"><span class="pre">SSL_Certificates</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.Personal_Certificate"><code class="docutils literal notranslate"><span class="pre">SSL_Certificates.Personal_Certificate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.kdb_file"><code class="docutils literal notranslate"><span class="pre">SSL_Certificates.kdb_file</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.name"><code class="docutils literal notranslate"><span class="pre">SSL_Certificates.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.personal_certificates"><code class="docutils literal notranslate"><span class="pre">SSL_Certificates.personal_certificates</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.signer_certificates"><code class="docutils literal notranslate"><span class="pre">SSL_Certificates.signer_certificates</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.stash_file"><code class="docutils literal notranslate"><span class="pre">SSL_Certificates.stash_file</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#administrator-account-management">Administrator Account Management</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management"><code class="docutils literal notranslate"><span class="pre">Account_Management</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_Group"><code class="docutils literal notranslate"><span class="pre">Account_Management.Management_Group</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_User"><code class="docutils literal notranslate"><span class="pre">Account_Management.Management_User</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.groups"><code class="docutils literal notranslate"><span class="pre">Account_Management.groups</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.users"><code class="docutils literal notranslate"><span class="pre">Account_Management.users</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#management-authorization">Management Authorization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization"><code class="docutils literal notranslate"><span class="pre">Management_Authorization</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role"><code class="docutils literal notranslate"><span class="pre">Management_Authorization.Role</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.authorization_enforcement"><code class="docutils literal notranslate"><span class="pre">Management_Authorization.authorization_enforcement</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.roles"><code class="docutils literal notranslate"><span class="pre">Management_Authorization.roles</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-activation">Module Activation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Module_Activations"><code class="docutils literal notranslate"><span class="pre">Module_Activations</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Module_Activations.access_control"><code class="docutils literal notranslate"><span class="pre">Module_Activations.access_control</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Module_Activations.federation"><code class="docutils literal notranslate"><span class="pre">Module_Activations.federation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Module_Activations.webseal"><code class="docutils literal notranslate"><span class="pre">Module_Activations.webseal</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-tuning-parameters">Advanced tuning parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Advanced_Tuning_Parameter"><code class="docutils literal notranslate"><span class="pre">Advanced_Tuning_Parameter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Advanced_Tuning_Parameter.description"><code class="docutils literal notranslate"><span class="pre">Advanced_Tuning_Parameter.description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Advanced_Tuning_Parameter.name"><code class="docutils literal notranslate"><span class="pre">Advanced_Tuning_Parameter.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Advanced_Tuning_Parameter.value"><code class="docutils literal notranslate"><span class="pre">Advanced_Tuning_Parameter.value</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration-snapshots">Configuration Snapshots</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Snapshot"><code class="docutils literal notranslate"><span class="pre">Snapshot</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Snapshot.snapshot"><code class="docutils literal notranslate"><span class="pre">Snapshot.snapshot</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#extensions">Extensions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Extensions"><code class="docutils literal notranslate"><span class="pre">Extensions</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Extensions.extension"><code class="docutils literal notranslate"><span class="pre">Extensions.extension</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Extensions.properties"><code class="docutils literal notranslate"><span class="pre">Extensions.properties</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Extensions.third_party_packages"><code class="docutils literal notranslate"><span class="pre">Extensions.third_party_packages</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#fips-compliance">FIPS Compliance</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.FIPS"><code class="docutils literal notranslate"><span class="pre">FIPS</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.FIPS.fips_enabled"><code class="docutils literal notranslate"><span class="pre">FIPS.fips_enabled</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.FIPS.tls_v10_enabled"><code class="docutils literal notranslate"><span class="pre">FIPS.tls_v10_enabled</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.configure.ISVA_Configurator.FIPS.tls_v11_enabled"><code class="docutils literal notranslate"><span class="pre">FIPS.tls_v11_enabled</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#networking">Networking</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking"><code class="docutils literal notranslate"><span class="pre">Networking</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.DNS"><code class="docutils literal notranslate"><span class="pre">Networking.DNS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface"><code class="docutils literal notranslate"><span class="pre">Networking.Interface</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route"><code class="docutils literal notranslate"><span class="pre">Networking.Route</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.dns"><code class="docutils literal notranslate"><span class="pre">Networking.dns</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.interfaces"><code class="docutils literal notranslate"><span class="pre">Networking.interfaces</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.routes"><code class="docutils literal notranslate"><span class="pre">Networking.routes</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#date-time-settings">Date / Time settings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Date_Time"><code class="docutils literal notranslate"><span class="pre">Date_Time</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Date_Time.date_time"><code class="docutils literal notranslate"><span class="pre">Date_Time.date_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Date_Time.enable_ntp"><code class="docutils literal notranslate"><span class="pre">Date_Time.enable_ntp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Date_Time.ntp_servers"><code class="docutils literal notranslate"><span class="pre">Date_Time.ntp_servers</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Date_Time.time_zone"><code class="docutils literal notranslate"><span class="pre">Date_Time.time_zone</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#cluster-configuration">Cluster Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration"><code class="docutils literal notranslate"><span class="pre">Cluster_Configuration</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Cluster"><code class="docutils literal notranslate"><span class="pre">Cluster_Configuration.Cluster</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database"><code class="docutils literal notranslate"><span class="pre">Cluster_Configuration.Database</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.cluster"><code class="docutils literal notranslate"><span class="pre">Cluster_Configuration.cluster</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.config_database"><code class="docutils literal notranslate"><span class="pre">Cluster_Configuration.config_database</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.runtime_database"><code class="docutils literal notranslate"><span class="pre">Cluster_Configuration.runtime_database</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="container.html">Container Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webseal.html">WebSEAL Reverse Proxy Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="access-control.html">Advanced Access Control Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="federations.html">Federations Configuration</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">verify-access-autoconf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Appliance Configuration</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/appliance.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="appliance-configuration">
+<h1>Appliance Configuration<a class="headerlink" href="#appliance-configuration" title="Permalink to this heading"></a></h1>
+<p>This module contains documentation for system level configuration applicable for Appliance (VM) based Verify Access
+deployments. Container configuration is defined under the <code class="docutils literal notranslate"><span class="pre">container</span></code> top level key. At a minimum an administrator
+should define the <code class="docutils literal notranslate"><span class="pre">isva_base_url</span></code>, <code class="docutils literal notranslate"><span class="pre">isva_admin_user</span></code> and <code class="docutils literal notranslate"><span class="pre">isva_admin_password</span></code> keys (or define the applicable
+environment variables).</p>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this heading"></a></h2>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">appliance</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">admin_cfg</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">session_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">720</span>
+<span class="w">  </span><span class="nt">activation</span><span class="p">:</span><span class="w"> </span><span class="c1">#Module activation codes</span>
+<span class="w">    </span><span class="nt">webseal</span><span class="p">:</span><span class="w"> </span><span class="kt">!environment</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ISVA_BASE_CODE</span>
+<span class="w">    </span><span class="nt">access_control</span><span class="p">:</span><span class="w"> </span><span class="kt">!environment</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ISVA_AAC_CODE</span>
+<span class="w">    </span><span class="nt">federation</span><span class="p">:</span><span class="w"> </span><span class="kt">!environment</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ISVA_FED_CODE</span>
+<span class="w">  </span><span class="nt">network</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">routes</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="w">      </span><span class="nt">comment</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Default</span><span class="nv"> </span><span class="s">route&quot;</span>
+<span class="w">      </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;default&quot;</span>
+<span class="w">      </span><span class="nt">gateway</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;192.168.42.1&quot;</span>
+<span class="w">      </span><span class="nt">interface</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1.1&quot;</span>
+<span class="w">    </span><span class="nt">interfaces</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">label</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1.1&quot;</span>
+<span class="w">      </span><span class="nt">comment</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Default</span><span class="nv"> </span><span class="s">Interface&quot;</span>
+<span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="w">      </span><span class="nt">ipv4</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">dhcp</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">          </span><span class="nt">allow_management</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">          </span><span class="nt">provides_default_route</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">        </span><span class="nt">addresses</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;192.168.42.101&quot;</span>
+<span class="w">          </span><span class="nt">mask_or_prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;24&quot;</span>
+<span class="w">          </span><span class="nt">broadcast_address</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;192.168.42.255&quot;</span>
+<span class="w">          </span><span class="nt">allow_management</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="w">          </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;192.168.42.102&quot;</span>
+<span class="w">          </span><span class="nt">mask_or_prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;24&quot;</span>
+<span class="w">          </span><span class="nt">broadcast_address</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;192.168.42.255&quot;</span>
+<span class="w">          </span><span class="nt">allow_management</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">          </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="w">      </span><span class="nt">ipv6</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">dhcp</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">          </span><span class="nt">allowManagement</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">    </span><span class="nt">dns</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">auto</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">      </span><span class="nt">primary_server</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;9.9.9.9&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="appliance-specific-configuration">
+<span id="appliance"></span><h2>Appliance specific configuration<a class="headerlink" href="#appliance-specific-configuration" title="Permalink to this heading"></a></h2>
+<p>This section covers the configuration options which are only available on appliance or Virtual Machine deployments of
+Verify Access.</p>
+<p id="base-module">The base configurator is responsible for completing the first steps (SLA), activating licensed modules, importing
+PKI and system wide settings like date/time/networking.</p>
+</section>
+<section id="sla-first-steps">
+<span id="id1"></span><h2>SLA / First steps<a class="headerlink" href="#sla-first-steps" title="Permalink to this heading"></a></h2>
+<p>The configurator can be used to accept the Service License Agreement as well as the “first steps” LMI prompts, including
+enabling FIPS compliance. This is always done with the admin account using the default password.
+Failing this step does not result in autoconfig aborting.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.accept_eula">
+<span class="sig-prename descclassname"><span class="pre">src.verify_access_autoconf.configure.ISVA_Configurator.</span></span><span class="sig-name descname"><span class="pre">accept_eula</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.accept_eula" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.complete_setup">
+<span class="sig-prename descclassname"><span class="pre">src.verify_access_autoconf.configure.ISVA_Configurator.</span></span><span class="sig-name descname"><span class="pre">complete_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.complete_setup" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="password-update">
+<span id="lmi-password-update"></span><h2>Password update<a class="headerlink" href="#password-update" title="Permalink to this heading"></a></h2>
+<p>The password of the management account may be updated once. This account must already exist on the appliance and
+have sufficient permission to complete all of the configuration required.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Password">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.verify_access_autoconf.configure.ISVA_Configurator.</span></span><span class="sig-name descname"><span class="pre">Admin_Password</span></span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Password" title="Permalink to this definition"></a></dt>
+<dd><p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mgmt_user</span><span class="p">:</span> <span class="s1">&#39;administrator&#39;</span>
+<span class="n">mgmt_pwd</span><span class="p">:</span> <span class="s1">&#39;S3cr37Pa55w0rd!&#39;</span>
+<span class="n">mgmt_old_pwd</span><span class="p">:</span> <span class="s1">&#39;administrator&#39;</span>
+</pre></div>
+</div>
+<p><em>note:</em> These properties are overridden by <code class="docutils literal notranslate"><span class="pre">ISVA_MGMT_*</span></code> environment variables</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Password.mgmt_old_pwd">
+<span class="sig-name descname"><span class="pre">mgmt_old_pwd</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Password.mgmt_old_pwd" title="Permalink to this definition"></a></dt>
+<dd><p>Password to update for the Administrator user.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Password.mgmt_pwd">
+<span class="sig-name descname"><span class="pre">mgmt_pwd</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Password.mgmt_pwd" title="Permalink to this definition"></a></dt>
+<dd><p>Secret to authenticate as the Administrator user.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Password.mgmt_user">
+<span class="sig-name descname"><span class="pre">mgmt_user</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Password.mgmt_user" title="Permalink to this definition"></a></dt>
+<dd><p>Administrator user to run configuration as.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="administrator-configuration">
+<span id="system-settings"></span><h2>Administrator Configuration<a class="headerlink" href="#administrator-configuration" title="Permalink to this heading"></a></h2>
+<p>System wide settings such as LMI log file configuration, account management and advanced tuning parameters.</p>
+<p>To set system administrator settings use the <code class="docutils literal notranslate"><span class="pre">admin_config</span></code> key. A complete list of the available configuration
+properties can be found <a class="reference external" href="https://ibm-security.github.io/pyisva">here</a>. An example configuration is:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.verify_access_autoconf.configure.ISVA_Configurator.</span></span><span class="sig-name descname"><span class="pre">Admin_Config</span></span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config" title="Permalink to this definition"></a></dt>
+<dd><p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">admin_cfg</span><span class="p">:</span>
+  <span class="n">session_timeout</span><span class="p">:</span> <span class="mi">7200</span>
+  <span class="n">sshd_client_alive</span><span class="p">:</span> <span class="mi">300</span>
+  <span class="n">console_log_level</span><span class="p">:</span> <span class="s2">&quot;AUDIT&quot;</span>
+  <span class="n">accept_client_certs</span><span class="p">:</span> <span class="n">true</span>
+</pre></div>
+</div>
+<p>The complete list of properties that can be set by this key can be found at <span class="xref std std-ref">pyisva:systemsettings#administrator-settings</span></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.accept_client_certs">
+<span class="sig-name descname"><span class="pre">accept_client_certs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.accept_client_certs" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.console_log_level">
+<span class="sig-name descname"><span class="pre">console_log_level</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.console_log_level" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.enabled_tls">
+<span class="sig-name descname"><span class="pre">enabled_tls</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.enabled_tls" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.http_proxy">
+<span class="sig-name descname"><span class="pre">http_proxy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.http_proxy" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.https_proxy">
+<span class="sig-name descname"><span class="pre">https_proxy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.https_proxy" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.log_max_files">
+<span class="sig-name descname"><span class="pre">log_max_files</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.log_max_files" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.log_max_size">
+<span class="sig-name descname"><span class="pre">log_max_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.log_max_size" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.session_timeout">
+<span class="sig-name descname"><span class="pre">session_timeout</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.session_timeout" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.sshd_client_alive">
+<span class="sig-name descname"><span class="pre">sshd_client_alive</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Admin_Config.sshd_client_alive" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="ssl-certificate-database">
+<span id="ssl-database"></span><h2>SSL Certificate database<a class="headerlink" href="#ssl-certificate-database" title="Permalink to this heading"></a></h2>
+<p>X509 Certificates and PCKS12 key-files can be imported into Verify Access SSL databases. The structure of this
+configuration option is to specify a yaml list of SSL databases. Each entry in the list has three keys: database name;
+personal certificates; and signer certificates. If a database does not exist on the appliance then it is created before
+files are imported.</p>
+<p>SSL certificates are imported into the appliance by reading files from the file system. Therefore any PKI which is to
+be imported into the appliance must specify the fully-qualified path or be a path relative to the <code class="docutils literal notranslate"><span class="pre">ISVA_CONFIG_BASE</span></code>
+environment variable. A complete list of the available configuration properties can be found
+<a class="reference external" href="https://ibm-security.github.io/pyisva">here</a>. An example configuration is:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.verify_access_autoconf.configure.ISVA_Configurator.</span></span><span class="sig-name descname"><span class="pre">SSL_Certificates</span></span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates" title="Permalink to this definition"></a></dt>
+<dd><p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssl_certificates</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;lmi_trust_store&quot;</span>
+  <span class="n">personal_certificates</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">path</span><span class="p">:</span> <span class="s2">&quot;ssl/lmi_trust_store/personal.p12&quot;</span>
+    <span class="n">secret</span><span class="p">:</span> <span class="s2">&quot;S3cr37&quot;</span>
+  <span class="n">signer_certificates</span><span class="p">:</span>
+  <span class="o">-</span> <span class="s2">&quot;ssl/lmi_trust_store/signer.pem&quot;</span>
+<span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;rt_profile_keys&quot;</span>
+  <span class="n">signer_certificates</span><span class="p">:</span>
+  <span class="o">-</span> <span class="s2">&quot;ssl/rt_profile_keys/signer.pem&quot;</span>
+<span class="o">-</span> <span class="n">kdb_file</span><span class="p">:</span> <span class="s2">&quot;my_keystore.kdb&quot;</span>
+  <span class="n">stash_file</span><span class="p">:</span> <span class="s2">&quot;my_keystore.sth&quot;</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.Personal_Certificate">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Personal_Certificate</span></span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.Personal_Certificate" title="Permalink to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.Personal_Certificate.path">
+<span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.Personal_Certificate.path" title="Permalink to this definition"></a></dt>
+<dd><p>Path to file to import as a personal certificate</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.Personal_Certificate.secret">
+<span class="sig-name descname"><span class="pre">secret</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.Personal_Certificate.secret" title="Permalink to this definition"></a></dt>
+<dd><p>Optional secret to decrypt personal certificate</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.kdb_file">
+<span class="sig-name descname"><span class="pre">kdb_file</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.kdb_file" title="Permalink to this definition"></a></dt>
+<dd><p>Path to the .kdb file to import as a SSL database. Required if importing a SSL KDB.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.name" title="Permalink to this definition"></a></dt>
+<dd><p>Name of SSL database to configure. If database does not exist it will be created. Either <cite>name</cite> or <cite>kdb_file</cite> must be defined.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.personal_certificates">
+<span class="sig-name descname"><span class="pre">personal_certificates</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="container.html#src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.Personal_Certificate" title="src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.Personal_Certificate"><span class="pre">Personal_Certificate</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.personal_certificates" title="Permalink to this definition"></a></dt>
+<dd><p>List of file paths for personal certificates (PKCS#12) to import.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.signer_certificates">
+<span class="sig-name descname"><span class="pre">signer_certificates</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.signer_certificates" title="Permalink to this definition"></a></dt>
+<dd><p>List of file paths for signer certificates (PEM or DER) to import.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.stash_file">
+<span class="sig-name descname"><span class="pre">stash_file</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.SSL_Certificates.stash_file" title="Permalink to this definition"></a></dt>
+<dd><p>Path to the .sth file for the specified <cite>kdb_file</cite>. Required if <cite>kdb_file</cite> is set.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="administrator-account-management">
+<h2>Administrator Account Management<a class="headerlink" href="#administrator-account-management" title="Permalink to this heading"></a></h2>
+<p>Administrator accounts, groups and permissions for managing Verify Access features can be defined in two configuration
+entries. The first entry allows for the creation of users and groups which can be used to authenticate to the
+management interface. A complete list of the available configuration properties can be found
+<a class="reference external" href="https://ibm-security.github.io/pyisva">here</a>. An example configuration is:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.verify_access_autoconf.configure.ISVA_Configurator.</span></span><span class="sig-name descname"><span class="pre">Account_Management</span></span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management" title="Permalink to this definition"></a></dt>
+<dd><p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>account_management:
+  users:
+  - name: !secret default/isva-secrets:cfgsvc_user
+    operation: &quot;update&quot;
+    password: !secret default/isva-secrets:cfgsvc_secret
+    groups:
+    - &quot;aGroup&quot;
+    - &quot;anotherGroup&quot;
+ groups:
+ - name: &quot;adminGroup&quot;
+   operation: &quot;update&quot;
+   users:
+   - &quot;admin&quot;
+   - &quot;anotherUser&quot;
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_Group">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Management_Group</span></span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_Group" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt><em>note</em>: Groups are created before users; therefore if a user is being created and added to a group then</dt><dd><p>this should be done in the user configuration entry.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_Group.id">
+<span class="sig-name descname"><span class="pre">id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_Group.id" title="Permalink to this definition"></a></dt>
+<dd><p>Name of group to create.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_Group.operation">
+<span class="sig-name descname"><span class="pre">operation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_Group.operation" title="Permalink to this definition"></a></dt>
+<dd><p>Operation to perform with group. “add” | “update” | delete”.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_Group.users">
+<span class="sig-name descname"><span class="pre">users</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_Group.users" title="Permalink to this definition"></a></dt>
+<dd><p>Optional list of users to add to group.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_User">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Management_User</span></span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_User" title="Permalink to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_User.groups">
+<span class="sig-name descname"><span class="pre">groups</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_User.groups" title="Permalink to this definition"></a></dt>
+<dd><p>Optional list of groups to add user to.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_User.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_User.name" title="Permalink to this definition"></a></dt>
+<dd><p>Name of the user to create, remove or update.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_User.operation">
+<span class="sig-name descname"><span class="pre">operation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_User.operation" title="Permalink to this definition"></a></dt>
+<dd><p>Operation to perform with user. “add” | “update” | delete”.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_User.password">
+<span class="sig-name descname"><span class="pre">password</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_User.password" title="Permalink to this definition"></a></dt>
+<dd><p>Password to authenticate as user. Required if creating user.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.groups">
+<span class="sig-name descname"><span class="pre">groups</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="container.html#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_Group" title="src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_Group"><span class="pre">Management_Group</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.groups" title="Permalink to this definition"></a></dt>
+<dd><p>Optional list of management groups to configure.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.users">
+<span class="sig-name descname"><span class="pre">users</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="container.html#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_User" title="src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.Management_User"><span class="pre">Management_User</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Account_Management.users" title="Permalink to this definition"></a></dt>
+<dd><p>Optional list of management users to configure</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="management-authorization">
+<h2>Management Authorization<a class="headerlink" href="#management-authorization" title="Permalink to this heading"></a></h2>
+<p>Administrators are also able to manage access to Verify Access features. This allows for more fine grained control
+over which accounts are permitted to modify a deployment. Administrators are not able to create new features, however
+they can create “roles” which contains permissions for one or more features. Each feature in a role has two permission
+levels: read access (can view but cannot modify); and write access (permission to modify). A complete list of the
+available configuration properties can be found <a class="reference external" href="https://ibm-security.github.io/pyisva">here</a>. An example
+configuration is:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.verify_access_autoconf.configure.ISVA_Configurator.</span></span><span class="sig-name descname"><span class="pre">Management_Authorization</span></span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization" title="Permalink to this definition"></a></dt>
+<dd><p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">management_authorization</span><span class="p">:</span>
+  <span class="n">authorization_enforcement</span><span class="p">:</span> <span class="kc">True</span>
+  <span class="n">roles</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">operation</span><span class="p">:</span> <span class="n">update</span>
+    <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;Configuration Service&quot;</span>
+    <span class="n">users</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;cfgsvc&quot;</span>
+      <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;local&quot;</span>
+    <span class="n">features</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;shared_volume&quot;</span>
+      <span class="n">access</span><span class="p">:</span> <span class="s2">&quot;w&quot;</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Role</span></span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role" title="Permalink to this definition"></a></dt>
+<dd><dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.Feature">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Feature</span></span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.Feature" title="Permalink to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.Feature.access">
+<span class="sig-name descname"><span class="pre">access</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.Feature.access" title="Permalink to this definition"></a></dt>
+<dd><p>Access to grant to feature. “r” | “w”.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.Feature.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.Feature.name" title="Permalink to this definition"></a></dt>
+<dd><p>Name of feature.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.Group">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Group</span></span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.Group" title="Permalink to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.Group.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.Group.name" title="Permalink to this definition"></a></dt>
+<dd><p>name of group.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.Group.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.Group.type" title="Permalink to this definition"></a></dt>
+<dd><p>Type of group. “local” | “remote”.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.User">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">User</span></span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.User" title="Permalink to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.User.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.User.name" title="Permalink to this definition"></a></dt>
+<dd><p>Name of user</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.User.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.User.type" title="Permalink to this definition"></a></dt>
+<dd><p>Type of user. “local” | “remote”.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.features">
+<span class="sig-name descname"><span class="pre">features</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="container.html#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.Feature" title="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.Feature"><span class="pre">Feature</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.features" title="Permalink to this definition"></a></dt>
+<dd><p>List of features to authorize users / groups for.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.groups">
+<span class="sig-name descname"><span class="pre">groups</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="container.html#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.Group" title="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.Group"><span class="pre">Group</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.groups" title="Permalink to this definition"></a></dt>
+<dd><p>Optional list of groups to add to role.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.name" title="Permalink to this definition"></a></dt>
+<dd><p>Name of role.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.operation">
+<span class="sig-name descname"><span class="pre">operation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.operation" title="Permalink to this definition"></a></dt>
+<dd><p>Operation to perform on authorization role. “add” | “remove” | “update”.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.users">
+<span class="sig-name descname"><span class="pre">users</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="container.html#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.User" title="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.User"><span class="pre">User</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role.users" title="Permalink to this definition"></a></dt>
+<dd><p>Optional list of users to add to role.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.authorization_enforcement">
+<span class="sig-name descname"><span class="pre">authorization_enforcement</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.authorization_enforcement" title="Permalink to this definition"></a></dt>
+<dd><p>Enable role based authorization for this deployment.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.roles">
+<span class="sig-name descname"><span class="pre">roles</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="container.html#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role" title="src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.Role"><span class="pre">Role</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Management_Authorization.roles" title="Permalink to this definition"></a></dt>
+<dd><p>Optional list of roles to modify for role based authorization.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-activation">
+<span id="id5"></span><h2>Module Activation<a class="headerlink" href="#module-activation" title="Permalink to this heading"></a></h2>
+<p>License files to activate the Advanced Access Control, Federation and WebSEAL Reverse Proxy modules are imported in
+this step. Subsequent module configuration is dependant on one or more of these licenses being applied to an appliance
+or container. An example configuration is:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Module_Activations">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.verify_access_autoconf.configure.ISVA_Configurator.</span></span><span class="sig-name descname"><span class="pre">Module_Activations</span></span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Module_Activations" title="Permalink to this definition"></a></dt>
+<dd><p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>activation:
+  webseal: &quot;example&quot;
+  access_control: !secret verify-access/isva-secrets:access_control_code
+  federation: !environment ISVA_ACCESS_CONTROL_CODE
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Module_Activations.access_control">
+<span class="sig-name descname"><span class="pre">access_control</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Module_Activations.access_control" title="Permalink to this definition"></a></dt>
+<dd><p>License code for the Advanced Access Control module.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Module_Activations.federation">
+<span class="sig-name descname"><span class="pre">federation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Module_Activations.federation" title="Permalink to this definition"></a></dt>
+<dd><p>License for the Federations module.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Module_Activations.webseal">
+<span class="sig-name descname"><span class="pre">webseal</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Module_Activations.webseal" title="Permalink to this definition"></a></dt>
+<dd><p>License code for the WebSEAL Reverse Proxy module.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="advanced-tuning-parameters">
+<span id="id6"></span><h2>Advanced tuning parameters<a class="headerlink" href="#advanced-tuning-parameters" title="Permalink to this heading"></a></h2>
+<p>Advanced Tuning Parameters can be set on an appliance to configure additional settings not exposed by the LMI. Any
+required advanced tuning parameters for your deployment will be communicated to you via support. An example
+configuration is:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Advanced_Tuning_Parameter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.verify_access_autoconf.configure.ISVA_Configurator.</span></span><span class="sig-name descname"><span class="pre">Advanced_Tuning_Parameter</span></span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Advanced_Tuning_Parameter" title="Permalink to this definition"></a></dt>
+<dd><p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">advanced_tuning_parameters</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;wga.rte.embedded.ldap.ssl.port&quot;</span>
+  <span class="n">value</span><span class="p">:</span> <span class="mi">636</span>
+<span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;password.policy&quot;</span>
+  <span class="n">value</span><span class="p">:</span> <span class="s2">&quot;minlen=8 dcredit=1 ucredit=1 lcredit=1&quot;</span>
+  <span class="n">description</span><span class="p">:</span> <span class="s2">&quot;Enforced PAM password quality for management accounts.&quot;</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Advanced_Tuning_Parameter.description">
+<span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Advanced_Tuning_Parameter.description" title="Permalink to this definition"></a></dt>
+<dd><p>optional description of the Advanced Tuning Parameter.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Advanced_Tuning_Parameter.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Advanced_Tuning_Parameter.name" title="Permalink to this definition"></a></dt>
+<dd><p>Name of the Advanced Tuning Parameter.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Advanced_Tuning_Parameter.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Advanced_Tuning_Parameter.value" title="Permalink to this definition"></a></dt>
+<dd><p>Value of the Advanced Tuning Parameter.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="configuration-snapshots">
+<h2>Configuration Snapshots<a class="headerlink" href="#configuration-snapshots" title="Permalink to this heading"></a></h2>
+<p>A snapshot can be applied to both Container and Appliance deployments to restore a previous configuration state. This
+is done via a signed archive file, generated by the deployment you are trying to preserve / re-create.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Snapshot">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.verify_access_autoconf.configure.ISVA_Configurator.</span></span><span class="sig-name descname"><span class="pre">Snapshot</span></span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Snapshot" title="Permalink to this definition"></a></dt>
+<dd><p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">snapshot</span><span class="p">:</span> <span class="s2">&quot;snapshot/isva-2023-02-08.snapshot&quot;</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Snapshot.snapshot">
+<span class="sig-name descname"><span class="pre">snapshot</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Snapshot.snapshot" title="Permalink to this definition"></a></dt>
+<dd><p>Path to signed snapshot archive file.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="extensions">
+<h2>Extensions<a class="headerlink" href="#extensions" title="Permalink to this heading"></a></h2>
+<p>Extensions are used to install third party applications, such as platform monitoring tools, onto
+a Verify Access appliance. An extension consists of:
+- A signed installation package from IBM Security Verify Access App-Xchange
+- Some configuration properties in key/value format
+- Optionally, additional binaries (RPM, ZIP, ect) required by the extension.</p>
+<p>The specific properties required to install an extension will change based on the type of extension being
+installed. Administrators can use a Web Browser to inspect HTTP requests when uploading an
+extension to a Verify Access appliance to determine which properties are required for their
+particular extension.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Extensions">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.verify_access_autoconf.configure.ISVA_Configurator.</span></span><span class="sig-name descname"><span class="pre">Extensions</span></span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Extensions" title="Permalink to this definition"></a></dt>
+<dd><p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>extensions:
+- extension: &quot;Instana/instana.ext&quot;
+  third_party_packages:
+  - &quot;Instana/agent.rpm&quot;
+  properties:
+    extId: &quot;instanaAgent&quot;
+    instanaAgentKey: !environment INSTANA_AGENT_KEY
+    instanaHost: !environment INSTANA_HOST
+    instanaPort: 443
+    mvnRepositoryUrl: &quot;https://artifact-public.instana.io&quot;
+    mvnRepositoryFeaturesPath: &quot;artifactory/features-public@id=features@snapshots@snapshotsUpdate=never&quot;
+    mvnRepositorySharedPath: &quot;artifactory/shared@id=shared@snapshots@snapshotsUpdate=never&quot;
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Extensions.extension">
+<span class="sig-name descname"><span class="pre">extension</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Extensions.extension" title="Permalink to this definition"></a></dt>
+<dd><p>The signed extension file to be installed on Verify Access.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Extensions.properties">
+<span class="sig-name descname"><span class="pre">properties</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Extensions.properties" title="Permalink to this definition"></a></dt>
+<dd><p>Key-Value properties to give the extension during the installation process. This list of properties will vary with the type of extension being installed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.Extensions.third_party_packages">
+<span class="sig-name descname"><span class="pre">third_party_packages</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.Extensions.third_party_packages" title="Permalink to this definition"></a></dt>
+<dd><p>An optional list of third party packages to be uploaded to Verify Access as part of the installation process.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="fips-compliance">
+<h2>FIPS Compliance<a class="headerlink" href="#fips-compliance" title="Permalink to this heading"></a></h2>
+<p>Verify Access can be configured to FIPS compliance when required. FIPS compliance can only be enabled on new (unconfigured)
+appliances and should be enabled before any other configuration options are applied.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.FIPS">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.verify_access_autoconf.configure.ISVA_Configurator.</span></span><span class="sig-name descname"><span class="pre">FIPS</span></span><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.FIPS" title="Permalink to this definition"></a></dt>
+<dd><p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fips</span><span class="p">:</span>
+  <span class="n">fips_enabled</span><span class="p">:</span> <span class="kc">True</span>
+  <span class="n">tls_v10_enabled</span><span class="p">:</span> <span class="kc">False</span>
+  <span class="n">tls_v11_enabled</span><span class="p">:</span> <span class="kc">False</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.FIPS.fips_enabled">
+<span class="sig-name descname"><span class="pre">fips_enabled</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.FIPS.fips_enabled" title="Permalink to this definition"></a></dt>
+<dd><p>Enable FIPS 140-2 Mode.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.FIPS.tls_v10_enabled">
+<span class="sig-name descname"><span class="pre">tls_v10_enabled</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.FIPS.tls_v10_enabled" title="Permalink to this definition"></a></dt>
+<dd><p>Allow TLS v1.0 for LMI sessions.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.configure.ISVA_Configurator.FIPS.tls_v11_enabled">
+<span class="sig-name descname"><span class="pre">tls_v11_enabled</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#src.verify_access_autoconf.configure.ISVA_Configurator.FIPS.tls_v11_enabled" title="Permalink to this definition"></a></dt>
+<dd><p>Allow TLS v1.1 for LMI sessions</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="networking">
+<span id="appliance-networking"></span><h2>Networking<a class="headerlink" href="#networking" title="Permalink to this heading"></a></h2>
+<p>The networking settings can be used to define networking routes, as well as interface address, netmask and gateway
+setting on a Verify Access appliance. Care must be taken when configuring network interfaces to ensure that the
+interface used to configure the appliance is not changed (as this will result in the automation tool failing).</p>
+<blockquote>
+<div><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Interfaces can only be updated using the LMI, they cannot be created.</p>
+</div>
+</div></blockquote>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.verify_access_autoconf.appliance.Appliance_Configurator.</span></span><span class="sig-name descname"><span class="pre">Networking</span></span><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking" title="Permalink to this definition"></a></dt>
+<dd><p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">networking</span><span class="p">:</span>
+  <span class="n">routes</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">enabled</span><span class="p">:</span> <span class="n">true</span>
+    <span class="n">address</span><span class="p">:</span> <span class="s2">&quot;default&quot;</span>
+    <span class="n">gateway</span><span class="p">:</span> <span class="s2">&quot;192.168.42.1&quot;</span>
+    <span class="n">interface</span><span class="p">:</span> <span class="s2">&quot;1.1&quot;</span>
+    <span class="n">metric</span><span class="p">:</span> <span class="mi">0</span>
+    <span class="n">table</span><span class="p">:</span> <span class="s2">&quot;main&quot;</span>
+    <span class="n">comment</span><span class="p">:</span> <span class="s2">&quot;Example route&quot;</span>
+  <span class="n">interfaces</span><span class="p">:</span>
+    <span class="n">ipv4</span><span class="p">:</span>
+      <span class="n">dhcp</span><span class="p">:</span>
+        <span class="n">enabled</span><span class="p">:</span> <span class="n">false</span>
+    <span class="n">addresses</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">address</span><span class="s2">&quot;: &quot;</span><span class="mf">192.168.42.101</span><span class="s2">&quot;</span>
+      <span class="n">mask_or_prefix</span><span class="p">:</span> <span class="s2">&quot;255.255.255.0&quot;</span>
+      <span class="n">broadcast_address</span><span class="p">:</span> <span class="s2">&quot;192.168.42.10&quot;</span>
+      <span class="n">allow_mgmt</span><span class="p">:</span> <span class="n">true</span>
+      <span class="n">enabled</span><span class="p">:</span> <span class="n">true</span>
+    <span class="o">-</span> <span class="n">address</span><span class="p">:</span> <span class="s2">&quot;192.168.42.102&quot;</span>
+      <span class="n">mask_or_prefix</span><span class="p">:</span> <span class="s2">&quot;/24&quot;</span>
+      <span class="n">broadcast_address</span><span class="p">:</span> <span class="s2">&quot;192.168.42.10&quot;</span>
+      <span class="n">allow_mgmt</span><span class="p">:</span> <span class="n">false</span>
+      <span class="n">enabled</span><span class="p">:</span> <span class="n">true</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.DNS">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DNS</span></span><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.DNS" title="Permalink to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.DNS.auto">
+<span class="sig-name descname"><span class="pre">auto</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.DNS.auto" title="Permalink to this definition"></a></dt>
+<dd><p>true if DNS should be auto configured via dhcp.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.DNS.auto_from_interface">
+<span class="sig-name descname"><span class="pre">auto_from_interface</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.DNS.auto_from_interface" title="Permalink to this definition"></a></dt>
+<dd><p>Name or ID of interface whose dhcp will defined the dns settings.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.DNS.primary_server">
+<span class="sig-name descname"><span class="pre">primary_server</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.DNS.primary_server" title="Permalink to this definition"></a></dt>
+<dd><p>Primary DNS Server address.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.DNS.search_domains">
+<span class="sig-name descname"><span class="pre">search_domains</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.DNS.search_domains" title="Permalink to this definition"></a></dt>
+<dd><p>Comma-separated list of DNS search domains.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.DNS.secondary_server">
+<span class="sig-name descname"><span class="pre">secondary_server</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.DNS.secondary_server" title="Permalink to this definition"></a></dt>
+<dd><p>Secondary DNS Server address.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.DNS.tertiary_server">
+<span class="sig-name descname"><span class="pre">tertiary_server</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.DNS.tertiary_server" title="Permalink to this definition"></a></dt>
+<dd><p>Tertiary DNS Server address.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Interface</span></span><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface" title="Permalink to this definition"></a></dt>
+<dd><dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">IPv4</span></span><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4" title="Permalink to this definition"></a></dt>
+<dd><dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4Address">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">IPv4Address</span></span><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4Address" title="Permalink to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4Address.address">
+<span class="sig-name descname"><span class="pre">address</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4Address.address" title="Permalink to this definition"></a></dt>
+<dd><p>IPv4 address to assign to interface.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4Address.allow_mgmt">
+<span class="sig-name descname"><span class="pre">allow_mgmt</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4Address.allow_mgmt" title="Permalink to this definition"></a></dt>
+<dd><p>Use this address for the Local Management Interface.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4Address.broadcast_address">
+<span class="sig-name descname"><span class="pre">broadcast_address</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4Address.broadcast_address" title="Permalink to this definition"></a></dt>
+<dd><p>IPv4 address to use for broadcasting.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4Address.enabled">
+<span class="sig-name descname"><span class="pre">enabled</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4Address.enabled" title="Permalink to this definition"></a></dt>
+<dd><p>Enable this address.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4Address.mask_or_prefix">
+<span class="sig-name descname"><span class="pre">mask_or_prefix</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4Address.mask_or_prefix" title="Permalink to this definition"></a></dt>
+<dd><p>IPv4 netmask or prefix to assign to address.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4DHCP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">IPv4DHCP</span></span><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4DHCP" title="Permalink to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4DHCP.allow_mgmt">
+<span class="sig-name descname"><span class="pre">allow_mgmt</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4DHCP.allow_mgmt" title="Permalink to this definition"></a></dt>
+<dd><p>Use a DHCP address for the Local Management Interface.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4DHCP.default_route">
+<span class="sig-name descname"><span class="pre">default_route</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4DHCP.default_route" title="Permalink to this definition"></a></dt>
+<dd><p>Use DHCP to determine the default network route.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4DHCP.enabled">
+<span class="sig-name descname"><span class="pre">enabled</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4DHCP.enabled" title="Permalink to this definition"></a></dt>
+<dd><p>Enable DHCP on this interface.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4DHCP.route_metric">
+<span class="sig-name descname"><span class="pre">route_metric</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4DHCP.route_metric" title="Permalink to this definition"></a></dt>
+<dd><p>Route metric.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.addresses">
+<span class="sig-name descname"><span class="pre">addresses</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4Address" title="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4Address"><span class="pre">IPv4Address</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.addresses" title="Permalink to this definition"></a></dt>
+<dd><p>Static IPv4 addresses assigned to an interface.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.dhcp">
+<span class="sig-name descname"><span class="pre">dhcp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4DHCP" title="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.IPv4DHCP"><span class="pre">IPv4DHCP</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4.dhcp" title="Permalink to this definition"></a></dt>
+<dd><p>DHCP configuration for an interface.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.comment">
+<span class="sig-name descname"><span class="pre">comment</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.comment" title="Permalink to this definition"></a></dt>
+<dd><p>Comment to add to interface.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.enabled">
+<span class="sig-name descname"><span class="pre">enabled</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.enabled" title="Permalink to this definition"></a></dt>
+<dd><p>Enable this interface.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.ipv4">
+<span class="sig-name descname"><span class="pre">ipv4</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4" title="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.IPv4"><span class="pre">IPv4</span></a></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.ipv4" title="Permalink to this definition"></a></dt>
+<dd><p>IPv4 settings.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.label">
+<span class="sig-name descname"><span class="pre">label</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.label" title="Permalink to this definition"></a></dt>
+<dd><p>System assigned label of interface.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.vlan_id">
+<span class="sig-name descname"><span class="pre">vlan_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface.vlan_id" title="Permalink to this definition"></a></dt>
+<dd><p>System assigned vlan ID.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Route</span></span><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route" title="Permalink to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route.address">
+<span class="sig-name descname"><span class="pre">address</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route.address" title="Permalink to this definition"></a></dt>
+<dd><p>Network address to use for route.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route.comment">
+<span class="sig-name descname"><span class="pre">comment</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route.comment" title="Permalink to this definition"></a></dt>
+<dd><p>Optional comment to add to route.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route.enabled">
+<span class="sig-name descname"><span class="pre">enabled</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route.enabled" title="Permalink to this definition"></a></dt>
+<dd><p>Enable this route.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route.gateway">
+<span class="sig-name descname"><span class="pre">gateway</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route.gateway" title="Permalink to this definition"></a></dt>
+<dd><p>Network gateway to use for route.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route.interface">
+<span class="sig-name descname"><span class="pre">interface</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route.interface" title="Permalink to this definition"></a></dt>
+<dd><p>Interface this route is attached to.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route.maks_or_prefix">
+<span class="sig-name descname"><span class="pre">maks_or_prefix</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route.maks_or_prefix" title="Permalink to this definition"></a></dt>
+<dd><p>Network bitmask or prefix to use for route.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route.metric">
+<span class="sig-name descname"><span class="pre">metric</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route.metric" title="Permalink to this definition"></a></dt>
+<dd><p>Route metric.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route.table">
+<span class="sig-name descname"><span class="pre">table</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route.table" title="Permalink to this definition"></a></dt>
+<dd><p>Route table.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.dns">
+<span class="sig-name descname"><span class="pre">dns</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.DNS" title="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.DNS"><span class="pre">DNS</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.dns" title="Permalink to this definition"></a></dt>
+<dd><p>Domain Name Server settings for appliance</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.interfaces">
+<span class="sig-name descname"><span class="pre">interfaces</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface" title="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Interface"><span class="pre">Interface</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.interfaces" title="Permalink to this definition"></a></dt>
+<dd><p>List of properties for attached interfaces.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.routes">
+<span class="sig-name descname"><span class="pre">routes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route" title="src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.Route"><span class="pre">Route</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Networking.routes" title="Permalink to this definition"></a></dt>
+<dd><p>Optional list of routes to add to an interface.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="date-time-settings">
+<span id="appliance-date-time"></span><h2>Date / Time settings<a class="headerlink" href="#date-time-settings" title="Permalink to this heading"></a></h2>
+<p>The date and time settings can be adjusted on a Verify Access appliance or synchronized to a external NTP server. Admins
+are also able to set the time zone of the appliance using canonical name.</p>
+<p>To set the Date/Time configuration using either a NTP server or manually setting the date via a formatted string. A
+complete list of the available configuration properties can be found <a class="reference external" href="https://ibm-security.github.io/pyisva">here</a>.
+An example configuration is:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Date_Time">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.verify_access_autoconf.appliance.Appliance_Configurator.</span></span><span class="sig-name descname"><span class="pre">Date_Time</span></span><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Date_Time" title="Permalink to this definition"></a></dt>
+<dd><p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">date_time</span><span class="p">:</span>
+  <span class="n">enable_ntp</span><span class="p">:</span> <span class="n">true</span>
+  <span class="n">ntp_servers</span><span class="p">:</span> <span class="s2">&quot;time.ibm.com,192.168.0.1&quot;</span>
+  <span class="n">time_zone</span><span class="p">:</span> <span class="s2">&quot;Australia/Brisbane&quot;</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Date_Time.date_time">
+<span class="sig-name descname"><span class="pre">date_time</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Date_Time.date_time" title="Permalink to this definition"></a></dt>
+<dd><p>ss”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The current date and time, in the format “YYYY-MM-DD HH</p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p>mm</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Date_Time.enable_ntp">
+<span class="sig-name descname"><span class="pre">enable_ntp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Date_Time.enable_ntp" title="Permalink to this definition"></a></dt>
+<dd><p>Enable Network Time Protocol synchronization.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Date_Time.ntp_servers">
+<span class="sig-name descname"><span class="pre">ntp_servers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Date_Time.ntp_servers" title="Permalink to this definition"></a></dt>
+<dd><p>List of hostnames or addresses to use as NTP servers.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Date_Time.time_zone">
+<span class="sig-name descname"><span class="pre">time_zone</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Date_Time.time_zone" title="Permalink to this definition"></a></dt>
+<dd><p>The id of the timezone the appliance is operating in.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="cluster-configuration">
+<span id="id8"></span><h2>Cluster Configuration<a class="headerlink" href="#cluster-configuration" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt>The cluster configuration options can be used to add additional servers to the Verify Access deployment. Currently only</dt><dd><p>external databases (HVDB and config) as well as Verify Access HA servers are supported.</p>
+</dd>
+</dl>
+<p>This option is typically used in a container deployment to configure the HVDB connection. A complete list of the available
+configuration properties can be found <span class="xref std std-ref">here</span>.</p>
+<blockquote>
+<div><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>PKI required to connect to any servers should be imported in the previous step.</p>
+</div>
+</div></blockquote>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.verify_access_autoconf.appliance.Appliance_Configurator.</span></span><span class="sig-name descname"><span class="pre">Cluster_Configuration</span></span><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration" title="Permalink to this definition"></a></dt>
+<dd><p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>cluster:
+  config_db:
+    address: &quot;127.0.10.1&quot;
+    port: 1234
+    username: &quot;database_user&quot;
+    password: &quot;database_password&quot;
+    ssl: True
+    ssl_keystore: &quot;lmi_trust_store.kdb&quot;
+    db_name: &quot;isva_config&quot;
+  runtime_db:
+    address: &quot;postgresql&quot;
+    port: 5432
+    type: &quot;Postgresql&quot;
+    user: &quot;postgres&quot;
+    password: !secret verify-access/isva-secrets:postgres-passwd
+    ssl: False
+    db_name: &quot;isva_hvdb&quot;
+  cluster:
+    sig_file: &quot;cluster/signature_file&quot;
+    primary_master: &quot;isva.primary.master&quot;
+    secondary_master: &quot;isva.secondary.master&quot;
+    nodes:
+    - &quot;isva.node&quot;
+    restricted_nodes:
+    - &quot;isva.restricted.node&quot;
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Cluster">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Cluster</span></span><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Cluster" title="Permalink to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Cluster.nodes">
+<span class="sig-name descname"><span class="pre">nodes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Cluster.nodes" title="Permalink to this definition"></a></dt>
+<dd><p>Verify Access appliance designated as nodes.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Cluster.primary_master">
+<span class="sig-name descname"><span class="pre">primary_master</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Cluster.primary_master" title="Permalink to this definition"></a></dt>
+<dd><p>Verify Access appliance designated as the primary master node.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Cluster.restricted_nodes">
+<span class="sig-name descname"><span class="pre">restricted_nodes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Cluster.restricted_nodes" title="Permalink to this definition"></a></dt>
+<dd><p>Verify Access appliance designated as the restricted nodes.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Cluster.secondary_master">
+<span class="sig-name descname"><span class="pre">secondary_master</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Cluster.secondary_master" title="Permalink to this definition"></a></dt>
+<dd><p>Verify Access appliance designated as the secondary master node.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Cluster.sig_file">
+<span class="sig-name descname"><span class="pre">sig_file</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Cluster.sig_file" title="Permalink to this definition"></a></dt>
+<dd><p>Signature file generated by the primary master; used to add nodes to the cluster.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Database</span></span><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database" title="Permalink to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database.db_name">
+<span class="sig-name descname"><span class="pre">db_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database.db_name" title="Permalink to this definition"></a></dt>
+<dd><p>Name of the database instance to use.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database.extra_config">
+<span class="sig-name descname"><span class="pre">extra_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database.extra_config" title="Permalink to this definition"></a></dt>
+<dd><p>Database type specific configuration.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database.host">
+<span class="sig-name descname"><span class="pre">host</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database.host" title="Permalink to this definition"></a></dt>
+<dd><p>Hostname or address of database.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database.password">
+<span class="sig-name descname"><span class="pre">password</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database.password" title="Permalink to this definition"></a></dt>
+<dd><p>Password to authenticate as <code class="docutils literal notranslate"><span class="pre">username</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database.port">
+<span class="sig-name descname"><span class="pre">port</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database.port" title="Permalink to this definition"></a></dt>
+<dd><p>Port database is listening on.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database.ssl">
+<span class="sig-name descname"><span class="pre">ssl</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database.ssl" title="Permalink to this definition"></a></dt>
+<dd><p>Enable SSL encryption of connections.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database.ssl_keystore">
+<span class="sig-name descname"><span class="pre">ssl_keystore</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database.ssl_keystore" title="Permalink to this definition"></a></dt>
+<dd><p>SSL database to use to verify connections. Only valid if <code class="docutils literal notranslate"><span class="pre">ssl</span> <span class="pre">==</span> <span class="pre">true</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database.type" title="Permalink to this definition"></a></dt>
+<dd><p>Database type. “postgresql” | “db2” | “oracle”.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database.user">
+<span class="sig-name descname"><span class="pre">user</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database.user" title="Permalink to this definition"></a></dt>
+<dd><p>Username to authenticate to database as.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.cluster">
+<span class="sig-name descname"><span class="pre">cluster</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Cluster" title="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Cluster"><span class="pre">Cluster</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.cluster" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for Verify Access High Availability cluster nodes.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.config_database">
+<span class="sig-name descname"><span class="pre">config_database</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database" title="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database"><span class="pre">Database</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.config_database" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for the config database.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.runtime_database">
+<span class="sig-name descname"><span class="pre">runtime_database</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database" title="src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.Database"><span class="pre">Database</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#src.verify_access_autoconf.appliance.Appliance_Configurator.Cluster_Configuration.runtime_database" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for the runtime (HVDB) database.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="examples.html" class="btn btn-neutral float-left" title="Example Verify Access Configurations (Getting Started)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="container.html" class="btn btn-neutral float-right" title="Container Configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Lachlan Gleeson.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

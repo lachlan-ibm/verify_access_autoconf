@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Example Verify Access Configurations (Getting Started) &mdash; verify-access-autoconf  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Appliance Configuration" href="appliance.html" />
+    <link rel="prev" title="Welcome to verify-access-autoconf documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            verify-access-autoconf
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Example Verify Access Configurations (Getting Started)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#first-steps">First Steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#first-steps-appliance-deployment">First Steps (appliance deployment)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#webseal-reverse-proxy-using-advanced-access-control-authentication">WebSEAL Reverse Proxy using Advanced Access Control authentication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation-of-the-instana-monitoring-agent">Installation of the Instana monitoring Agent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mobile-multi-factor-authentication">Mobile Multi-Factor Authentication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#federation">Federation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#example-idp-yaml">IdP Configuration:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sp-configuration">SP Configuration:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-idp-partner-yaml">IdP Partner Configuration:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sp-partner-configuration">SP Partner Configuration:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="appliance.html">Appliance Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="container.html">Container Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webseal.html">WebSEAL Reverse Proxy Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="access-control.html">Advanced Access Control Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="federations.html">Federations Configuration</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">verify-access-autoconf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Example Verify Access Configurations (Getting Started)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/examples.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="example-verify-access-configurations-getting-started">
+<h1>Example Verify Access Configurations (Getting Started)<a class="headerlink" href="#example-verify-access-configurations-getting-started" title="Permalink to this heading"></a></h1>
+<section id="first-steps">
+<h2>First Steps<a class="headerlink" href="#first-steps" title="Permalink to this heading"></a></h2>
+<p>The first steps configuration file defines some initial configuration that is required for all Verify Access deployments.
+These steps include:</p>
+<ul class="simple">
+<li><p>Accepting the software license agreement and initial management configuration.</p></li>
+<li><p>Configuring service accounts for publishing snapshots to Runtime Containers.</p></li>
+<li><p>Importing PKI for the LDAP Runtime Server and High-Volume Runtime Database.</p></li>
+<li><p>Applying module licenses for the WebSEAL, Advanced Access Control and Federation modules.</p></li>
+<li><p>Configuring the WebSEAL Runtime Policy Server / User Registry.</p></li>
+</ul>
+<p>To run this configuration you should define the following properties, where the “current directory” contains the PKI for the LDAP and HVDB services:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">ISVA_CONFIG_BASE</span><span class="o">=</span><span class="s2">&quot;current directory&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">ISVA_CONFIG_YAML</span><span class="o">=</span>first_steps.yaml
+<span class="nb">export</span><span class="w"> </span><span class="nv">ISVA_MGMT_BASE_URL</span><span class="o">=</span><span class="s2">&quot;https://192.168.42.101&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">ISVA_MGMT_USER</span><span class="o">=</span>admin
+<span class="nb">export</span><span class="w"> </span><span class="nv">ISVA_MGMT_PWD</span><span class="o">=</span>betterThanPassw0rd
+<span class="nb">export</span><span class="w"> </span><span class="nv">ISVA_MGMT_OLD_PWD</span><span class="o">=</span>admin
+<span class="nb">export</span><span class="w"> </span><span class="nv">ISVA_BASE_CODE</span><span class="o">=</span><span class="s2">&quot;webseal activation code&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">ISVA_AAC_CODE</span><span class="o">=</span><span class="s2">&quot;access control activation code&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">ISVA_FED_CODE</span><span class="o">=</span><span class="s2">&quot;federations activation code&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">LDAP_BIND_PASSWORD</span><span class="o">=</span>betterThanPassw0rd
+<span class="nb">export</span><span class="w"> </span><span class="nv">LDAP_SEC_PASSWORD</span><span class="o">=</span>betterThanPassw0rd
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>container:
+  compose_services:
+    - &quot;isvawrprp1&quot;
+    - &quot;isvaruntime&quot;
+  docker_compose_yaml: &quot;iamlab/docker-compose.yaml&quot;
+  admin_cfg:
+    session_timeout: 720
+  account_management:
+    users:
+    - name: &quot;cfgsvc&quot;
+      operation: &quot;update&quot;
+      password: &quot;Passw0rd&quot;
+  management_authorization:
+    authorization_enforcement: True
+    roles:
+    - operation: &quot;update&quot;
+      name: &quot;Configuration Service&quot;
+      users:
+      - name: &quot;cfgsvc&quot;
+        type: &quot;local&quot;
+      features:
+      - name: &quot;shared_volume&quot;
+        access: &quot;w&quot;
+  ssl_certificates:
+  - name: &quot;lmi_trust_store&quot;
+    signer_certificates:
+    - &quot;pki/postgresql/postgres.crt&quot;
+    - &quot;pki/openldap/ca.crt&quot;
+  - name: &quot;rt_profile_keys&quot;
+    signer_certificates:
+    - &quot;pki/postgresql/postgres.crt&quot;
+  cluster:
+    runtime_database:
+      host: &quot;postgresql&quot;
+      port: 5432
+      type: &quot;postgresql&quot;
+      user: &quot;postgres&quot;
+      password: &quot;Passw0rd&quot;
+      ssl: True
+      db_name: &quot;isva&quot;
+  activation: #Activation codes
+    webseal: !environment ISVA_BASE_CODE
+    access_control: !environment ISVA_AAC_CODE
+    federation: !environment ISVA_FED_CODE
+webseal:
+  runtime:
+    policy_server: &quot;ldap&quot;
+    user_registry: &quot;ldap&quot;
+    ldap:
+      host: &quot;openldap&quot;
+      port: 636
+      dn: &quot;cn=root,secAuthority=Default&quot;
+      dn_password: &quot;Passw0rd&quot;
+      key_file: &quot;lmi_trust_store&quot;
+    clean_ldap: True
+    domain: &quot;Default&quot;
+    admin_user: &quot;sec_master&quot;
+    admin_password: &quot;Passw0rd&quot;
+    admin_cert_lifetime: 1460
+    ssl_compliance: &quot;fips&quot;
+</pre></div>
+</div>
+</section>
+<section id="first-steps-appliance-deployment">
+<h2>First Steps (appliance deployment)<a class="headerlink" href="#first-steps-appliance-deployment" title="Permalink to this heading"></a></h2>
+<p>The first steps configuration file defines some initial configuration that is required for all Verify Access deployments.
+These steps include:</p>
+<ul class="simple">
+<li><p>Accepting the software license agreement and initial management configuration.</p></li>
+<li><p>Setting network configuration (routes, ip addresses, dns).</p></li>
+<li><p>Applying module licenses for the WebSEAL, Advanced Access Control and Federation modules.</p></li>
+<li><p>Configuring the WebSEAL Runtime Policy Server / User Registry.</p></li>
+</ul>
+<p>To run this configuration you should define the following properties:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">ISVA_CONFIG_YAML</span><span class="o">=</span>appliance_first_steps.yaml
+<span class="nb">export</span><span class="w"> </span><span class="nv">ISVA_MGMT_BASE_URL</span><span class="o">=</span><span class="s2">&quot;https://192.168.42.101&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">ISVA_MGMT_USER</span><span class="o">=</span>admin
+<span class="nb">export</span><span class="w"> </span><span class="nv">ISVA_MGMT_PWD</span><span class="o">=</span>betterThanPassw0rd
+<span class="nb">export</span><span class="w"> </span><span class="nv">ISVA_MGMT_OLD_PWD</span><span class="o">=</span>admin
+<span class="nb">export</span><span class="w"> </span><span class="nv">ISVA_BASE_CODE</span><span class="o">=</span><span class="s2">&quot;webseal activation code&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">ISVA_AAC_CODE</span><span class="o">=</span><span class="s2">&quot;access control activation code&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">ISVA_FED_CODE</span><span class="o">=</span><span class="s2">&quot;federations activation code&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">LDAP_BIND_PASSWORD</span><span class="o">=</span>betterThanPassw0rd
+<span class="nb">export</span><span class="w"> </span><span class="nv">LDAP_SEC_PASSWORD</span><span class="o">=</span>betterThanPassw0rd
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>appliance:
+  admin_cfg:
+    session_timeout: 720
+  activation: #Activation codes
+    webseal: !environment ISVA_BASE_CODE
+    access_control: !environment ISVA_AAC_CODE
+    federation: !environment ISVA_FED_CODE
+  network:
+    routes:
+    - enabled: True
+      comment: &quot;Default route&quot;
+      address: &quot;default&quot;
+      gateway: &quot;192.168.42.1&quot;
+      interface: &quot;1.1&quot;
+    interfaces:
+    - label: &quot;1.1&quot;
+      comment: &quot;Default Interface&quot;
+      enabled: True
+      ipv4:
+        dhcp:
+          enabled: False
+          allow_management: False
+          provides_default_route: False
+        addresses:
+        - address: &quot;192.168.42.101&quot;
+          mask_or_prefix: &quot;24&quot;
+          broadcast_address: &quot;192.168.42.255&quot;
+          allow_management: True
+          enabled: True
+        - address: &quot;192.168.42.102&quot;
+          mask_or_prefix: &quot;24&quot;
+          broadcast_address: &quot;192.168.42.255&quot;
+          allow_management: False
+          enabled: True
+      ipv6:
+        dhcp:
+          enabled: False
+          allowManagement: False
+    dns:
+      auto: False
+      primary_server: &quot;9.9.9.9&quot;
+webseal:
+  runtime:
+    policy_server: &quot;local&quot;
+    user_registry: &quot;local&quot;
+    ldap:
+      host: &quot;localhost&quot;
+      port: 389
+      dn: &quot;cn=root,secAuthority=Default&quot;
+      dn_password: !environment LDAP_BIND_PASSWORD
+    clean_ldap: True
+    domain: &quot;Default&quot;
+    admin_user: &quot;sec_master&quot;
+    admin_password: !environment LDAP_SEC_PASSWORD
+    admin_cert_lifetime: 1460
+    ssl_compliance: &quot;none&quot;
+</pre></div>
+</div>
+</section>
+<section id="webseal-reverse-proxy-using-advanced-access-control-authentication">
+<h2>WebSEAL Reverse Proxy using Advanced Access Control authentication<a class="headerlink" href="#webseal-reverse-proxy-using-advanced-access-control-authentication" title="Permalink to this heading"></a></h2>
+<p>The WebSEAL / AAC deployment defines a Verify Access deployment with a single WebSEAL reverse proxy. This proxy is
+configured to perform authentication using the AAC authentication capabilities. The configuration steps performed
+include:</p>
+<ul class="simple">
+<li><p>Creating a WebSEAL Reverse Proxy instance</p></li>
+<li><p>Integrating the AAC/Federation runtime to provide authentication to WebSEAL</p></li>
+<li><p>Enable the Username/Password authentication mechanism</p></li>
+<li><p>Create a demo user in the WebSEAL User Registry</p></li>
+<li><p>Update the default WebSEAL login page to use AAC</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>container:
+  docker_compose_yaml: &quot;iamlab/docker-compose.yaml&quot;
+  compose_services:
+  - &quot;isvaruntime&quot;
+  - &quot;isvawrp-rp1&quot;
+webseal:
+  runtime:
+    policy_server: &quot;ldap&quot;
+    user_registry: &quot;ldap&quot;
+    ldap:
+      host: &quot;openldap&quot;
+      port: 636
+      dn: !environment LDAP_BIND_DN
+      dn_password: !environment LDAP_BIND_PW
+      key_file: &quot;lmi_trust_store&quot;
+    clean_ldap: True
+    domain: &quot;Default&quot;
+    admin_user: !environment LDAP_SEC_USER
+    admin_password: !environment LDAP_SEC_PW
+    admin_cert_lifetime: 1460
+    ssl_compliance: &quot;fips&quot;
+  reverse_proxy:
+  - name: &quot;default&quot;
+    host: &quot;isvawebseal&quot;
+    http:
+      enabled: &quot;no&quot;
+    https:
+      enabled: &quot;yes&quot;
+    domain: &quot;Default&quot;
+    ldap:
+      ssl_yn: &quot;yes&quot;
+      port: 636
+      key_file: &quot;lmi_trust_store&quot;
+    aac_configuration:
+      junction: &quot;/mga&quot;
+      runtime:
+        hostname: &quot;isvaruntime&quot;
+        port: 9443
+        user: !environment AAC_RUNTIME_USER
+        password: !environment AAC_RUNTIME_PW
+      reuse_certs: True
+      reuse_acls: True
+    stanza_configuration:
+    - stanza: &quot;acnt-mgt&quot;
+      entry_id: &quot;enable-local-response-redirect&quot;
+      value: &quot;yes&quot;
+      operation: &quot;update&quot;
+    - stanza: &quot;local-response-redirect&quot;
+      entry_id: &quot;local-response-redirect-uri&quot;
+      value: &quot;/mga/sps/authsvc?PolicyId=urn:ibm:security:authentication:asf:password&quot;
+      operation: &quot;update&quot;
+  pdadmin:
+    users:
+    - name: &quot;testuser&quot;
+      dn: !environment TEST_BIND_DN
+      password: !environment TEST_PW
+access_control:
+  authentication:
+    policies:
+    - name: &quot;Username Password&quot;
+      description: &quot;Username and password authentication policy.&quot;
+      enabled: true
+      uri: &quot;urn:ibm:security:authentication:asf:password&quot;
+      policy: &quot;&lt;Policy xmlns=\&quot;urn:ibm:security:authentication:policy:1.0:schema\&quot; PolicyId=\&quot;urn:ibm:security:authentication:asf:password\&quot;&gt;&lt;Description&gt;Username and password authentication policy.&lt;/Description&gt;&lt;Step type=\&quot;Authenticator\&quot;&gt;&lt;Authenticator AuthenticatorId=\&quot;urn:ibm:security:authentication:asf:mechanism:password\&quot;/&gt;&lt;/Step&gt;&lt;Actions&gt;&lt;Action On=\&quot;null\&quot; type=\&quot;null\&quot;&gt;&lt;AttributeAssignments/&gt;&lt;/Action&gt;&lt;/Actions&gt;&lt;/Policy&gt;&quot;
+    mechanisms:
+    - id: &quot;7&quot;
+      name: &quot;Username Password&quot;
+      type: &quot;Username Password&quot;
+      description: &quot;Username password authentication&quot;
+      uri: &quot;urn:ibm:security:authentication:asf:mechanism:password&quot;
+      properties:
+      - usernamePasswordAuthentication.enableLastLogin: &quot;false&quot;
+      - usernamePasswordAuthentication.loginFailuresPersistent: &quot;false&quot;
+      - usernamePasswordAuthentication.maxServerConnections: &quot;16&quot;
+      - usernamePasswordAuthentication.mgmtDomain: &quot;Default&quot;
+      - usernamePasswordAuthentication.sslServerStartTLS: &quot;false&quot;
+      - usernamePasswordAuthentication.useFederatedDirectoriesConfig: &quot;false&quot;
+      - usernamePasswordAuthentication.userSearchFilter: &quot;(|(objectclass=ePerson)(objectclass=Person))&quot;
+      - usernamePasswordAuthentication.ldapBindDN: !environment LDAP_BIND_DN
+      - usernamePasswordAuthentication.ldapHostName: &quot;openldap&quot;
+      - usernamePasswordAuthentication.ldapBindPwd: !environment LDAP_BIND_PW
+      - usernamePasswordAuthentication.ldapPort: &quot;636&quot;
+      - usernamePasswordAuthentication.sslEnabled: &quot;true&quot;
+      - usernamePasswordAuthentication.sslTrustStore: &quot;lmi_trust_store&quot;
+      attributes:
+      - selector: &quot;mobile&quot;
+        name: &quot;mobileNumber&quot;
+        namespace: &quot;urn:ibm:security:authentication:asf:mechanism:password&quot;
+      - selector: &quot;mail&quot;
+        name: &quot;emailAddress&quot;
+        namespace: &quot;urn:ibm:security:authentication:asf:mechanism:password&quot;
+</pre></div>
+</div>
+</section>
+<section id="installation-of-the-instana-monitoring-agent">
+<h2>Installation of the Instana monitoring Agent<a class="headerlink" href="#installation-of-the-instana-monitoring-agent" title="Permalink to this heading"></a></h2>
+<p>The Instana monitoring example defines a Verify Access deployment where a third party infrastructure monitoring tool (Instana)
+is installed onto a Verify Access appliance using a <a class="reference external" href="https://exchange.xforce.ibmcloud.com/hub">Verify Access Extension</a>. This
+extension allows administrators to collect detailed system information (CPU, RAM, Disk, Networking) during runtime. This example
+assumes that you have a valid Instana tenant and have downloaded the latest <a class="reference external" href="https://packages.instana.io/agent/download">Agent RPM</a>
+for JDK 11. The configuration steps performed include:</p>
+<ul class="simple">
+<li><p>Applying the module licenses</p></li>
+<li><p>Set static networking properties
+- Static IPv4 addresses
+- Gateway (default route) settings
+- Set DNS properties</p></li>
+<li><p>Install the Instana extension</p></li>
+<li><p>Configure the WebSEAL RTE (Policy Server/User Registry)</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>appliance:
+  admin_cfg:
+    session_timeout: 720
+  activation: #Activation codes
+    webseal: !environment ISVA_BASE_CODE
+    access_control: !environment ISVA_AAC_CODE
+    federation: !environment ISVA_FED_CODE
+  network:
+    routes:
+    - enabled: True
+      comment: &quot;Default route&quot;
+      address: &quot;default&quot;
+      gateway: &quot;192.168.42.1&quot;
+      interface: &quot;1.1&quot;
+    interfaces:
+    - label: &quot;1.1&quot;
+      comment: &quot;Default Interface&quot;
+      enabled: True
+      ipv4:
+        dhcp:
+          enabled: False
+          allow_management: False
+          provides_default_route: False
+        addresses:
+        - address: &quot;192.168.42.101&quot;
+          mask_or_prefix: &quot;24&quot;
+          broadcast_address: &quot;192.168.42.255&quot;
+          allow_management: True
+          enabled: True
+        - address: &quot;192.168.42.102&quot;
+          mask_or_prefix: &quot;24&quot;
+          broadcast_address: &quot;192.168.42.255&quot;
+          allow_management: False
+          enabled: True
+      ipv6:
+        dhcp:
+          enabled: False
+          allowManagement: False
+    dns:
+      auto: False
+      primary_server: &quot;9.9.9.9&quot;
+  extensions:
+  - extension: &quot;Instana/instana.ext&quot;
+    third_party_packages:
+    - &quot;Instana/agent.rpm&quot;
+    properties:
+      extId: &quot;instanaAgent&quot;
+      instanaAgentKey: !environment INSTANA_AGENT_KEY 
+      instanaHost: !environment INSTANA_HOST
+      instanaPort: &quot;443&quot;
+      mvnRepositoryUrl: &quot;https://artifact-public.instana.io&quot;
+      mvnRepositoryFeaturesPath: &quot;artifactory/features-public@id=features@snapshots@snapshotsUpdate=never&quot;
+      mvnRepositorySharedPath: &quot;artifactory/shared@id=shared@snapshots@snapshotsUpdate=never&quot;
+webseal:
+  runtime:
+    policy_server: &quot;local&quot;
+    user_registry: &quot;local&quot;
+    ldap:
+      host: &quot;localhost&quot;
+      port: 389
+      dn: &quot;cn=root,secAuthority=Default&quot;
+      dn_password: !environment LDAP_BIND_PASSWORD
+    clean_ldap: True
+    domain: &quot;Default&quot;
+    admin_user: &quot;sec_master&quot;
+    admin_password: !environment LDAP_SEC_PASSWORD
+    admin_cert_lifetime: 1460
+    ssl_compliance: &quot;none&quot;
+</pre></div>
+</div>
+</section>
+<section id="mobile-multi-factor-authentication">
+<h2>Mobile Multi-Factor Authentication<a class="headerlink" href="#mobile-multi-factor-authentication" title="Permalink to this heading"></a></h2>
+<p>The MMFA example follows the legacy cookbook deployment guide.</p>
+<p><em>TODO</em></p>
+</section>
+<section id="federation">
+<h2>Federation<a class="headerlink" href="#federation" title="Permalink to this heading"></a></h2>
+<p>The Federation example follows the legacy cookbook deployment guide</p>
+<p>There are a few steps which are required for running this configuration. You must:
+- Create PKI for IDP and SP deployments [self-signed demonstration provide]
+- Deploy the IdP and SP container deployments from the <span class="xref std std-ref">IAMExploring</span>
+- Obtain an version appropriate copy of the required JavaScript mapping rules
+- Run the <a class="reference internal" href="#example-idp-yaml"><span class="std std-ref">IdP</span></a> and <a class="reference internal" href="#example-sp-yaml"><span class="std std-ref">SP</span></a> configurations to create the Federations
+- Run the <a class="reference internal" href="#example-idp-partner-yaml"><span class="std std-ref">IdP partner</span></a> and <a class="reference internal" href="#example-sp-partner-yaml"><span class="std std-ref">SP partner</span></a> configurations to create the Federation Partners
+- Create a test user using the demo User Self Care enrollment policy on the IdP deployment
+- Test the Federated authentication:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>IdP initiated SSO</p></li>
+<li><p>SP initiated SSO</p></li>
+</ul>
+</div></blockquote>
+<section id="example-idp-yaml">
+<span id="idp-configuration"></span><h3>IdP Configuration:<a class="headerlink" href="#example-idp-yaml" title="Permalink to this heading"></a></h3>
+</section>
+<section id="sp-configuration">
+<span id="example-sp-yaml"></span><h3>SP Configuration:<a class="headerlink" href="#sp-configuration" title="Permalink to this heading"></a></h3>
+</section>
+<section id="example-idp-partner-yaml">
+<span id="idp-partner-configuration"></span><h3>IdP Partner Configuration:<a class="headerlink" href="#example-idp-partner-yaml" title="Permalink to this heading"></a></h3>
+</section>
+<section id="sp-partner-configuration">
+<span id="example-sp-partner-yaml"></span><h3>SP Partner Configuration:<a class="headerlink" href="#sp-partner-configuration" title="Permalink to this heading"></a></h3>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to verify-access-autoconf documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="appliance.html" class="btn btn-neutral float-right" title="Appliance Configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Lachlan Gleeson.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
