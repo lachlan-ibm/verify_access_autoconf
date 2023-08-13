@@ -793,6 +793,17 @@ class FED_Configurator(object):
                                             verb, json.dumps(source, indent=4), rsp.data))
 
 
+    def _import_partner(self, fed_id, partner):
+        metadata_file = optional_list(FILE_LOADER.read_files(partner.metadata))[0]
+        rsp = self.fed.federations.import_federation_partner(
+                fed_id=fed_id, name=partner.name, metadata=metadata_file['path'])
+        if rsp.success == True:
+            _logger.info("Successfully imported {} Federation Partner".format(partner.name))
+        else:
+            _logger.error("Failed to import Federation Partner:\n{}\n{}".format(
+                                            json.dumps(partner, indent=4), rsp.data))
+
+
     def _configure_saml_partner(self, fedId, partner):
         methodArgs = {
                 "name": partner.name,
@@ -1000,12 +1011,7 @@ class FED_Configurator(object):
             _logger.error("Failed to create {} OIDC RP Partner with config:\n{}/n{}".format(
                 partner.name, json.dumps(partner, indent=4), rsp.data))
 
-    def _configure_federation_partner(self, federation, partner):
-        federationId = None
-        _federations = self.fed.federations.list_federations().json
-        for _federation in _federations:
-            if _federation.get("name", None) == federation.name:
-                federationId = _federation['id']
+    def _configure_federation_partner(self, fed_id, partner):
         method = {"ip": _configure_saml_partner,
                   "sp": _configure_saml_partner,
                   "rp": _configure_oidc_partner
@@ -1014,199 +1020,211 @@ class FED_Configurator(object):
             _logger.error("Federation partner {} does not specify a valid configuration: {}\n\tskipping . . .".format(
                 partner.name, json.dumps(partner, indent=4)))
         else:
-            method(federationId, partner)
+            method(fed_id, partner)
 
     def _configure_saml_federation(self, federation):
-        methodArgs = {
-                    "name": federation.name,
-                    "role": federation.role,
-                    "template_name": federation.template_name,
-                }
-        if federation.configuration != None:
-            config = federation.configuration
-            methodArgs.update({
-                    "access_policy": config.access_policy,
-                    "artifact_lifetime": config.artifact_lifetime,
-                    "artifact_resolution_service": config.artifact_resolution_services,
-                    "attribute_mapping": config.attribute_mappings,
-                    "company_name": config.company_name,
-                    "manage_name_id_services": config.manage_name_id_services,
-                    "msg_valid_time": config.message_valid_time,
-                    "msg_issuer_fmt": config.message_issuer_format,
-                    "msg_issuer_name_qualifier": config.message_issuer_name_qualifier,
-                    "consent_to_federate": config.need_consent_to_federate,
-                    "exclude_session_index_logout_request": config.exclude_session_index_in_single_logout_request,
-                    "poc_url": config.point_of_contact_url,
-                    "provider_id": config.provider_id,
-                    "session_timeout": config.session_timeout,
-                    "sso_svc_data": config.single_sign_on_service,
-                    "slo_svc_data": config.single_logout_service,
-                    "assertion_consume_svc": config.assertion_consumer_services
-                })
-
-            if config.name_id_format != None:
+        if federation.role:
+            methodArgs = {
+                        "name": federation.name,
+                        "role": federation.role,
+                        "template_name": federation.template_name,
+                    }
+            if federation.configuration != None:
+                config = federation.configuration
                 methodArgs.update({
-                        "name_id_default": config.name_id_format.default,
-                        "name_id_supported": config.name_id_format.supported
+                        "access_policy": config.access_policy,
+                        "artifact_lifetime": config.artifact_lifetime,
+                        "artifact_resolution_service": config.artifact_resolution_services,
+                        "attribute_mapping": config.attribute_mappings,
+                        "company_name": config.company_name,
+                        "manage_name_id_services": config.manage_name_id_services,
+                        "msg_valid_time": config.message_valid_time,
+                        "msg_issuer_fmt": config.message_issuer_format,
+                        "msg_issuer_name_qualifier": config.message_issuer_name_qualifier,
+                        "consent_to_federate": config.need_consent_to_federate,
+                        "exclude_session_index_logout_request": config.exclude_session_index_in_single_logout_request,
+                        "poc_url": config.point_of_contact_url,
+                        "provider_id": config.provider_id,
+                        "session_timeout": config.session_timeout,
+                        "sso_svc_data": config.single_sign_on_service,
+                        "slo_svc_data": config.single_logout_service,
+                        "assertion_consume_svc": config.assertion_consumer_services
                     })
 
-            if config.encryption_settings != None:
-                methodArgs.update({
-                        "encrypt_block_alg": config.encryption_settings.block_algorithm,
-                        "encrypt_key_transport_alg": config.encryption_settings.key_transport_algorithm,
-                        "encrypt_key_alias": config.encryption_settings.key_alias,
-                        "encrypt_key_store": config.encryption_settings.key_store,
-                        "encrypt_name_id": config.encryption_settings.encrypt_name_id,
-                        "encrypt_assertions": config.encryption_settings.encrypt_assertions,
-                        "encrypt_assertion_attrs": config.encryption_settings.encrypt_assertion_attributes,
-                        "decrypt_key_alias": config.encryption_settings.decryption_key_identifier.label if encryption.decryption_key_identifier else None,
-                        "decrypt_key_store": config.encryption_settings.decryption_key_identifier.store if encryption.decryption_key_identifier else None
-                    })
+                if config.name_id_format != None:
+                    methodArgs.update({
+                            "name_id_default": config.name_id_format.default,
+                            "name_id_supported": config.name_id_format.supported
+                        })
 
-            if config.assert_settings != None:
-                methodArgs.update({
-                        "assertion_attr_types": config.assert_settings.attribute_types,
-                        "assertion_session_not_on_or_after": config.assert_settings.session_not_on_or_after,
-                        "assertion_multi_attr_stmt": config.assert_settings.create_multiple_attribute_statements,
-                        "assertion_valid_before": config.assert_settings.assertion_valid_before,
-                        "assertion_valid_after": config.assert_settings.assertion_valid_after
-                    })
-            if config.identity_mapping != None and config.identity_mapping.properties != None:
-                methodArgs.update({
-                        "identity_delegate_id": config.identity_mapping.active_delegate_id,
-                        "identity_rule_id": config.identity_mapping.properties.mapping_rule,
-                        "identity_rule_type": config.identity_mapping.properties.rule_type if config.identity_mapping.properties.rule_type else 'JAVASCRIPT',
-                        "identity_applies_to": config.identity_mapping.properties.applies_to,
-                        "identity_auth_type": config.identity_mapping.properties.auth_type,
-                        "identity_ba_user": config.identity_mapping.properties.basic_auth_username,
-                        "identity_ba_password": config.identity_mapping.properties.basic_auth_password,
-                        "identity_client_keystore": config.identity_mapping.properties.client_key_store,
-                        "identity_client_key_alias": config.identity_mapping.properties.client_key_alias,
-                        "identity_issuer_uri": config.identity_mapping.properties.issuer_uri,
-                        "identity_msg_fmt": config.identity_mapping.properties.message_format,
-                        "identity_ssl_keystore": config.identity_mapping.properties.ssl_key_store,
-                        "identity_uri": config.identity_mapping.properties.uri
-                    })
-            if config.extension_mapping != None:
-                methodArgs.update({
-                        "ext_delegate_id": config.extension_mapping.active_delegate_id,
-                        "ext_mapping_rule": config.extension_mapping.mapping_rule
-                    })
-            if config.signature_settings != None:
-                sigSetting = config.signature_settings
-                methodArgs.update({
-                        "sign_alg": sigSetting.signature_algorithm,
-                        "sign_digest_alg": sigSetting.digest_algorithm,
-                        "transform_include_namespace": sigSetting.include_inclusive_namespaces,
-                        "validate_assertion": sigSetting.validate_assertion
-                    })
-                if sigSettings.key_info_elements != None:
+                if config.encryption_settings != None:
                     methodArgs.update({
-                            "sign_include_cert": sigSettings.key_info_elements.include_x509_certificate_data,
-                            "sign_include_subject": sigSettings.key_info_elements.include_x509_subject_name,
-                            "sign_include_ski": sigSettings.key_info_elements.include_x509_subject_key_identifier,
-                            "sign_include_issuer": sigSettings.key_info_elements.include_x509_issuer_details,
-                            "sign_include_pubkey": sigSettings.key_info_elements.include_public_key
+                            "encrypt_block_alg": config.encryption_settings.block_algorithm,
+                            "encrypt_key_transport_alg": config.encryption_settings.key_transport_algorithm,
+                            "encrypt_key_alias": config.encryption_settings.key_alias,
+                            "encrypt_key_store": config.encryption_settings.key_store,
+                            "encrypt_name_id": config.encryption_settings.encrypt_name_id,
+                            "encrypt_assertions": config.encryption_settings.encrypt_assertions,
+                            "encrypt_assertion_attrs": config.encryption_settings.encrypt_assertion_attributes,
+                            "decrypt_key_alias": config.encryption_settings.decryption_key_identifier.label if encryption.decryption_key_identifier else None,
+                            "decrypt_key_store": config.encryption_settings.decryption_key_identifier.store if encryption.decryption_key_identifier else None
                         })
-                if sigSettings.signing_key_identifier != None:
+
+                if config.assert_settings != None:
                     methodArgs.update({
-                            "signing_keystore": sigSettings.signing_key_identifier.keystore,
-                            "sign_key_alias": sigSettings.signing_key_identifier.certificate
+                            "assertion_attr_types": config.assert_settings.attribute_types,
+                            "assertion_session_not_on_or_after": config.assert_settings.session_not_on_or_after,
+                            "assertion_multi_attr_stmt": config.assert_settings.create_multiple_attribute_statements,
+                            "assertion_valid_before": config.assert_settings.assertion_valid_before,
+                            "assertion_valid_after": config.assert_settings.assertion_valid_after
                         })
-                if sigSetting.validation_key_identifier != None:
+                if config.identity_mapping != None and config.identity_mapping.properties != None:
                     methodArgs.update({
-                            "sign_valid_key_store": sigSettings.validation_key_identifier.keystore,
-                            "sign_valid_key_alias": sigSettings.validation_key_identifier.certificate
+                            "identity_delegate_id": config.identity_mapping.active_delegate_id,
+                            "identity_rule_id": config.identity_mapping.properties.mapping_rule,
+                            "identity_rule_type": config.identity_mapping.properties.rule_type if config.identity_mapping.properties.rule_type else 'JAVASCRIPT',
+                            "identity_applies_to": config.identity_mapping.properties.applies_to,
+                            "identity_auth_type": config.identity_mapping.properties.auth_type,
+                            "identity_ba_user": config.identity_mapping.properties.basic_auth_username,
+                            "identity_ba_password": config.identity_mapping.properties.basic_auth_password,
+                            "identity_client_keystore": config.identity_mapping.properties.client_key_store,
+                            "identity_client_key_alias": config.identity_mapping.properties.client_key_alias,
+                            "identity_issuer_uri": config.identity_mapping.properties.issuer_uri,
+                            "identity_msg_fmt": config.identity_mapping.properties.message_format,
+                            "identity_ssl_keystore": config.identity_mapping.properties.ssl_key_store,
+                            "identity_uri": config.identity_mapping.properties.uri
                         })
-                if sigSettings.signing_options != None:
+                if config.extension_mapping != None:
                     methodArgs.update({
-                            "sign_assertion": sigSettings.signing_options.sign_assertion,
-                            "sign_auth_rsp": sigSettings.signing_options.sign_authn_response,
-                            "sign_arti_req": sigSettings.signing_options.sign_artifact_request,
-                            "sign_arti_rsp": sigSettings.signing_options.sign_artifact_response,
-                            "sign_logout_req": sigSettings.signing_options.sign_logout_request,
-                            "sign_logout_rsp": sigSettings.signing_options.sign_logout_response,
-                            "sign_name_id_req": sigSettings.signing_options.sign_name_id_management_request,
-                            "sign_name_id_rsp": sigSettings.signing_options.sign_name_id_management_response
+                            "ext_delegate_id": config.extension_mapping.active_delegate_id,
+                            "ext_mapping_rule": config.extension_mapping.mapping_rule
                         })
-                if sigSettings.validation_options != None:
+                if config.signature_settings != None:
+                    sigSetting = config.signature_settings
                     methodArgs.update({
-                            "validate_auth_req": sigSettings.validation_options.validate_authn_request,
-                            "validate_assert": sigSettings.validation_options.validate_assertion,
-                            "validate_arti_req": sigSettings.validation_options.validate_artifact_request,
-                            "validate_arti_rsp": sigSettings.validation_options.validate_artifact_response,
-                            "validate_logout_req": sigSettings.validation_options.validate_logout_request,
-                            "validate_logout_rsp": sigSettings.validation_options.validate_logout_response,
-                            "validate_name_id_req": sigSettings.validation_options.validate_name_id_management_request,
-                            "validate_name_id_rsp": sigSettings.validation_options.validate_name_id_management_response
+                            "sign_alg": sigSetting.signature_algorithm,
+                            "sign_digest_alg": sigSetting.digest_algorithm,
+                            "transform_include_namespace": sigSetting.include_inclusive_namespaces,
+                            "validate_assertion": sigSetting.validate_assertion
                         })
-            if config.alias_service_settings != None:
-                methodArgs.update({
-                        "alias_svc_db_type": config.alias_service_settings.db_type,
-                        "alias_svc_ldap_con": config.alias_service_settings.ldap_connection,
-                        "alias_svc_ldap_base_dn": config.alias_service_settings.ldap_base_dn
-                    })
-            
-            if config.authn_req_mapping != None:
-                methodArgs.update({
-                        "authn_req_delegate_id": config.authn_req_mapping.active_delegate_id,
-                        "authn_req_mr": config.authn_req_mapping.mapping_rule
-                    })
-            
-        rsp = self.fed.federations.create_saml_federation(**methodArgs)
-        if rsp.success == True:
-            _logger.info("Successfully created {} SAML2.0 Federation".format(federation.name))
-        else:
-            _logger.error("Failed to create {} SAML2.0 Federation with config:\n{}\n{}".format(
-                federation.name, json.dumps(federation, indent=4), rsp.data))
-            return
+                    if sigSettings.key_info_elements != None:
+                        methodArgs.update({
+                                "sign_include_cert": sigSettings.key_info_elements.include_x509_certificate_data,
+                                "sign_include_subject": sigSettings.key_info_elements.include_x509_subject_name,
+                                "sign_include_ski": sigSettings.key_info_elements.include_x509_subject_key_identifier,
+                                "sign_include_issuer": sigSettings.key_info_elements.include_x509_issuer_details,
+                                "sign_include_pubkey": sigSettings.key_info_elements.include_public_key
+                            })
+                    if sigSettings.signing_key_identifier != None:
+                        methodArgs.update({
+                                "signing_keystore": sigSettings.signing_key_identifier.keystore,
+                                "sign_key_alias": sigSettings.signing_key_identifier.certificate
+                            })
+                    if sigSetting.validation_key_identifier != None:
+                        methodArgs.update({
+                                "sign_valid_key_store": sigSettings.validation_key_identifier.keystore,
+                                "sign_valid_key_alias": sigSettings.validation_key_identifier.certificate
+                            })
+                    if sigSettings.signing_options != None:
+                        methodArgs.update({
+                                "sign_assertion": sigSettings.signing_options.sign_assertion,
+                                "sign_auth_rsp": sigSettings.signing_options.sign_authn_response,
+                                "sign_arti_req": sigSettings.signing_options.sign_artifact_request,
+                                "sign_arti_rsp": sigSettings.signing_options.sign_artifact_response,
+                                "sign_logout_req": sigSettings.signing_options.sign_logout_request,
+                                "sign_logout_rsp": sigSettings.signing_options.sign_logout_response,
+                                "sign_name_id_req": sigSettings.signing_options.sign_name_id_management_request,
+                                "sign_name_id_rsp": sigSettings.signing_options.sign_name_id_management_response
+                            })
+                    if sigSettings.validation_options != None:
+                        methodArgs.update({
+                                "validate_auth_req": sigSettings.validation_options.validate_authn_request,
+                                "validate_assert": sigSettings.validation_options.validate_assertion,
+                                "validate_arti_req": sigSettings.validation_options.validate_artifact_request,
+                                "validate_arti_rsp": sigSettings.validation_options.validate_artifact_response,
+                                "validate_logout_req": sigSettings.validation_options.validate_logout_request,
+                                "validate_logout_rsp": sigSettings.validation_options.validate_logout_response,
+                                "validate_name_id_req": sigSettings.validation_options.validate_name_id_management_request,
+                                "validate_name_id_rsp": sigSettings.validation_options.validate_name_id_management_response
+                            })
+                if config.alias_service_settings != None:
+                    methodArgs.update({
+                            "alias_svc_db_type": config.alias_service_settings.db_type,
+                            "alias_svc_ldap_con": config.alias_service_settings.ldap_connection,
+                            "alias_svc_ldap_base_dn": config.alias_service_settings.ldap_base_dn
+                        })
+                
+                if config.authn_req_mapping != None:
+                    methodArgs.update({
+                            "authn_req_delegate_id": config.authn_req_mapping.active_delegate_id,
+                            "authn_req_mr": config.authn_req_mapping.mapping_rule
+                        })
+                
+            rsp = self.fed.federations.create_saml_federation(**methodArgs)
+            if rsp.success == True:
+                _logger.info("Successfully created {} SAML2.0 Federation".format(federation.name))
+            else:
+                _logger.error("Failed to create {} SAML2.0 Federation with config:\n{}\n{}".format(
+                    federation.name, json.dumps(federation, indent=4), rsp.data))
+                return
+        old_feds = optional_list(self.fed.federations.list_federations().json)
+        fed_id = optional_list(filter_list("name", federation.name, old_feds))[0].get("id", "MISSING_ID")
         if federation.partners != None:
             for partner in federation.partners:
-                self._create_partner(federation, partner)
+                self._configure_federation_partner(fed_id, partner)
+        if federation.import_partners != None:
+            for partner in federation.import_partners:
+                self._import_partner(fed_id, partner)
 
 
     def _configure_oidc_federation(self, federation):
-        methodArgs = {
-                "name": federation.name,
-                "role": federation.role,
-                "template": federation.template
-            }
-        if federation.configuration != None:
-            config = federation.configuration
-            methodArgs.update({
-                    "redirect_uri_prefix": config.redirect_uri_prefix,
-                    "response_type": config.response_types,
-                    "attribute_mapping": config.attribute_mappings
-                })
-            if config.identity_mapping != None and config.identity_mapping.properties != None:
+        if federation.role:
+            methodArgs = {
+                    "name": federation.name,
+                    "role": federation.role,
+                    "template": federation.template
+                }
+            if federation.configuration != None:
+                config = federation.configuration
                 methodArgs.update({
-                        "identity_mapping_delegate_id": config.identity_mapping.active_delegate_id,
-                        "identity_mapping_rule": config.identity_mapping.properties.mapping_rule,
-                        "identity_auth_type": config.identity_mapping.properties.auth_type,
-                        "identity_ba_user": config.identity_mapping.properties.basic_auth_username,
-                        "identity_ba_password": config.identity_mapping.properties.basic_auth_password,
-                        "identity_client_keystore": config.identity_mapping.properties.client_key_store,
-                        "identity_client_key_alias": config.identity_mapping.properties.client_key_alias,
-                        "identity_issuer_uri": config.identity_mapping.properties.issuer_uri,
-                        "identity_message_format": config.identity_mapping.properties.message_format,
-                        "identity_ssl_keystore": config.identity_mapping.properties.ssl_key_store,
-                        "identity_uri": config.identity_mapping.properties.uri
+                        "redirect_uri_prefix": config.redirect_uri_prefix,
+                        "response_type": config.response_types,
+                        "attribute_mapping": config.attribute_mappings
                     })
-            if config.advance_configuration != None:
-                methodArgs.update({
-                        "adv_delegate_id": config.advance_configuration.active_delegate_id,
-                        "adv_mapping_rule": config.advance_configuration.mapping_rule,
-                        "adv_rule_type": config.advance_configuration.rule_type if config.advance_configuration.rule_type != None else "JAVASCRIPT"
-                    })
-        rsp = self.fed.federations.create_oidc_rp_federation(**methodArgs)
-        if rsp.success == True:
-            _logger.info("Successfully created {} OIDC RP Federation".format(federation.name))
-        else:
-            _logger.error("Failed to create {} OIDC RP Federation with config:\n{}\n{}".format(
-                    federation.name, json.dumps(federation, indent=4), rsp.data))
-            if federation.partners != None:
-                for partner in federation.partners:
-                    _create_partner(federation, partner)
+                if config.identity_mapping != None and config.identity_mapping.properties != None:
+                    methodArgs.update({
+                            "identity_mapping_delegate_id": config.identity_mapping.active_delegate_id,
+                            "identity_mapping_rule": config.identity_mapping.properties.mapping_rule,
+                            "identity_auth_type": config.identity_mapping.properties.auth_type,
+                            "identity_ba_user": config.identity_mapping.properties.basic_auth_username,
+                            "identity_ba_password": config.identity_mapping.properties.basic_auth_password,
+                            "identity_client_keystore": config.identity_mapping.properties.client_key_store,
+                            "identity_client_key_alias": config.identity_mapping.properties.client_key_alias,
+                            "identity_issuer_uri": config.identity_mapping.properties.issuer_uri,
+                            "identity_message_format": config.identity_mapping.properties.message_format,
+                            "identity_ssl_keystore": config.identity_mapping.properties.ssl_key_store,
+                            "identity_uri": config.identity_mapping.properties.uri
+                        })
+                if config.advance_configuration != None:
+                    methodArgs.update({
+                            "adv_delegate_id": config.advance_configuration.active_delegate_id,
+                            "adv_mapping_rule": config.advance_configuration.mapping_rule,
+                            "adv_rule_type": config.advance_configuration.rule_type if config.advance_configuration.rule_type != None else "JAVASCRIPT"
+                        })
+            rsp = self.fed.federations.create_oidc_rp_federation(**methodArgs)
+            if rsp.success == True:
+                _logger.info("Successfully created {} OIDC RP Federation".format(federation.name))
+            else:
+                _logger.error("Failed to create {} OIDC RP Federation with config:\n{}\n{}".format(
+                        federation.name, json.dumps(federation, indent=4), rsp.data))
+        old_feds = optional_list(self.fed.federations.list_federations().json)
+        fed_id = optional_list(filter_list("name", federation.name, old_feds))[0].get("id", "MISSING_ID")
+        if federation.partners != None:
+            for partner in federation.partners:
+                self._configure_federation_partner(fed_id, partner)
+        if federation.import_partners != None:
+            for partner in federation.import_partners:
+                self._import_partner(fed_id, partner)
 
 
     class Federations(typing.TypedDict):
@@ -1217,6 +1235,30 @@ class FED_Configurator(object):
 
         '''
         class Federation(typing.TypedDict):
+
+            class Webseal(typing.TypedDict):
+                class Runtime:
+                    username: str
+                    'The username used to authenticate with the runtime.'
+                    password: str
+                    'The password used to authenticate with the runtime. '
+                    hostname: str
+                    'The hostname of the runtime.'
+                    port: str
+                    'The port of the runtime. Must be the SSL port.'
+
+                federation: str
+                'The name or ID of the federation to run the wizard for.'
+                reuse_acls: bool
+                'A flag to indicate that any existing ACLs with the same name should be reused. If they are not reused, they will be replaced.'
+                reuse_certs: bool
+                'If the SSL certificate has already been saved, this flag indicates that the certificate should be reused instead of overwritten.'
+
+            class Partner(typing.TypedDict):
+                name: str
+                'Name of the federation partner to create'
+                metadata: str
+                "Path to XML metadata file which contains the partner's configuration properties."
 
             class SAML20_Identity_Provider(typing.TypedDict):
 
@@ -1523,8 +1565,12 @@ class FED_Configurator(object):
             'The protocol-specific configuration data. The contents of this JSON object will be different for each protocol.'
             partners: typing.Optional[typing.Union[SAML20_Identity_Provider_Partner, SAML20_Service_Provider_Partner, OIDC_Relying_Party_Partner, WSFed_Identity_Provider_Partner]]
             'List of federation partners to create for each federations.'
-            import_partners: typing.Optional[typing.List[str]]
+            import_partners: typing.Optional[typing.List[Partner]]
             'List of XML metadata documents which define partners for a configured Federation.'
+            export_metadata: typing.Optional[str]
+            "Optional path to file to write Federation's XML metadata file to. eg: 'idpmetadata.xml'"
+            webseal: typing.Optional[Webseal]
+            'Optional properties for the webseal configuration wizard '
 
         federations: typing.List[Federation]
         'List of federations and associated partner properties.'
@@ -1535,16 +1581,30 @@ class FED_Configurator(object):
                 method = {"SAML2_0": _configure_saml_federation,
                           "OIDC10": _configure_oidc_federation
                           }.get(federation.protocol, None)
-                if method == None:
+                if method == None :
                     _logger.error("Federation {} does not specify a valid configuration: {}\n\tskipping . . .".format(
                         federation.name, json.dumps(federation, indent=4)))
-                    continue
                 else:
                     method(federation)
+                if federation.export_metadata:
+                    #Export the metadata to the given file
+                    fed_objs = optional_list(self.fed.federations.list_federations().json)
+                    fed_obj = optional_list(filter_list("name", federation.name, fed_objs))[0]
+                    if fed_obj:
+                        rsp = self.fed.federations.export_metadata(fed_obj.get('id', "ID_MISSING"), federation.export_metadata)
+                        if rsp.success == True:
+                            _logger.info("Exported {} metadata to {}".format(federation.name, federation.export_metadata))
+                        else:
+                            _logger.error("Failed to export {} federation metadata:\n{}".format(
+                                                        federation.name, rsp.data))
+                    else:
+                        _logger.error("Could not find {} federation to export metadata".format(federation.name))
                 if federation.webseal:
+                    fed_objs = optional_list(self.fed.federations.list_federations().json)
+                    fed_obj = optional_list(filter_list("name", federation.name, fed_objs))[0]
                     #Run the WebSEAL config wizard
                     methodArgs = {
-                            "federation_id": fed_uuid,
+                            "federation_id": fed_obj.get("id", "MISSING_ID"),
                             "reuse_acls": federation.webseal.reuse_acls,
                             "reuse_certs": federation.webseal.reuse_certs
                         }
@@ -1556,7 +1616,7 @@ class FED_Configurator(object):
                                             "runtime_password": federation.webseal.runtime.password
                                         })
                     rsp = self.factory.get_web_settings().reverse_proxy.configure_fed(
-                                                                                federation.webseal.name, **methodArgs);
+                                                                                federation.webseal.name, **methodArgs)
                     if rsp.success == True:
                         _logger.info("Successfully ran WebSEAL configuration for {} Federation on the {} reverse"
                                      "proxy instance".format(federation.name, federation.webseal.name))

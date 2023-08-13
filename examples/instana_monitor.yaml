@@ -1,0 +1,68 @@
+appliance:
+  admin_cfg:
+    session_timeout: 720
+  activation: #Activation codes
+    webseal: !environment ISVA_BASE_CODE
+    access_control: !environment ISVA_AAC_CODE
+    federation: !environment ISVA_FED_CODE
+  network:
+    routes:
+    - enabled: True
+      comment: "Default route"
+      address: "default"
+      gateway: "192.168.42.1"
+      interface: "1.1"
+    interfaces:
+    - label: "1.1"
+      comment: "Default Interface"
+      enabled: True
+      ipv4:
+        dhcp:
+          enabled: False
+          allow_management: False
+          provides_default_route: False
+        addresses:
+        - address: "192.168.42.101"
+          mask_or_prefix: "24"
+          broadcast_address: "192.168.42.255"
+          allow_management: True
+          enabled: True
+        - address: "192.168.42.102"
+          mask_or_prefix: "24"
+          broadcast_address: "192.168.42.255"
+          allow_management: False
+          enabled: True
+      ipv6:
+        dhcp:
+          enabled: False
+          allowManagement: False
+    dns:
+      auto: False
+      primary_server: "9.9.9.9"
+  extensions:
+  - extension: "Instana/instana.ext"
+    third_party_packages:
+    - "Instana/agent.rpm"
+    properties:
+      extId: "instanaAgent"
+      instanaAgentKey: !environment INSTANA_AGENT_KEY 
+      instanaHost: !environment INSTANA_HOST
+      instanaPort: "443"
+      mvnRepositoryUrl: "https://artifact-public.instana.io"
+      mvnRepositoryFeaturesPath: "artifactory/features-public@id=features@snapshots@snapshotsUpdate=never"
+      mvnRepositorySharedPath: "artifactory/shared@id=shared@snapshots@snapshotsUpdate=never"
+webseal:
+  runtime:
+    policy_server: "local"
+    user_registry: "local"
+    ldap:
+      host: "localhost"
+      port: 389
+      dn: "cn=root,secAuthority=Default"
+      dn_password: !environment LDAP_BIND_PASSWORD
+    clean_ldap: True
+    domain: "Default"
+    admin_user: "sec_master"
+    admin_password: !environment LDAP_SEC_PASSWORD
+    admin_cert_lifetime: 1460
+    ssl_compliance: "none"

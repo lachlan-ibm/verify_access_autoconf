@@ -5,10 +5,12 @@
 
 Welcome to verify-access-autoconf documentation!
 ==================================================
-verify-access-configuratior is an automation layer written on top of pyISVA. THis library should be used to apply 
+verify-access-autoconf is an automation layer written on top of pyISVA. This library should be used to apply 
 YAML configuration files to a Verify Access deployment.
 
 This library is designed to work with both Appliance and Container based deployments, and is not idempotent.
+
+Configuration is supplied in YAML syntax using a well-defined data structure (detailed in this doc).
 
 
 Installation
@@ -25,9 +27,11 @@ Architecture
 ------------
 
 Users should take care to ensure the configuration of these separate features are compatible (eg. conflicting ALC's
-in a WebSEAL reverse proxy).
+in a WebSEAL reverse proxy). Administrators will also have to define the ``webseal.runtime`` entry for many configuration
+options even if the :ref:`WebSEAL Runtime Component<webseal_runtime_server>` is already configured.
 
-Example configurations can be found in the ``examples`` directory with additional documentation `here <examples>`.
+Example configurations can be found in the ``examples`` directory with additional documentation in the 
+`Examples / Getting Started <examples.html>`_ page.
 
 
 .. _verify_access_autoconf_modules:
@@ -38,12 +42,14 @@ _______
 The configuration process is broken into six modules. Each module is responsible for configuring a subset of
 Verify Access features. The order of configuration is:
 
-- base
+- base (Licensing, SSL Databases, Cluster Settings)
 - appliance (if applicable)
 - container (if applicable)
 - webseal
 - access control
 - federations
+
+More complex deployment architectures can be achieved by running sequential ``config.yaml`` descriptors.
 
 .. _verify_access_autoconf_yaml_keywords:
 
@@ -54,20 +60,25 @@ Each module expects a YAML object describing the desired configuration state. Th
 which can be used to make configuration files re-usable and version controlled. There are three keywords which 
 can be used in configuration files:
 
- - ``!include``: Used to include a YAML configuration file as the value of the given key. This file can be either an 
-                absolute path or relative to the ``ISVA_CONFIG_BASE`` environment variable. eg::
+ - ``!include``
+    Used to include a YAML configuration file as the value of the given key. This file can be either an 
+    absolute path or relative to the ``ISVA_CONFIG_BASE`` environment variable. eg::
 
-                                                                                                webseal: !include webseal.yaml
+                                                                                    container: !include base_config.yaml
+                                                                                    webseal: !include webseal.yaml
+                                                                                    access_control: !include aac.yaml
 
- - ``!secret``: Used to set the value of the given key as a value read from the given Kubernetes Secret Namespace/Name,
-                eg::
+ - ``!secret``
+    Used to set the value of the given key as a value read from the given Kubernetes Secret Namespace/Name,
+    eg::
 
-                    admin_password: !secret default/isva-secrets:admin_secret
+        admin_password: !secret default/isva-secrets:admin_secret
 
- - ``!environment``: Used to set the value of the given key as the value read from the given environment variable,
-                    eg::
+ - ``!environment``: 
+    Used to set the value of the given key as the value read from the given environment variable,
+    eg::
 
-                        admin_password: !secret ISVA_ADMIN_SECRET
+        admin_password: !environment ISVA_ADMIN_SECRET
 
 
 .. _verify_access_autoconf_env_vars:
@@ -82,7 +93,8 @@ these variables are set, they take priority over values set in configuration fil
                         This variable is the root directory of all configuration files for the given Verify Access 
                         Deployment. This can include: YAML configuration files; HTML template pages; JavaScript mapping
                         rules; XML configuration files.
-                        If this environment variable is not set then the user's ``$HOME`` directory is used.
+                        
+                        .. note:: If this environment variable is not set then the user's ``$HOME`` directory is used.
 
 - ``ISVA_CONFIG_YAML``
                         This variable defines the YAML configuration file to deploy. This can be either relative
@@ -112,17 +124,17 @@ these variables are set, they take priority over values set in configuration fil
                         deployments and pods in the namespace that Verify Access is deployed to.
                         The file path can either be absolute or relative to the ``ISVA_CONFIG_BASE`` variable.
 
-                        *note:* This is only applicable for Container deployments using Kubernetes orchestration.
+                        .. note:: This is only applicable for Container deployments using Kubernetes orchestration.
 
 - ``ISVA_DOCKER_COMPOSE_CONFIG``
                         This variable defines the Docker-Compose deployment configuration file required to run
                         ``docker-compose`` commands for your Verify Access deployment. This file path can 
                         either be absolute or relative to the ``ISVA_CONFIG_BASE`` variable.
 
-                        *note:* This is only applicable for Container deployments using Docker-Compose orchestration.
+                        .. note:: This is only applicable for Container deployments using Docker-Compose orchestration.
 
 - ``ISVA_CONFIGURATOR_LOG_LEVEL``
-                        This variable set the logging level for the configurator. The default log level is ``INFO``.
+                        This variable set the logging level for the autoconf tool. The default log level is ``INFO``.
 
 
 
@@ -135,9 +147,9 @@ Detailed information on configuration object structure can be found in the submo
    examples
    appliance
    container
+   webseal
    access-control
    federations
-   webseal
 
 
 Indices and tables

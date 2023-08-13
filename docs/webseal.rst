@@ -19,13 +19,13 @@ Example
                     ldap:
                       host: "openldap"
                       port: 636
-                      dn: "cn=root,secAuthority=Default"
-                      dn_password: "Passw0rd"
+                      dn: !secret default/isva_secrets:ldap_bind_dn
+                      dn_password: !secret default/isva_secrets:ldap_bind_pw
                       key_file: "lmi_trust_store"
                     clean_ldap: True
                     domain: "Default"
-                    admin_user: "sec_master"
-                    admin_password: "Passw0rd"
+                    admin_user: !secret default/isva_secrets:sec_user
+                    admin_password: !secret default/isva_secrets:sec_pw
                     admin_cert_lifetime: 1460
                     ssl_compliance: "fips"
                   reverse_proxy:
@@ -44,8 +44,8 @@ Example
                       hostname: "isvaruntime"
                       port: 9443
                       junction: "/mga"
-                      user: "easuser"
-                      password: "passw0rd"
+                      user: !secret default/isva_secrets:runtime_user
+                      password: !secret default/isva_secrets:runtime_pw
                       reuse_certs: True
                       reuse_acls: True
                     stanza_configuration:
@@ -60,8 +60,8 @@ Example
                   pdadmin:
                     users:
                     - name: "testuser"
-                      dn: "cn=testuser,dc=ibm,dc=com"
-                      password: "passw0rd"
+                      dn: !secret default/isva_secrets:test_dn
+                      password: !secret default/isva_secrets:test_pw
 
 
 .. _webseal_reverse_proxy:
@@ -84,8 +84,15 @@ Junction configuration
 ______________________
 For each WebSEAL instance, administrators will typically define one or more standard or virtual junctions. Junctions are 
 how an administrator defines the relationship and behavior between a WebSEAL server and an application server (for whom 
-TCP traffic is being proxied by WebSEAL). Some advanced configuratioin options cannot be set in this entry and the Stanza 
+TCP traffic is being proxied by WebSEAL). Some advanced configuration options cannot be set in this entry and the Stanza 
 configuration must be used to set key/value entries in the reverse proxy config file.
+
+Runtime Configuration Wizards
+_____________________________
+Every WebSEAL instance can optional provide more advanced authentication and authorization logic by integrating 
+the Advanced Access Control runtime server as an External Authentication Interface (EAI). To simplify this configuration,
+a number of wizards are available for :ref:`Access Control<>access-control.rst#Context Based Access Control`,
+ :ref:`Federations<federations.rst#Federations>` and :ref:`Mobile Multi-Factor Authentication<access-control.rst#Mobile Multi-Factor Authentication>`
 
 
 .. autoclass:: src.verify_access_autoconf.webseal.WEB_Configurator.Reverse_Proxy
@@ -97,7 +104,7 @@ configuration must be used to set key/value entries in the reverse proxy config 
 Policy Directory Admin
 ======================
 Administrators can also use the ``pdadmin`` tool to modify the configured User Registry and Policy Server. This tool is
-used to: create Access Control Lists (ACL's); create Proteced Object Policies (POP's); create users or groups; as well 
+used to: create Access Control Lists (ACL's); create Protected Object Policies (POP's); create users or groups; as well 
 as attaching ACL's or POP's to a reverse proxy instance's object space.
 
 

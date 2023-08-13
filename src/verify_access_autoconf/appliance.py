@@ -9,7 +9,7 @@ import typing
 
 from .util.constants import HEADERS
 from .util.configure_util import creds, config_base_dir, deploy_pending_changes
-from .util.data_util import Map
+from .util.data_util import Map, optional_list, filter_list
 
 _logger = logging.getLogger(__name__)
 
@@ -18,90 +18,84 @@ class Appliance_Configurator(object):
     config = Map()
     appliance = None
 
-    def __init__(self, appFctry, config):
+    def __init__(self, config, factory):
         self.config = config
-        self.appliance = appFctry
+        self.appliance = factory
 
 
     def _update_routes(self, route):
         system = self.appliance.get_system_settings()
-        interfaces = system.interfaces.list_interfaces().json["interfaces"]
-        ifaceUuid = None
-        for iface in interfaces:
-            if iface.get('label', None) == route.interface:
-                ifaceUuid = iface.get('uuid', '-1')
-                break
-        if ifaceUuid == None:
+        interfaces = system.interfaces.list_interfaces().json.get("interfaces", [])
+        ifaceUuid = optional_list(filter_list('label', route.interface, interfaces))[0].get("uuid", None)
+        if not ifaceUuid:
             _logger.error("Unable to find interface {} in : {}".format(
                 route.interface, json.dumps(interfaces, indent=4)))
             return
-        existingRoutes = system.static_routes.list_routes().json['staticRoutes']
-        rsp = None
-        for oldRoute in existingRoutes:
-            if oldRoute['interfaceUUID'] == ifaceUuid:
-                rsp = system.static_routes.update_route(oldRoute['uuid'], enabled=route.enabled,
-                        address=route.address, mask_or_prefix=route.mask_or_prefix, gateway=route.gateway,
-                        interface_uuid=ifaceUuid, metric=route.metric, comment=route.comment,
-                        table=route.table)
-                break
-        if rsp == None:
+        existingRoutes = system.static_routes.list_routes().json.get('staticRoutes', [])
+        rsp = None; verb = "NONE"
+        oldRoute = optional_list(filter_list('interfaceUUID', ifaceUuid, existingRoutes))[0]
+        if oldRoute:
+            rsp = system.static_routes.update_route(oldRoute['uuid'], enabled=route.enabled,
+                    address=route.address, mask_or_prefix=route.mask_or_prefix, gateway=route.gateway,
+                    interface_uuid=ifaceUuid, metric=route.metric, comment=route.comment,
+                    table=route.table)
+            verb = "updated" if rsp.success == True else "update"
+        else:
             rsp = system.static_routes.create_route(enabled=route.enabled, address=route.address, mask_or_prefix=proxy.mask_or_prefix,
                     gateway=route.gateway, interface_uuid=ifaceUuid, metric=route.metric, comment=route.comment,
                     table=route.table)
+            verb = "created" if rsp.success == True else "create"
         if rsp.success == True:
-            _logger.info("Successfully set route info for {} interface".format(route.interface))
+            _logger.info("Successfully {} route info for {} interface".format(
+                                        verb, route.interface))
         else:
-            _logger.error("Failed to set route info for {} interface:\n{}\n{}".format(
-                route.info, json.dumps(route, indent=4), rsp.data))
+            _logger.error("Failed to {} route info for {} interface:\n{}\n{}".format(
+                                verb, route.info, json.dumps(route, indent=4), rsp.data))
 
     def _update_interface(self, iface):
         system = self.appliance.get_system_settings()
-        interfaces = system.interfaces.list_interfaces().json["interfaces"]
+        interfaces = system.interfaces.list_interfaces().json.get("interfaces", [])
         rsp = None
         if iface.ipv4 == None:
             _logger.error("Config tool only tested with IPv4 addresses, sorry")
             return
-        for oldIface in interfaces:
-            if iface.label == oldIface['label']:
-                methodArgs = {
-                            "name": iface.name,
-                            "comment": iface.comment,
-                            "enabled": iface.enabled,
-                            "vlan_id": iface.vlan_id,
-                            "bonding_mode": iface.bonding_mode,
-                            "bonded_to": iface.bonded_to,
+        oldIface = optional_list(filter_list('label', iface.label, interfaces))[0]
+        if oldIface:
+            methodArgs = {
+                        "name": iface.name,
+                        "comment": iface.comment,
+                        "enabled": iface.enabled,
+                        "vlan_id": iface.vlan_id,
+                        "bonding_mode": iface.bonding_mode,
+                        "bonded_to": iface.bonded_to,
+                    }
+            if iface.ipv4 != None:
+                if iface.ipv4.dhcp != None:
+                    methodArgs.update({
+                            "ipv4_dhcp_enabled": iface.ipv4.dhcp.enabled,
+                            "ipv4_dhcp_allow_management": iface.ipv4.dhcp.allow_management,
+                            "ipv4_dhcp_default_route": iface.ipv4.dhcp.provides_default_route,
+                            "ipv4_dhcp_route_metric": iface.ipv4.dhcp.route_metric
+                        })
+                if iface.ipv4.addresses != None and isinstance(iface.ipv4.addresses, list):
+                    address = iface.ipv4.addresses[0]
+                    methodArgs.update({
+                            "ipv4_address": address.address,
+                            "ipv4_mask_or_prefix": address.mask_or_prefix,
+                            "ipv4_broadcast_address": address.broadcast_address,
+                            "ipv4_allow_management": address.allow_management,
+                            "ipv4_enabled": address.enabled
+                        })
+            rsp = system.interfaces.update_interface(oldIface['uuid'], **methodArgs)
+            if rsp.success == True and iface.ipv4.addresses != None: # Log error in outer if block
+                for address in iface.ipv4.addresses[1:]:
+                    methodArgs = {
+                            "address": address.address,
+                            "mask_or_prefix": address.mask_or_prefix,
+                            "enabled": address.enabled,
+                            "allow_management": address.allow_management
                         }
-                if iface.ipv4 != None:
-                    if iface.ipv4.dhcp != None:
-                        methodArgs.update({
-                                "ipv4_dhcp_enabled": iface.ipv4.dhcp.enabled,
-                                "ipv4_dhcp_allow_management": iface.ipv4.dhcp.allow_mgmt,
-                                "ipv4_dhcp_default_route": iface.ipv4.dhcp.provides_default_route,
-                                "ipv4_dhcp_route_metric": iface.ipv4.dhcp.route_metric
-                            })
-                    if iface.ipv4.addresses != None and isinstance(iface.ipv4.addresses, list):
-                        address = iface.ipv4.addresses[0]
-                        methodArgs.update({
-                                "ipv4_address": address.address,
-                                "ipv4_mask_or_prefix": address.mask_or_prefix,
-                                "ipv4_broadcast_address": address.broadcast_address,
-                                "ipv4_allow_management": address.allow_mgmt,
-                                "ipv4_enabled": address.enabled
-                            })
-                rsp = system.interfaces.update_interface(oldIface['uuid'], **methodArgs)
-                if rsp.success != True:
-                    break # Log error in outer if block
-                if iface.ipv4.addresses != None:
-                    for address in iface.ipv4.addresses[1:]:
-                        methodArgs = {
-                                "address": address.address,
-                                "mask_or_prefix": address.mask_or_prefix,
-                                "enabled": address.enabled,
-                                "allow_management": address.allow_management
-                            }
-                        rsp = system.interfaces.create_address(iface.label, **methodArgs)
-                        if rsp.success != True:
-                            break # Log error in outer if block
+                    rsp = system.interfaces.create_address(iface.label, **methodArgs)
 
         if rsp != None and rsp.success == True:
             _logger.info("Successfully set address for interface {}".format(iface.label))
@@ -109,6 +103,14 @@ class Appliance_Configurator(object):
             _logger.error("Failed to update address for interface {} with config:\n{}\n{}".format(
                 iface.label, json.dumps(iface, indent=4), rsp.data))
 
+
+    def _update_dns(self, dns_config):
+        rsp = self.appliance.get_system_settings().dns.update(**dns_config)
+        if rsp.success == True:
+            _logger.info("Successfully set the DNS properties")
+        else:
+            _logger.error("Failed to set the DNS properties:\n{}\n{}".format(
+                                                json.dumps(dns_config, indent=4), rsp.data))
 
     class Networking(typing.TypedDict):
         '''
@@ -187,8 +189,8 @@ class Appliance_Configurator(object):
                 addresses: typing.Optional[typing.List[IPv4Address]]
                 'Static IPv4 addresses assigned to an interface.'
 
-            name: str
-            'Name of interface.'
+            label: str
+            'System assigned label of interface.'
             comment: str
             'Comment to add to interface.'
             enabled: str
@@ -198,11 +200,29 @@ class Appliance_Configurator(object):
             ipv4: IPv4
             'IPv4 settings.'
 
+        class DNS(typing.TypedDict):
+            auto: bool
+            'true if DNS should be auto configured via dhcp.'
+            auto_from_interface: typing.Optional[str]
+            'Name or ID of interface whose dhcp will defined the dns settings.'
+            primary_server: typing.Optional[str]
+            'Primary DNS Server address.'
+            secondary_server: typing.Optional[str]
+            'Secondary DNS Server address.'
+            tertiary_server: typing.Optional[str]
+            'Tertiary DNS Server address.'
+            search_domains: typing.Optional[str]
+            'Comma-separated list of DNS search domains.'
+
+
         routes: typing.Optional[typing.List[Route]]
         'Optional list of routes to add to an interface.'
 
         interfaces: typing.List[Interface]
         'List of properties for attached interfaces.'
+
+        dns: typing.Optional[DNS]
+        'Domain Name Server settings for appliance'
 
     def update_network(self, config):
         if config.network != None:
@@ -212,7 +232,9 @@ class Appliance_Configurator(object):
             if config.network.interfaces != None:
                 for iface in config.network.interfaces:
                     self._update_interface(iface)
-        deploy_pending_changes(self.factory, self.config)
+            if config.network.dns != None:
+                self._update_dns(config.network.dns)
+        deploy_pending_changes(self.appliance, self.config)
 
 
     class Date_Time(typing.TypedDict):
